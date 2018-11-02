@@ -15,8 +15,7 @@ import java.util.Set;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class ConsequenceTypesByGeneFunction
-        extends AbstractFunction2<GenericRowWithSchema, String, Collection<String>>
+public class ConsequenceTypesByGeneFunction extends AbstractFunction2<GenericRowWithSchema, String, Collection<String>>
         implements UDF2<GenericRowWithSchema, String, Collection<String>> {
 
     @Override

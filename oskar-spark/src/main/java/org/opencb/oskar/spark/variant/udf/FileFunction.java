@@ -12,9 +12,7 @@ import java.util.List;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class FileFunction
-        extends AbstractFunction2<Object, String, Row>
-        implements UDF2<Object, String, Row> {
+public class FileFunction extends AbstractFunction2<Object, String, Row> implements UDF2<Object, String, Row> {
 
     @Override
     public Row call(Object o, String fileId) {

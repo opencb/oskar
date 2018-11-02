@@ -13,9 +13,7 @@ import java.util.List;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class FileFilterFunction
-        extends AbstractFunction2<Object, String, List<String>>
-        implements UDF2<Object, String, List<String>> {
+public class FileFilterFunction extends AbstractFunction2<Object, String, List<String>> implements UDF2<Object, String, List<String>> {
 
     @Override
     public List<String> call(Object o, String fileId) {

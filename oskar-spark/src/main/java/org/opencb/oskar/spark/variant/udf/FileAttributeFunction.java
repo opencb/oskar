@@ -9,13 +9,11 @@ import scala.runtime.AbstractFunction3;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class FileAttributeFunction
-        extends AbstractFunction3<Object, String, String, String>
+public class FileAttributeFunction extends AbstractFunction3<Object, String, String, String>
         implements UDF3<Object, String, String, String> {
 
     @Override
     public String call(Object studies, String fileId, String infoField) {
-
         Row file = new FileFunction().call(studies, fileId);
         if (file != null) {
             Object infoValue = file.getJavaMap(file.fieldIndex("attributes")).get(infoField);

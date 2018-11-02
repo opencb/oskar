@@ -14,22 +14,21 @@ import java.util.Set;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class ConsequenceTypesFunction
-        extends AbstractFunction1<GenericRowWithSchema, Collection<String>>
+public class ConsequenceTypesFunction extends AbstractFunction1<GenericRowWithSchema, Collection<String>>
         implements UDF1<GenericRowWithSchema, Collection<String>> {
 
     @Override
     public Collection<String> call(GenericRowWithSchema annotation) {
-        Set<String> ct = new HashSet<>();
+        Set<String> consequenceTypeNames = new HashSet<>();
         List<GenericRowWithSchema> consequenceTypes = annotation.getList(annotation.fieldIndex("consequenceTypes"));
 
         for (GenericRowWithSchema consequenceType : consequenceTypes) {
             List<GenericRowWithSchema> sequenceOntologyTerms = consequenceType.getList(consequenceType.fieldIndex("sequenceOntologyTerms"));
             for (GenericRowWithSchema sequenceOntologyTerm : sequenceOntologyTerms) {
-                ct.add(sequenceOntologyTerm.getAs("name"));
+                consequenceTypeNames.add(sequenceOntologyTerm.getAs("name"));
             }
         }
-        return ct;
+        return consequenceTypeNames;
     }
 
     @Override

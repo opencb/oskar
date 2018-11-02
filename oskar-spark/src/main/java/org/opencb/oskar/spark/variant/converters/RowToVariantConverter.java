@@ -20,6 +20,7 @@ import java.util.*;
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
 public class RowToVariantConverter implements MapFunction<Row, Variant>, Converter<Row, Variant> {
+
     @Override
     public Variant convert(Row row) {
         return call(row);
@@ -30,8 +31,6 @@ public class RowToVariantConverter implements MapFunction<Row, Variant>, Convert
 //        SchemaConverters.SchemaType schemaType = SchemaConverters.toSqlType(VariantAvro.getClassSchema());
 //        SchemaConverters.<VariantAvro>convertStructToAvro(((StructType) schemaType.dataType()), new SchemaBuilder.RecordBuilder<>(), "");
         VariantBuilder builder = new VariantBuilder();
-
-
         builder.setChromosome(row.getAs("chromosome"));
         builder.setId(row.getAs("id"));
         builder.setNames(row.getList(row.fieldIndex("names")));
@@ -86,7 +85,6 @@ public class RowToVariantConverter implements MapFunction<Row, Variant>, Convert
     }
 
     public static <T> T convert(Object o, DataType dataType, Schema schema) {
-
         try {
             if (o == null) {
                 return null;
@@ -95,7 +93,6 @@ public class RowToVariantConverter implements MapFunction<Row, Variant>, Convert
             schema = getUnionSubType(schema);
             if (dataType instanceof ArrayType) {
                 List<Object> list = new ArrayList<>(((WrappedArray) o).length());
-
 
                 Schema elementType = schema.getElementType();
 

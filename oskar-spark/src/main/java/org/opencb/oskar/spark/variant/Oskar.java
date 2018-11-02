@@ -1,4 +1,4 @@
-package org.opencb.oskar.spark.core;
+package org.opencb.oskar.spark.variant;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.spark.sql.Dataset;
@@ -10,6 +10,7 @@ import org.opencb.biodata.models.metadata.Sample;
 import org.opencb.biodata.models.variant.metadata.VariantMetadata;
 import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.commons.utils.FileUtils;
+import org.opencb.oskar.spark.core.OskarException;
 import org.opencb.oskar.spark.variant.converters.DataTypeUtils;
 import org.opencb.oskar.spark.variant.ml.VariantStatsTransformer;
 import org.opencb.oskar.spark.variant.udf.VariantUdfManager;
@@ -34,7 +35,7 @@ public class Oskar {
 
     private final SparkSession spark;
 
-    public Oskar(SparkSession spark) throws OskarException {
+    public Oskar(SparkSession spark) {
         this.spark = spark;
         new VariantUdfManager().loadVariantUdfs(spark);
     }
@@ -61,10 +62,8 @@ public class Oskar {
 
         if (Paths.get(metadataPath).toFile().exists()) {
             VariantMetadata variantMetadata = loadMetadata(metadataPath);
-
             dataset = addVariantMetadata(dataset, variantMetadata);
         }
-
 
         return dataset;
     }
@@ -92,12 +91,10 @@ public class Oskar {
         StructType studyStructType = ((StructType) studiesArrayType.elementType());
 
         // Add metadata to samplesData field
-        StructField samplesDataSchemaWithMetadata =
-                DataTypeUtils.addMetadata(metadata, studyStructType.apply("samplesData"));
+        StructField samplesDataSchemaWithMetadata = DataTypeUtils.addMetadata(metadata, studyStructType.apply("samplesData"));
 
         // Replace samplesData field
-        StructType elementType =
-                DataTypeUtils.replaceField(studyStructType, samplesDataSchemaWithMetadata);
+        StructType elementType = DataTypeUtils.replaceField(studyStructType, samplesDataSchemaWithMetadata);
 
         return dataset.withColumn("studies", col("studies").as("studies", metadata))
                 .withColumn("studies", col("studies").cast(new ArrayType(elementType, studiesArrayType.containsNull())));

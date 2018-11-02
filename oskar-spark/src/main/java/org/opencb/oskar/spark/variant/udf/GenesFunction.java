@@ -16,13 +16,10 @@ import java.util.Set;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class GenesFunction
-        extends AbstractFunction1<Row, Collection<String>>
-        implements UDF1<Row, Collection<String>> {
+public class GenesFunction extends AbstractFunction1<Row, Collection<String>> implements UDF1<Row, Collection<String>> {
 
     @Override
     public Collection<String> call(Row annotation) {
-
         Set<String> genes = new HashSet<>();
         List<GenericRowWithSchema> consequenceTypes = annotation.getList(annotation.fieldIndex("consequenceTypes"));
 

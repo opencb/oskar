@@ -15,8 +15,7 @@ import java.util.List;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class SampleDataFunction
-        extends AbstractFunction2<Object, String, WrappedArray<String>>
+public class SampleDataFunction extends AbstractFunction2<Object, String, WrappedArray<String>>
         implements UDF2<Object, String, WrappedArray<String>> {
 
     @Override

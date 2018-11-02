@@ -15,9 +15,9 @@ import java.util.Set;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class IncludeFunction
-        extends AbstractFunction2<GenericRowWithSchema, String, GenericRowWithSchema>
+public class IncludeFunction extends AbstractFunction2<GenericRowWithSchema, String, GenericRowWithSchema>
         implements UDF2<GenericRowWithSchema, String, GenericRowWithSchema> {
+
     @Override
     public GenericRowWithSchema call(GenericRowWithSchema row, String include) {
         Object[] values = new Object[row.length()];

@@ -10,9 +10,7 @@ import scala.runtime.AbstractFunction2;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class FileQualFunction
-        extends AbstractFunction2<Object, String, Double>
-        implements UDF2<Object, String, Double> {
+public class FileQualFunction extends AbstractFunction2<Object, String, Double> implements UDF2<Object, String, Double> {
 
     @Override
     public Double call(Object o, String fileId) {

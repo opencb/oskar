@@ -10,9 +10,7 @@ import scala.runtime.AbstractFunction1;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class RevcompFunction
-        extends AbstractFunction1<String, String>
-        implements UDF1<String, String> {
+public class RevcompFunction extends AbstractFunction1<String, String> implements UDF1<String, String> {
 
     @Override
     public String call(String allele) {

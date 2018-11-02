@@ -17,8 +17,7 @@ import java.util.List;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class ProteinSubstitutionScoreFunction
-        extends AbstractFunction2<GenericRowWithSchema, String, List<Double>>
+public class ProteinSubstitutionScoreFunction extends AbstractFunction2<GenericRowWithSchema, String, List<Double>>
         implements UDF2<GenericRowWithSchema, String, List<Double>> {
 
     @Override
@@ -47,6 +46,7 @@ public class ProteinSubstitutionScoreFunction
                 }
             }
         }
+
         if (max == Double.MIN_VALUE) {
             return Collections.emptyList();
         } else {

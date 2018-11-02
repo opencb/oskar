@@ -12,8 +12,7 @@ import java.util.List;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class SampleDataFieldFunction
-        extends AbstractFunction3<Object, String, String, String>
+public class SampleDataFieldFunction extends AbstractFunction3<Object, String, String, String>
         implements UDF3<Object, String, String, String> {
 
     @Override

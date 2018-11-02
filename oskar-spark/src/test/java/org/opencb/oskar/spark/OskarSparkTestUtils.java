@@ -1,11 +1,10 @@
 package org.opencb.oskar.spark;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.junit.rules.ExternalResource;
-import org.opencb.oskar.spark.core.Oskar;
+import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.core.OskarException;
 
 import java.io.IOException;

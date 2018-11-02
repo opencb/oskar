@@ -18,6 +18,7 @@ import java.util.Map;
  * Created by joaquin on 1/19/17.
  */
 public class RvTestsWrapper extends VariantAnalysisWrapper {
+
     public static final String ANALYSIS_NAME = "rvtests";
 
     private String inFilename;
@@ -28,12 +29,12 @@ public class RvTestsWrapper extends VariantAnalysisWrapper {
     private Logger logger;
 
     public RvTestsWrapper(String studyId, String inFilename, String metaFilename,
-                          Query query, Map<String, String> rvtestsParams, OskarConfiguration configuration) {
+                          Query query, Map<String, String> rvTestsParams, OskarConfiguration configuration) {
         super(studyId, configuration);
         this.inFilename = inFilename;
         this.metaFilename = metaFilename;
         this.query = query;
-        this.rvtestsParams = rvtestsParams;
+        this.rvtestsParams = rvTestsParams;
 
         this.logger = LoggerFactory.getLogger(RvTestsWrapper.class);
     }

@@ -31,13 +31,11 @@ public class IncludeStudyFunction
             }
         }
 
-
         return WrappedArray.<GenericRowWithSchema>make(filteredStudies.toArray(new GenericRowWithSchema[filteredStudies.size()]));
     }
 
     @Override
     public WrappedArray<GenericRowWithSchema> apply(WrappedArray<GenericRowWithSchema> studies, String include) {
-
         return call(studies, include);
     }
 }

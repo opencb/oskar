@@ -13,20 +13,18 @@ import java.util.Map;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class PopFreqAsMapFunction
-        extends AbstractFunction1<GenericRowWithSchema, Object>
-        implements UDF1<GenericRowWithSchema, Object> {
+public class PopFreqAsMapFunction extends AbstractFunction1<GenericRowWithSchema, Object> implements UDF1<GenericRowWithSchema, Object> {
 
     @Override
     public Object call(GenericRowWithSchema annotation) {
-        Map<String, Double> map = new HashMap<>();
+        Map<String, Double> popAltFreq = new HashMap<>();
         List<GenericRowWithSchema> list = annotation.getList(annotation.fieldIndex("populationFrequencies"));
         if (list != null && list.size() > 0) {
             for (GenericRowWithSchema elem : list) {
-                map.put(elem.getAs("study") + ":" + elem.getAs("population"), ((Number) elem.getAs("altAlleleFreq")).doubleValue());
+                popAltFreq.put(elem.getAs("study") + ":" + elem.getAs("population"), ((Number) elem.getAs("altAlleleFreq")).doubleValue());
             }
         }
-        return map;
+        return popAltFreq;
     }
 
     @Override

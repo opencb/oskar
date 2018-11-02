@@ -10,8 +10,7 @@ import scala.runtime.AbstractFunction2;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class StudyFunction
-        extends AbstractFunction2<WrappedArray<? extends Row>, String, Row>
+public class StudyFunction extends AbstractFunction2<WrappedArray<? extends Row>, String, Row>
         implements UDF2<WrappedArray<? extends Row>, String, Row> {
 
     @Override
