@@ -1,7 +1,7 @@
 package org.opencb.oskar.spark.variant;
 
 import org.apache.spark.sql.SparkSession;
-import org.opencb.biodata.formats.pedigree.PedigreeManager;
+import org.opencb.biodata.formats.pedigree.PedigreeParser;
 import org.opencb.biodata.models.core.pedigree.Pedigree;
 import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.biodata.tools.variant.converters.VCFExporter;
@@ -63,7 +63,6 @@ public class VariantAnalysisUtils {
         VariantMetadataManager metadataManager = new VariantMetadataManager();
         metadataManager.load(Paths.get(metaFilename));
         List<Pedigree> pedigrees = metadataManager.getPedigree(studyId);
-        PedigreeManager pedigreeManager = new PedigreeManager();
-        pedigreeManager.save(pedigrees, Paths.get(pedFilename));
+        PedigreeParser.save(pedigrees, Paths.get(pedFilename));
     }
 }
