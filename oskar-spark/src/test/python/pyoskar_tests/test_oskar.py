@@ -16,7 +16,7 @@ class TestOskar(TestCase):
     def setUpClass(cls):
         cls.spark = create_testing_pyspark_session()
         cls.oskar = Oskar(cls.spark)
-        cls.df = cls.oskar.load(PLATINUM_CHR__SMALL_AVRO)
+        cls.df = cls.oskar.load(PLATINUM_SMALL)
 
     def setUp(self):
         self.spark = self.__class__.spark

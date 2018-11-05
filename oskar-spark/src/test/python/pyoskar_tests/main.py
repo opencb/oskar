@@ -2,9 +2,9 @@
 
 
 from pyoskar_tests.test_utils import *
-from oskar.core import Oskar
-from oskar.analysis.sql import *
-from oskar.analysis.mllib import *
+from pyoskar.core import Oskar
+from pyoskar.analysis.sql import *
+from pyoskar.analysis.mllib import *
 from pyspark.sql.functions import col, udf, count, explode, concat, when, expr
 from pyspark.sql.functions import *
 
@@ -12,7 +12,7 @@ spark = create_testing_pyspark_session()
 
 oskar = Oskar(spark)
 
-df = oskar.load(PLATINUM_CHR__SMALL_AVRO) # type: DataFrame
+df = oskar.load(PLATINUM_SMALL) # type: DataFrame
 
 df.createOrReplaceTempView("chr22")
 oskar.samples(df)

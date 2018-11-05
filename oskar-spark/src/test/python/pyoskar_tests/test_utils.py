@@ -6,7 +6,7 @@ here = path.abspath(path.dirname(__file__))
 
 TARGET_PATH = here + "/../../../../target/"
 RESOURCES_PATH = here + "/../../resources/"
-PLATINUM_CHR__SMALL_AVRO = RESOURCES_PATH + "platinum_chr22.small.avro"
+PLATINUM_SMALL = RESOURCES_PATH + "platinum_chr22.small.parquet"
 
 
 def create_testing_pyspark_session():

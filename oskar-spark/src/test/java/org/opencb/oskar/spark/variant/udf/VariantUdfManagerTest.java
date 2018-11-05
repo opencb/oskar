@@ -2,7 +2,10 @@ package org.opencb.oskar.spark.variant.udf;
 
 import org.apache.spark.ml.feature.Bucketizer;
 import org.apache.spark.ml.feature.SQLTransformer;
-import org.apache.spark.sql.*;
+import org.apache.spark.sql.Column;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.expressions.UserDefinedFunction;
 import org.apache.spark.sql.types.DataTypes;
 import org.junit.Before;
@@ -32,20 +35,6 @@ public class VariantUdfManagerTest {
     @Before
     public void setUp() throws Exception {
         spark = sparkTest.getSpark();
-        new VariantUdfManager().loadVariantUdfs(spark);
-    }
-
-    @Test
-    public void testVariantStatsML() throws Exception {
-
-        Dataset<Row> df = sparkTest.getVariantsDataset();
-
-        VariantStatsTransformer transformer = new VariantStatsTransformer().setCohort("ALL");
-        Dataset<Row> transform = transformer.transform(df);
-        transform.show();
-
-        transform.select(col("studies").getItem(0).getField("stats")).show(false);
-        df.select(col("studies").getItem(0).getField("samplesData"), col("studies").getItem(0).getField("stats")).show(false);
     }
 
     @Test

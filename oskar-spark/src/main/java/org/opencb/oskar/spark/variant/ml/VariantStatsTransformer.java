@@ -1,10 +1,7 @@
 package org.opencb.oskar.spark.variant.ml;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.spark.ml.Transformer;
 import org.apache.spark.ml.param.Param;
-import org.apache.spark.ml.param.ParamMap;
-import org.apache.spark.ml.util.Identifiable$;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -12,7 +9,6 @@ import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema;
 import org.apache.spark.sql.expressions.UserDefinedFunction;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
-import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.biodata.models.variant.avro.StudyEntry;
 import org.opencb.biodata.models.variant.stats.VariantStats;
@@ -36,9 +32,8 @@ import static org.apache.spark.sql.functions.udf;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class VariantStatsTransformer extends Transformer {
+public class VariantStatsTransformer extends AbstractTransformer {
 
-    private String uid;
     private Param<String> cohortParam;
     private Param<String> studyIdParam;
     private Param<List<String>> samplesParam;
@@ -61,7 +56,7 @@ public class VariantStatsTransformer extends Transformer {
     }
 
     public VariantStatsTransformer(String uid) {
-        this.uid = uid;
+        super(uid);
         setDefault(cohortParam(), "ALL");
         setDefault(studyIdParam(), "");
         setDefault(samplesParam(), Collections.emptyList());
@@ -107,22 +102,8 @@ public class VariantStatsTransformer extends Transformer {
     }
 
     @Override
-    public String uid() {
-        return getUid();
-    }
-
-    private String getUid() {
-        if (uid == null) {
-            uid = Identifiable$.MODULE$.randomUID("VariantStatsTransformer");
-        }
-        return uid;
-    }
-
-    @Override
     public Dataset<Row> transform(Dataset<?> dataset) {
-
-
-        Dataset<Row> datasetRow = (Dataset<Row>) dataset;
+        Dataset<Row> df = (Dataset<Row>) dataset;
 
         List<String> samples = getSamples();
         Set<Integer> sampleIdx;
@@ -172,21 +153,11 @@ public class VariantStatsTransformer extends Transformer {
         UserDefinedFunction statsFromStudy = udf(new VariantStatsFromStudiesFunction(studyId, getCohort(), sampleIdx),
                 DataTypes.createArrayType(VariantToRowConverter.STUDY_DATA_TYPE, false));
 
-        return datasetRow.withColumn("studies", statsFromStudy.apply(new ListBuffer<Column>()
+        return df.withColumn("studies", statsFromStudy.apply(new ListBuffer<Column>()
                 .$plus$eq(col("reference"))
                 .$plus$eq(col("alternate"))
                 .$plus$eq(col("studies"))
         ));
-    }
-
-    @Override
-    public StructType transformSchema(StructType schema) {
-        return schema;
-    }
-
-    @Override
-    public Transformer copy(ParamMap extra) {
-        return defaultCopy(extra);
     }
 
     public static class VariantStatsFromStudiesFunction

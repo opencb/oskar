@@ -1,11 +1,13 @@
 package org.opencb.oskar.spark;
 
+import org.apache.log4j.Level;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.execution.datasources.parquet.ParquetReadSupport;
 import org.junit.rules.ExternalResource;
-import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.core.OskarException;
+import org.opencb.oskar.spark.variant.Oskar;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,6 +24,7 @@ import java.util.Date;
  */
 public class OskarSparkTestUtils extends ExternalResource {
 
+    protected static final String PLATINUM_SMALL = "platinum_chr22.small.parquet";
     private static Path rootDir;
     private transient SparkSession spark;
     private Oskar oskar;
@@ -34,6 +37,8 @@ public class OskarSparkTestUtils extends ExternalResource {
                 .config("spark.ui.enabled", "false")
                 .getOrCreate();
         oskar = new Oskar(spark);
+
+        org.apache.log4j.Logger.getLogger(ParquetReadSupport.class).setLevel(Level.WARN);
     }
 
     @Override
@@ -61,12 +66,12 @@ public class OskarSparkTestUtils extends ExternalResource {
 
     public Dataset<Row> getVariantsDataset() throws OskarException, IOException {
 
-        Files.copy(getClass().getClassLoader().getResourceAsStream("platinum_chr22.small.avro"),
-                getRootDir().resolve("platinum_chr22.small.avro"), StandardCopyOption.REPLACE_EXISTING);
-        Files.copy(getClass().getClassLoader().getResourceAsStream("platinum_chr22.small.avro.meta.json.gz"),
-                getRootDir().resolve("platinum_chr22.small.avro.meta.json.gz"), StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(getClass().getClassLoader().getResourceAsStream(PLATINUM_SMALL),
+                getRootDir().resolve(PLATINUM_SMALL), StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(getClass().getClassLoader().getResourceAsStream(PLATINUM_SMALL + ".meta.json.gz"),
+                getRootDir().resolve(PLATINUM_SMALL + ".meta.json.gz"), StandardCopyOption.REPLACE_EXISTING);
 
-        return oskar.load(getRootDir().resolve("platinum_chr22.small.avro"));
+        return oskar.load(getRootDir().resolve(PLATINUM_SMALL));
     }
 
 }
