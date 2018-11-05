@@ -6,7 +6,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.execution.datasources.parquet.ParquetReadSupport;
 import org.junit.rules.ExternalResource;
-import org.opencb.oskar.spark.core.OskarException;
+import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
 
 import java.io.IOException;

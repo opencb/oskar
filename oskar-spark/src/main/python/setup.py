@@ -9,7 +9,7 @@ setup(
     version='0.1.0',
     description='',
     long_description='',
-    packages=['pyoskar', 'pyoskar.analysis'],
+    packages=['pyoskar', 'pyoskar.spark'],
     url='https://github.com/opencb/oskar/tree/develop/oskar-spark/src/main/python',
     license='Apache Software License',
     author='',

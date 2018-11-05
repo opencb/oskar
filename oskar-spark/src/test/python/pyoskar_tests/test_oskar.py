@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from pyspark.sql import DataFrame
 
-from pyoskar.analysis.sql import *
+from pyoskar.spark.sql import *
 from pyoskar.core import Oskar
 from pyoskar_tests.test_utils import *
 

@@ -1,4 +1,4 @@
-package org.opencb.oskar.spark.variant.wrappers;
+package org.opencb.oskar.spark.variant.analysis.wrappers;
 
 import org.opencb.oskar.analysis.variant.VariantAnalysisExecutor;
 import org.opencb.oskar.core.config.OskarConfiguration;

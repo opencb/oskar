@@ -1,4 +1,4 @@
-package org.opencb.oskar.spark.variant.ml;
+package org.opencb.oskar.spark.variant.analysis;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.ml.param.Param;

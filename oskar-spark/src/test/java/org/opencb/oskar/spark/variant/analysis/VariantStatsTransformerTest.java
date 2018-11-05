@@ -1,16 +1,12 @@
-package org.opencb.oskar.spark.variant.ml;
+package org.opencb.oskar.spark.variant.analysis;
 
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.variant.udf.VariantUdfManager;
 
 import static org.apache.spark.sql.functions.col;
-import static org.apache.spark.sql.functions.length;
 import static org.apache.spark.sql.functions.size;
 import static org.junit.Assert.*;
 

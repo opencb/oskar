@@ -4,8 +4,7 @@ from pyspark.sql.functions import col
 from pyspark.sql.session import SparkSession
 from pyspark.sql.types import StructType,StructField
 
-import analysis
-from pyoskar.analysis.mllib import *
+from pyoskar.spark.analysis import *
 
 __all__ = ['Oskar']
 
@@ -16,7 +15,8 @@ class Oskar:
         """
         :type spark: SparkSession
         """
-        analysis.sql.loadVariantUdfs(spark)
+        from pyoskar.spark.sql import loadVariantUdfs
+        loadVariantUdfs(spark)
         self.spark = spark
 
     def load(self, file_path):

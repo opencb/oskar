@@ -1,4 +1,4 @@
-package org.opencb.oskar.spark.variant;
+package org.opencb.oskar.spark.variant.analysis;
 
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;

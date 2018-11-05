@@ -1,4 +1,4 @@
-package org.opencb.oskar.spark.core;
+package org.opencb.oskar.spark.commons;
 
 import java.io.IOException;
 

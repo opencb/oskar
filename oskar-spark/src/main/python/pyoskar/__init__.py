@@ -1,6 +1,6 @@
 
 
-import analysis
+import spark
 from core import Oskar
 
 # myUdfs = UDFs()

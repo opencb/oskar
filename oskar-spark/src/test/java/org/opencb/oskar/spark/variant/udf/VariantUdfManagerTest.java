@@ -12,7 +12,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.variant.ml.VariantStatsTransformer;
 import scala.collection.mutable.ListBuffer;
 import scala.runtime.AbstractFunction1;
 

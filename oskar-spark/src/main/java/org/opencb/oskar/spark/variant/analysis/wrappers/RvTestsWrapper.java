@@ -1,11 +1,11 @@
-package org.opencb.oskar.spark.variant.wrappers;
+package org.opencb.oskar.spark.variant.analysis.wrappers;
 
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.oskar.analysis.exceptions.AnalysisExecutorException;
 import org.opencb.oskar.analysis.exceptions.AnalysisToolException;
 import org.opencb.oskar.core.config.OskarConfiguration;
 import org.opencb.oskar.analysis.executor.Executor;
-import org.opencb.oskar.spark.variant.VariantAnalysisUtils;
+import org.opencb.oskar.spark.variant.analysis.VariantAnalysisUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

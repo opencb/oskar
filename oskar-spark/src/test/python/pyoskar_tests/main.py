@@ -3,8 +3,8 @@
 
 from pyoskar_tests.test_utils import *
 from pyoskar.core import Oskar
-from pyoskar.analysis.sql import *
-from pyoskar.analysis.mllib import *
+from pyoskar.spark.sql import *
+from pyoskar.spark.mllib import *
 from pyspark.sql.functions import col, udf, count, explode, concat, when, expr
 from pyspark.sql.functions import *
 

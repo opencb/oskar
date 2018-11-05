@@ -1,4 +1,4 @@
-package org.opencb.oskar.spark.variant;
+package org.opencb.oskar.spark.variant.analysis;
 
 import org.apache.spark.sql.SparkSession;
 import org.opencb.biodata.formats.pedigree.PedigreeParser;

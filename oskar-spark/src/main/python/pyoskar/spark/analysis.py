@@ -25,7 +25,7 @@ class VariantStatsTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable,
     @keyword_only
     def __init__(self, studyId=None, cohort="ALL", samples=None):
         super(VariantStatsTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.ml.VariantStatsTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.VariantStatsTransformer", self.uid)
         self._setDefault(cohort="ALL")
         kwargs = self._input_kwargs
         # self.setParams(**kwargs)
@@ -56,7 +56,7 @@ class MendelianErrorTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadabl
     @keyword_only
     def __init__(self):
         super(MendelianErrorTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.ml.MendelianErrorTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.MendelianErrorTransformer", self.uid)
         # self._java_obj = self._new_java_obj("org.apache.spark.ml.feature.Binarizer", self.uid)
         # self._setDefault(studyId="")
         kwargs = self._input_kwargs
@@ -77,7 +77,7 @@ class IBSTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWr
     @keyword_only
     def __init__(self, skipReference=False, samples=None, numPairs=None):
         super(IBSTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.ml.IBSTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.IBSTransformer", self.uid)
         self._setDefault(skipReference=False)
         # self._java_obj = self._new_java_obj("org.apache.spark.ml.feature.Binarizer", self.uid)
         kwargs = self._input_kwargs
@@ -106,7 +106,7 @@ class HistogramTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, Ja
         :type step: float
         """
         super(HistogramTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.ml.HistogramTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.HistogramTransformer", self.uid)
         self._setDefault(step=0.1)
         kwargs = self._input_kwargs
         # self.setParams(**kwargs)
@@ -125,7 +125,7 @@ class HardyWeinbergTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable
     @keyword_only
     def __init__(self, studyId=None):
         super(HardyWeinbergTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.ml.HardyWeinbergTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.HardyWeinbergTransformer", self.uid)
         kwargs = self._input_kwargs
         # self.setParams(**kwargs)
         self._set(**kwargs)

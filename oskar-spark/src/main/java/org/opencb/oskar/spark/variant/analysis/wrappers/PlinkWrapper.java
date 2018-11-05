@@ -1,4 +1,4 @@
-package org.opencb.oskar.spark.variant.wrappers;
+package org.opencb.oskar.spark.variant.analysis.wrappers;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.sql.SparkSession;
