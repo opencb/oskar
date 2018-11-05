@@ -31,6 +31,7 @@ public class OskarSparkTestUtils extends ExternalResource {
         spark = SparkSession.builder()
                 .master("local[*]")
                 .appName("testing")
+                .config("spark.ui.enabled", "false")
                 .getOrCreate();
         oskar = new Oskar(spark);
     }
