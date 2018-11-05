@@ -5,7 +5,7 @@ from pyspark.sql.session import SparkSession
 from pyspark.sql.types import StructType,StructField
 
 import analysis
-from oskar.analysis.mllib import *
+from pyOskar.analysis.mllib import *
 
 __all__ = ['Oskar']
 

@@ -34,11 +34,11 @@ def loadVariantUdfs(spark):
                                     studyDataType)
     sqlContext.registerJavaFunction("file", "org.opencb.oskar.spark.variant.udf.FileFunction",
                                     fileDataType)
-    sqlContext.registerJavaFunction("info", "org.opencb.oskar.spark.variant.udf.FileAttributeFunction",
+    sqlContext.registerJavaFunction("fileAttribute", "org.opencb.oskar.spark.variant.udf.FileAttributeFunction",
                                     StringType())
-    sqlContext.registerJavaFunction("filter", "org.opencb.oskar.spark.variant.udf.FileFilterFunction",
+    sqlContext.registerJavaFunction("fileFilter", "org.opencb.oskar.spark.variant.udf.FileFilterFunction",
                                     ArrayType(StringType()))
-    sqlContext.registerJavaFunction("qual", "org.opencb.oskar.spark.variant.udf.FileQualFunction",
+    sqlContext.registerJavaFunction("fileQual", "org.opencb.oskar.spark.variant.udf.FileQualFunction",
                                     DoubleType())
     sqlContext.registerJavaFunction("sampleData", "org.opencb.oskar.spark.variant.udf.SampleDataFunction",
                                     ArrayType(StringType()))
@@ -97,24 +97,29 @@ def file(column, fileId):
     jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.file(_to_java_column(column), fileId)
     return Column(jc)
 
-def info(column, fileId, info):
+def fileAttribute(column, fileId, info):
     sc = SparkContext._active_spark_context
-    jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.info(_to_java_column(column), fileId, info)
+    jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.fileAttribute(_to_java_column(column), fileId, info)
     return Column(jc)
 
-def filter(column, fileId):
+def fileFilter(column, fileId):
     sc = SparkContext._active_spark_context
-    jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.filter(_to_java_column(column), fileId)
+    jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.fileFilter(_to_java_column(column), fileId)
     return Column(jc)
 
-def qual(column, fileId):
+def fileQual(column, fileId):
     sc = SparkContext._active_spark_context
-    jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.qual(_to_java_column(column), fileId)
+    jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.fileQual(_to_java_column(column), fileId)
     return Column(jc)
 
-def sample(column, sample):
+def sampleData(column, sample):
     sc = SparkContext._active_spark_context
-    jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.sample(_to_java_column(column), sample)
+    jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.sampleData(_to_java_column(column), sample)
+    return Column(jc)
+
+def sampleDataField(column, sample):
+    sc = SparkContext._active_spark_context
+    jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.sampleDataField(_to_java_column(column), sample)
     return Column(jc)
 
 def genes(annotationCol):
