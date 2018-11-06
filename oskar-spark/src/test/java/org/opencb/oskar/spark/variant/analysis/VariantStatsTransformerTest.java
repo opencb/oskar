@@ -21,7 +21,7 @@ public class VariantStatsTransformerTest {
     public static OskarSparkTestUtils sparkTest = new OskarSparkTestUtils();
 
     @Test
-    public void testVariantStatsML() throws Exception {
+    public void testVariantStats() throws Exception {
 
         Dataset<Row> df = sparkTest.getVariantsDataset();
 

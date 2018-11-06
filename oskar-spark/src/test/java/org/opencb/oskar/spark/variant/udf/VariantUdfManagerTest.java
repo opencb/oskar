@@ -53,24 +53,6 @@ public class VariantUdfManagerTest {
 
     }
 
-
-    @Test
-    public void testUdf() throws Exception {
-
-        Dataset<Row> df = sparkTest.getVariantsDataset();
-
-
-        UserDefinedFunction mode = udf(new RowStringAbstractFunction1(), DataTypes.StringType);
-
-        // Transform single column
-        df.select(mode.apply(new ListBuffer<Column>().$plus$eq(col("annotation")))).show();
-        // Add new column
-        df.withColumn("new_col", mode.apply(new ListBuffer<Column>().$plus$eq(col("annotation")))).show();
-        // Replace column
-        df.withColumn("annotation", mode.apply(new ListBuffer<Column>().$plus$eq(col("annotation")))).show();
-
-    }
-
     @Test
     public void testUDFs() throws Exception {
 
@@ -153,10 +135,4 @@ public class VariantUdfManagerTest {
 
     }
 
-    public static class RowStringAbstractFunction1 extends AbstractFunction1<Row, String> implements Serializable {
-        @Override
-        public String apply(Row ss) {
-            return "LLL";
-        }
-    }
 }
