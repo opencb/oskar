@@ -16,31 +16,7 @@ class VariantUdfManager(JavaWrapper):
 
 
     def loadVariantUdfs(self, spark):
-        sqlContext = spark.udf.sqlContext
-
-        udfs = self.getUdfs()
-        for udf in udfs:
-            clazz = self.getUdfClassName(udf)
-            data_type = self.getUdfReturnType(udf)
-            sqlContext.registerJavaFunction(udf, clazz, data_type)
-
-    def getUdfs(self):
-        return self._call_java("getUdfs")
-
-    def getUdfClassName(self, udf):
-        return self._call_java("getUdfClassName", udf)
-
-    def getUdfReturnTypeAsJson(self, udf):
-        return self._call_java("getUdfReturnTypeAsJson", udf)
-
-    def getUdfReturnType(self, udf):
-        from pyspark.sql.types import _parse_datatype_json_string
-
-        jsonStr = self.getUdfReturnTypeAsJson(udf)
-        return _parse_datatype_json_string(jsonStr)
-
-    def getStudyDataType(self):
-        return self._call_java("getStudyDataType")
+        self._call_java("loadVariantUdfs", spark._jsparkSession)
 
 
 def revcomp(allele):

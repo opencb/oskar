@@ -9,10 +9,6 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.MapType;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import static org.apache.spark.sql.functions.*;
 import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.VariantUdf.*;
 
@@ -81,24 +77,6 @@ public class VariantUdfManager {
         for (VariantUdf udf : VariantUdf.values()) {
             spark.udf().register(udf.name(), udf.getUdf());
         }
-    }
-
-    //// Helper methods to read the enum from python. Must be public
-
-    public List<String> getUdfs() {
-        return Arrays.stream(VariantUdf.values()).map(VariantUdf::name).collect(Collectors.toList());
-    }
-
-    public String getUdfClassName(String udf) {
-        return VariantUdf.valueOf(udf).getUdfClassName();
-    }
-
-    public String getUdfReturnTypeAsJson(String udf) {
-        return VariantUdf.valueOf(udf).getReturnTypeAsJson();
-    }
-
-    public String getStudyDataType() {
-        return VariantToRowConverter.STUDY_DATA_TYPE.json();
     }
 
     public static Column revcomp(Column allele) {
