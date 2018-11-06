@@ -45,6 +45,7 @@ public class OskarSparkTestUtils extends ExternalResource {
     protected void after() {
         spark.stop();
         spark = null;
+        oskar = null;
     }
 
     public SparkSession getSpark() {

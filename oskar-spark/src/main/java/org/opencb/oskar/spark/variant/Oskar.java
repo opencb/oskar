@@ -36,9 +36,15 @@ public class Oskar {
 
     private final SparkSession spark;
 
+    public Oskar() {
+        this.spark = null;
+    }
+
     public Oskar(SparkSession spark) {
         this.spark = spark;
-        new VariantUdfManager().loadVariantUdfs(spark);
+        if (spark != null) {
+            new VariantUdfManager().loadVariantUdfs(spark);
+        }
     }
 
     public Dataset<Row> load(Path path) throws OskarException {
@@ -62,8 +68,7 @@ public class Oskar {
         String metadataPath = path + ".meta.json.gz";
 
         if (Paths.get(metadataPath).toFile().exists()) {
-            VariantMetadata variantMetadata = loadMetadata(metadataPath);
-            dataset = addVariantMetadata(dataset, variantMetadata);
+            dataset = addVariantMetadata(dataset, metadataPath);
         }
 
         return dataset;
@@ -76,6 +81,20 @@ public class Oskar {
         } catch (IOException e) {
             throw OskarException.errorLoadingVariantMetadataFile(e, path);
         }
+    }
+
+    /**
+     * Writes the VariantMetadata into the schema metadata from the given dataset.
+     *
+     * @param dataset Dataset to modify
+     * @param metadataPath VariantMetadata to add
+     * @return  Modified dataset
+     * @throws OskarException if there is an error reading the metadata file
+     */
+    public Dataset<Row> addVariantMetadata(Dataset<Row> dataset, String metadataPath) throws OskarException {
+        VariantMetadata variantMetadata = loadMetadata(metadataPath);
+        dataset = addVariantMetadata(dataset, variantMetadata);
+        return dataset;
     }
 
     /**

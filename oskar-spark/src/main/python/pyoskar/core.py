@@ -1,17 +1,16 @@
 
 from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.functions import col
-from pyspark.sql.session import SparkSession
-from pyspark.sql.types import StructField
 
 from pyoskar.spark.analysis import *
 
 __all__ = ['Oskar']
 
 
-class Oskar:
+class Oskar(JavaWrapper):
 
     def __init__(self, spark):
+        super(Oskar, self).__init__()
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.Oskar")
         """
         :type spark: SparkSession
         """
@@ -39,29 +38,12 @@ class Oskar:
 
         import os
         if os.path.exists(meta_path):
-            variantMetadata = self.load_metadata(meta_path)
-            df = self.add_variant_metadata(df, variantMetadata)
+            df = self.add_variant_metadata(df, meta_path)
 
         return df
 
-    def add_variant_metadata(self, df, variantMetadata):
-        metadata = df.schema["studies"].metadata
-        # metadata["variantMetadata"] = variantMetadata
-        samples = {}
-        metadata["samples"] = samples
-        for study in variantMetadata["studies"]:
-            samplesFromStudy = []
-            for individual in study["individuals"]:
-                for sample in individual["samples"]:
-                    samplesFromStudy.append(sample["id"])
-            samples[study["id"]] = samplesFromStudy
-        studiesSchema = df.schema["studies"]  # type: StructField
-        studiesSchema.metadata = metadata
-        samplesSchema = studiesSchema.dataType.elementType["samplesData"]  # type: StructField
-        samplesSchema.metadata = metadata
-        df = df.withColumn("studies", col("studies").cast(studiesSchema.dataType))
-        df = df.withColumn("studies", col("studies").alias("", metadata=metadata))
-        return df
+    def add_variant_metadata(self, df, meta_path):
+        return self._call_java("addVariantMetadata", df, meta_path)
 
     def load_metadata(self, meta_path):
         import json
@@ -70,7 +52,7 @@ class Oskar:
             return json.loads(f.read().decode("ascii"))
 
     def samples(self, df, study=None):
-        samples_ = df.schema["studies"].metadata["samples"]
+        samples_ = df.schema["studies"].dataType.elementType["samplesData"].metadata["samples"]
         if study is None:
             if len(samples_) == 1:
                 for study in samples_:
