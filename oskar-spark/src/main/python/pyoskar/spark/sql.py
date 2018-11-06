@@ -47,15 +47,17 @@ def loadVariantUdfs(spark):
 
     sqlContext.registerJavaFunction("genes", "org.opencb.oskar.spark.variant.udf.GenesFunction",
                                     ArrayType(StringType()))
-    sqlContext.registerJavaFunction("consequenceType", "org.opencb.oskar.spark.variant.udf.ConsequenceTypesFunction",
+    sqlContext.registerJavaFunction("consequenceTypes", "org.opencb.oskar.spark.variant.udf.ConsequenceTypesFunction",
                                     ArrayType(StringType()))
-    sqlContext.registerJavaFunction("consequenceTypeByGene", "org.opencb.oskar.spark.variant.udf.ConsequenceTypesByGeneFunction",
+    sqlContext.registerJavaFunction("consequenceTypesByGene", "org.opencb.oskar.spark.variant.udf.ConsequenceTypesByGeneFunction",
+                                    ArrayType(StringType()))
+    sqlContext.registerJavaFunction("biotypes", "org.opencb.oskar.spark.variant.udf.BiotypesFunction",
                                     ArrayType(StringType()))
     sqlContext.registerJavaFunction("proteinSubstitution", "org.opencb.oskar.spark.variant.udf.ProteinSubstitutionScoreFunction",
                                     ArrayType(DoubleType()))
-    sqlContext.registerJavaFunction("populationFrequency", "org.opencb.oskar.spark.variant.udf.PopFreqFunction",
+    sqlContext.registerJavaFunction("populationFrequency", "org.opencb.oskar.spark.variant.udf.PopulationFrequencyFunction",
                                     DoubleType())
-    sqlContext.registerJavaFunction("populationFrequencyAsMap", "org.opencb.oskar.spark.variant.udf.PopFreqAsMapFunction",
+    sqlContext.registerJavaFunction("populationFrequencyAsMap", "org.opencb.oskar.spark.variant.udf.PopulationFrequencyAsMapFunction",
                                     MapType(StringType(), DoubleType()))
 
 
@@ -127,14 +129,14 @@ def genes(annotationCol):
     jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.genes(_to_java_column(annotationCol))
     return Column(jc)
 
-def consequenceType(annotationCol):
+def consequenceTypes(annotationCol):
     sc = SparkContext._active_spark_context
-    jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.consequenceType(_to_java_column(annotationCol))
+    jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.consequenceTypes(_to_java_column(annotationCol))
     return Column(jc)
 
-def consequenceTypeByGene(annotationCol, gene=""):
+def consequenceTypesByGene(annotationCol, gene=""):
     sc = SparkContext._active_spark_context
-    jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.consequenceTypeByGene(_to_java_column(annotationCol), gene)
+    jc = sc._jvm.org.opencb.oskar.spark.variant.udf.VariantUdfManager.consequenceTypesByGene(_to_java_column(annotationCol), gene)
     return Column(jc)
 
 def proteinSubstitution(annotationCol, score):

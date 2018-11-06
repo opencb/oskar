@@ -13,7 +13,8 @@ import java.util.Map;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class PopFreqAsMapFunction extends AbstractFunction1<GenericRowWithSchema, Object> implements UDF1<GenericRowWithSchema, Object> {
+public class PopulationFrequencyAsMapFunction
+        extends AbstractFunction1<GenericRowWithSchema, Object> implements UDF1<GenericRowWithSchema, Object> {
 
     @Override
     public Object call(GenericRowWithSchema annotation) {

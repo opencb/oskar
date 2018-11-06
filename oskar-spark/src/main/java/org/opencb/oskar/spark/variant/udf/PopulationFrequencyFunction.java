@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class PopFreqFunction extends AbstractFunction3<GenericRowWithSchema, String, String, Object>
+public class PopulationFrequencyFunction extends AbstractFunction3<GenericRowWithSchema, String, String, Object>
         implements UDF3<GenericRowWithSchema, String, String, Object> {
 
     @Override

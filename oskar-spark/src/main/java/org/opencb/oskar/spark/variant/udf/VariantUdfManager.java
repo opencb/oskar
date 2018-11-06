@@ -32,6 +32,7 @@ public class VariantUdfManager {
         genes(new ArrayType(DataTypes.StringType, false)),
         consequenceTypes(new ArrayType(DataTypes.StringType, false)),
         consequenceTypesByGene(new ArrayType(DataTypes.StringType, false)),
+        biotypes(new ArrayType(DataTypes.StringType, false)),
         proteinSubstitution(new ArrayType(DataTypes.DoubleType, false)),
         populationFrequencyAsMap(new MapType(DataTypes.StringType, DataTypes.DoubleType, false)),
         populationFrequency(DataTypes.DoubleType);
@@ -77,9 +78,11 @@ public class VariantUdfManager {
         spark.udf().register(genes.name(), new GenesFunction(), genes.getReturnType());
         spark.udf().register(consequenceTypes.name(), new ConsequenceTypesFunction(), consequenceTypes.getReturnType());
         spark.udf().register(consequenceTypesByGene.name(), new ConsequenceTypesByGeneFunction(), consequenceTypesByGene.getReturnType());
+        spark.udf().register(biotypes.name(), new BiotypesFunction(), biotypes.getReturnType());
         spark.udf().register(proteinSubstitution.name(), new ProteinSubstitutionScoreFunction(), proteinSubstitution.getReturnType());
-        spark.udf().register(populationFrequencyAsMap.name(), new PopFreqAsMapFunction(), populationFrequencyAsMap.getReturnType());
-        spark.udf().register(populationFrequency.name(), new PopFreqFunction(), populationFrequency.getReturnType());
+        spark.udf().register(populationFrequencyAsMap.name(), new PopulationFrequencyAsMapFunction(),
+                populationFrequencyAsMap.getReturnType());
+        spark.udf().register(populationFrequency.name(), new PopulationFrequencyFunction(), populationFrequency.getReturnType());
 
 //        spark.udf().register("include", new IncludeFunction(), DataTypes.createStructType(Collections.emptyList()));
 //        spark.udf().register("includeStudy", new IncludeStudyFunction(), VariantToRowConverter.STUDY_DATA_TYPE);
@@ -133,6 +136,10 @@ public class VariantUdfManager {
         return callUDF(genes.name(), annotation);
     }
 
+    public static Column consequenceTypes(String annotation) {
+        return consequenceTypes(col(annotation));
+    }
+
     public static Column consequenceTypes(Column annotation) {
         return callUDF(consequenceTypes.name(), annotation);
     }
@@ -143,6 +150,14 @@ public class VariantUdfManager {
 
     public static Column proteinSubstitution(Column annotation, String source) {
         return proteinSubstitution(annotation, lit(source));
+    }
+
+    public static Column biotypes(String annotation) {
+        return biotypes(col(annotation));
+    }
+
+    public static Column biotypes(Column annotation) {
+        return callUDF(biotypes.name(), annotation);
     }
 
     public static Column proteinSubstitution(Column annotation, Column source) {
