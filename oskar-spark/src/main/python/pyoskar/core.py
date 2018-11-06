@@ -2,7 +2,7 @@
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.functions import col
 from pyspark.sql.session import SparkSession
-from pyspark.sql.types import StructType,StructField
+from pyspark.sql.types import StructField
 
 from pyoskar.spark.analysis import *
 
@@ -88,7 +88,13 @@ class Oskar:
         return VariantStatsTransformer(studyId=studyId, cohort=cohort, samples=samples).transform(df)
 
     # def sample_stats(self, df, samples, studyId=None):
-    # def global_stats(self):
+
+    def global_stats(self, df, studyId=None, fileId=None):
+        """
+
+        :type df: DataFrame
+        """
+        return VariantSetStatsTransformer(studyId=studyId, fileId=fileId).transform(df)
 
     def histogram(self, df, inputCol, step):
         """

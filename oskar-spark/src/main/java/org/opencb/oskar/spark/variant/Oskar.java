@@ -11,6 +11,7 @@ import org.opencb.biodata.models.variant.metadata.VariantMetadata;
 import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.commons.utils.FileUtils;
 import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.spark.variant.analysis.VariantSetStatsTransformer;
 import org.opencb.oskar.spark.variant.analysis.VariantStatsTransformer;
 import org.opencb.oskar.spark.commons.converters.DataTypeUtils;
 import org.opencb.oskar.spark.variant.udf.VariantUdfManager;
@@ -124,6 +125,10 @@ public class Oskar {
 
     public Dataset<Row> stats(Dataset<Row> df, String studyId, String cohort, List<String> samples) {
         return new VariantStatsTransformer(studyId, cohort, samples).transform(df);
+    }
+
+    public Dataset<Row> globalStats(Dataset<Row> df, String studyId, String fileId) {
+        return new VariantSetStatsTransformer(studyId, fileId).transform(df);
     }
 
 }

@@ -50,6 +50,33 @@ class VariantStatsTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable,
         return self._set(studyId=value)
 
 
+class VariantSetStatsTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
+    studyId = Param(Params._dummy(), "studyId", "", typeConverter=TypeConverters.toString)
+    fileId = Param(Params._dummy(), "fileId", "", typeConverter=TypeConverters.toString)
+
+    @keyword_only
+    def __init__(self, studyId=None, fileId=None):
+        super(VariantSetStatsTransformer, self).__init__()
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.VariantSetStatsTransformer", self.uid)
+        self._setDefault(studyId="")
+        self._setDefault(fileId="")
+        kwargs = self._input_kwargs
+        # self.setParams(**kwargs)
+        self._set(**kwargs)
+
+    def getStudyId(self):
+        return self.getOrDefault(self.studyId)
+
+    def setStudyId(self, value):
+        return self._set(studyId=value)
+
+    def getFileId(self):
+        return self.getOrDefault(self.fileId)
+
+    def setFileId(self, value):
+        return self._set(fileId=value)
+
+
 class MendelianErrorTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
     studyId = Param(Params._dummy(), "studyId", "", typeConverter=TypeConverters.toString)
 

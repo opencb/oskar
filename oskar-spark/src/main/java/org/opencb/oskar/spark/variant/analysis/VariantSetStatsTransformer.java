@@ -42,6 +42,16 @@ public class VariantSetStatsTransformer extends AbstractTransformer {
         this(null);
     }
 
+    public VariantSetStatsTransformer(String studyId, String fileId) {
+        super();
+        if (studyId != null) {
+            setStudyId(studyId);
+        }
+        if (fileId != null) {
+            setFileId(fileId);
+        }
+    }
+
     public VariantSetStatsTransformer(String uid) {
         super(uid);
         setDefault(studyIdParam(), "");
