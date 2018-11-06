@@ -1,65 +1,12 @@
 
 import sys
+
 if sys.version > '3':
     basestring = str
 
-from pyspark import since, keyword_only, SparkContext
-from pyspark.rdd import ignore_unicode_prefix
-from pyspark.ml.linalg import _convert_to_vector
+from pyspark import SparkContext
 from pyspark.ml.wrapper import JavaWrapper
-from pyspark.ml.param.shared import *
-from pyspark.ml.util import JavaMLReadable, JavaMLWritable
-from pyspark.ml.wrapper import JavaEstimator, JavaModel, JavaParams, JavaTransformer, _jvm
-from pyspark.ml.common import inherit_doc
-from pyspark.sql.functions import lit
-from pyspark.sql.types import ArrayType, DoubleType, StringType, StructType, MapType
-from pyspark.sql.column import Column, _to_java_column, _to_seq
-
-
-def loadVariantUdfs(spark):
-    import json
-
-    sqlContext = spark.udf.sqlContext
-
-    sqlContext.registerJavaFunction("revcomp", "org.opencb.oskar.spark.variant.udf.RevcompFunction",
-                                    StringType())
-
-    json = json.loads(VariantUdfManager().getStudyDataType())
-    studyDataType = StructType.fromJson(json)
-    fileDataType = studyDataType["files"].dataType.elementType
-
-    sqlContext.registerJavaFunction("includeStudy", "org.opencb.oskar.spark.variant.udf.IncludeStudyFunction",
-                                    ArrayType(studyDataType))
-    sqlContext.registerJavaFunction("study", "org.opencb.oskar.spark.variant.udf.StudyFunction",
-                                    studyDataType)
-    sqlContext.registerJavaFunction("file", "org.opencb.oskar.spark.variant.udf.FileFunction",
-                                    fileDataType)
-    sqlContext.registerJavaFunction("fileAttribute", "org.opencb.oskar.spark.variant.udf.FileAttributeFunction",
-                                    StringType())
-    sqlContext.registerJavaFunction("fileFilter", "org.opencb.oskar.spark.variant.udf.FileFilterFunction",
-                                    ArrayType(StringType()))
-    sqlContext.registerJavaFunction("fileQual", "org.opencb.oskar.spark.variant.udf.FileQualFunction",
-                                    DoubleType())
-    sqlContext.registerJavaFunction("sampleData", "org.opencb.oskar.spark.variant.udf.SampleDataFunction",
-                                    ArrayType(StringType()))
-    sqlContext.registerJavaFunction("sampleDataField", "org.opencb.oskar.spark.variant.udf.SampleDataFieldFunction",
-                                    ArrayType(StringType()))
-
-    sqlContext.registerJavaFunction("genes", "org.opencb.oskar.spark.variant.udf.GenesFunction",
-                                    ArrayType(StringType()))
-    sqlContext.registerJavaFunction("consequenceTypes", "org.opencb.oskar.spark.variant.udf.ConsequenceTypesFunction",
-                                    ArrayType(StringType()))
-    sqlContext.registerJavaFunction("consequenceTypesByGene", "org.opencb.oskar.spark.variant.udf.ConsequenceTypesByGeneFunction",
-                                    ArrayType(StringType()))
-    sqlContext.registerJavaFunction("biotypes", "org.opencb.oskar.spark.variant.udf.BiotypesFunction",
-                                    ArrayType(StringType()))
-    sqlContext.registerJavaFunction("proteinSubstitution", "org.opencb.oskar.spark.variant.udf.ProteinSubstitutionScoreFunction",
-                                    ArrayType(DoubleType()))
-    sqlContext.registerJavaFunction("populationFrequency", "org.opencb.oskar.spark.variant.udf.PopulationFrequencyFunction",
-                                    DoubleType())
-    sqlContext.registerJavaFunction("populationFrequencyAsMap", "org.opencb.oskar.spark.variant.udf.PopulationFrequencyAsMapFunction",
-                                    MapType(StringType(), DoubleType()))
-
+from pyspark.sql.column import Column, _to_java_column
 
 
 class VariantUdfManager(JavaWrapper):
@@ -67,8 +14,30 @@ class VariantUdfManager(JavaWrapper):
         super(VariantUdfManager, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.udf.VariantUdfManager")
 
-    def helloWorld(self):
-        self._call_java("helloWorld")
+
+    def loadVariantUdfs(self, spark):
+        sqlContext = spark.udf.sqlContext
+
+        udfs = self.getUdfs()
+        for udf in udfs:
+            clazz = self.getUdfClassName(udf)
+            data_type = self.getUdfReturnType(udf)
+            sqlContext.registerJavaFunction(udf, clazz, data_type)
+
+    def getUdfs(self):
+        return self._call_java("getUdfs")
+
+    def getUdfClassName(self, udf):
+        return self._call_java("getUdfClassName", udf)
+
+    def getUdfReturnTypeAsJson(self, udf):
+        return self._call_java("getUdfReturnTypeAsJson", udf)
+
+    def getUdfReturnType(self, udf):
+        from pyspark.sql.types import _parse_datatype_json_string
+
+        jsonStr = self.getUdfReturnTypeAsJson(udf)
+        return _parse_datatype_json_string(jsonStr)
 
     def getStudyDataType(self):
         return self._call_java("getStudyDataType")

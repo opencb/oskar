@@ -15,8 +15,8 @@ class Oskar:
         """
         :type spark: SparkSession
         """
-        from pyoskar.spark.sql import loadVariantUdfs
-        loadVariantUdfs(spark)
+        from pyoskar.spark.sql import VariantUdfManager
+        VariantUdfManager().loadVariantUdfs(spark)
         self.spark = spark
 
     def load(self, file_path):

@@ -2,11 +2,16 @@ package org.opencb.oskar.spark.variant.udf;
 
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.expressions.UserDefinedFunction;
 import org.apache.spark.sql.types.ArrayType;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.MapType;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.apache.spark.sql.functions.*;
 import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.VariantUdf.*;
@@ -19,27 +24,32 @@ import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.VariantUdf.*;
 public class VariantUdfManager {
 
     enum VariantUdf {
-        revcomp(DataTypes.StringType),
+        revcomp(new RevcompFunction(), DataTypes.StringType),
 
-        study(VariantToRowConverter.STUDY_DATA_TYPE),
-        file(VariantToRowConverter.FILE_DATA_TYPE),
-        fileAttribute(DataTypes.StringType),
-        fileQual(DataTypes.DoubleType),
-        fileFilter(new ArrayType(DataTypes.StringType, false)),
-        sampleData(new ArrayType(DataTypes.StringType, false)),
-        sampleDataField(DataTypes.StringType),
+        study(new StudyFunction(), VariantToRowConverter.STUDY_DATA_TYPE),
+        file(new FileFunction(), VariantToRowConverter.FILE_DATA_TYPE),
+        fileAttribute(new FileAttributeFunction(), DataTypes.StringType),
+        fileQual(new FileQualFunction(), DataTypes.DoubleType),
+        fileFilter(new FileFilterFunction(), new ArrayType(DataTypes.StringType, false)),
+        sampleData(new SampleDataFunction(), new ArrayType(DataTypes.StringType, false)),
+        sampleDataField(new SampleDataFieldFunction(), DataTypes.StringType),
 
-        genes(new ArrayType(DataTypes.StringType, false)),
-        consequenceTypes(new ArrayType(DataTypes.StringType, false)),
-        consequenceTypesByGene(new ArrayType(DataTypes.StringType, false)),
-        biotypes(new ArrayType(DataTypes.StringType, false)),
-        proteinSubstitution(new ArrayType(DataTypes.DoubleType, false)),
-        populationFrequencyAsMap(new MapType(DataTypes.StringType, DataTypes.DoubleType, false)),
-        populationFrequency(DataTypes.DoubleType);
+        genes(new GenesFunction(), new ArrayType(DataTypes.StringType, false)),
+        consequenceTypes(new ConsequenceTypesFunction(), new ArrayType(DataTypes.StringType, false)),
+        consequenceTypesByGene(new ConsequenceTypesByGeneFunction(), new ArrayType(DataTypes.StringType, false)),
+        biotypes(new BiotypesFunction(), new ArrayType(DataTypes.StringType, false)),
+        proteinSubstitution(new ProteinSubstitutionScoreFunction(), new ArrayType(DataTypes.DoubleType, false)),
+        populationFrequencyAsMap(new PopulationFrequencyAsMapFunction(), new MapType(DataTypes.StringType, DataTypes.DoubleType, false)),
+        populationFrequency(new PopulationFrequencyFunction(), DataTypes.DoubleType);
 
         private final DataType returnType;
+        private final UserDefinedFunction udf;
+        private final Class<?> udfClass;
 
-        VariantUdf(DataType returnType) {
+        VariantUdf(Object function, DataType returnType) {
+            udfClass = function.getClass();
+            // With this UDF, there is no automatic input type coercion.
+            this.udf = udf(function, returnType);
             this.returnType = returnType;
         }
 
@@ -50,42 +60,45 @@ public class VariantUdfManager {
         public String getReturnTypeAsJson() {
             return returnType.json();
         }
+
+        public UserDefinedFunction getUdf() {
+            return udf;
+        }
+
+        public String getUdfClassName() {
+            return udfClass.getName();
+        }
     }
 
-    public void helloWorld() {
-        System.out.println("Hello World from Java!");
+    /**
+     * Load all Variant UserDefinedFunction.
+     *
+     * Variant UDFs are defined in the enum {@link VariantUdf}
+     *
+     * @param spark SparkSession
+     */
+    public void loadVariantUdfs(SparkSession spark) {
+        for (VariantUdf udf : VariantUdf.values()) {
+            spark.udf().register(udf.name(), udf.getUdf());
+        }
     }
 
-    public void helloWorld(int i) {
-        System.out.println("Hello World from Java! " + i);
+    //// Helper methods to read the enum from python. Must be public
+
+    public List<String> getUdfs() {
+        return Arrays.stream(VariantUdf.values()).map(VariantUdf::name).collect(Collectors.toList());
+    }
+
+    public String getUdfClassName(String udf) {
+        return VariantUdf.valueOf(udf).getUdfClassName();
+    }
+
+    public String getUdfReturnTypeAsJson(String udf) {
+        return VariantUdf.valueOf(udf).getReturnTypeAsJson();
     }
 
     public String getStudyDataType() {
         return VariantToRowConverter.STUDY_DATA_TYPE.json();
-    }
-
-    public void loadVariantUdfs(SparkSession spark) {
-        spark.udf().register(revcomp.name(), new RevcompFunction(), revcomp.getReturnType());
-
-        spark.udf().register(study.name(), new StudyFunction(), study.getReturnType());
-        spark.udf().register(file.name(), new FileFunction(), file.getReturnType());
-        spark.udf().register(fileAttribute.name(), new FileAttributeFunction(), fileAttribute.getReturnType());
-        spark.udf().register(fileQual.name(), new FileQualFunction(), fileQual.getReturnType());
-        spark.udf().register(fileFilter.name(), new FileFilterFunction(), fileFilter.getReturnType());
-        spark.udf().register(sampleData.name(), new SampleDataFunction(), sampleData.getReturnType());
-        spark.udf().register(sampleDataField.name(), new SampleDataFieldFunction(), sampleDataField.getReturnType());
-
-        spark.udf().register(genes.name(), new GenesFunction(), genes.getReturnType());
-        spark.udf().register(consequenceTypes.name(), new ConsequenceTypesFunction(), consequenceTypes.getReturnType());
-        spark.udf().register(consequenceTypesByGene.name(), new ConsequenceTypesByGeneFunction(), consequenceTypesByGene.getReturnType());
-        spark.udf().register(biotypes.name(), new BiotypesFunction(), biotypes.getReturnType());
-        spark.udf().register(proteinSubstitution.name(), new ProteinSubstitutionScoreFunction(), proteinSubstitution.getReturnType());
-        spark.udf().register(populationFrequencyAsMap.name(), new PopulationFrequencyAsMapFunction(),
-                populationFrequencyAsMap.getReturnType());
-        spark.udf().register(populationFrequency.name(), new PopulationFrequencyFunction(), populationFrequency.getReturnType());
-
-//        spark.udf().register("include", new IncludeFunction(), DataTypes.createStructType(Collections.emptyList()));
-//        spark.udf().register("includeStudy", new IncludeStudyFunction(), VariantToRowConverter.STUDY_DATA_TYPE);
     }
 
     public static Column revcomp(Column allele) {
