@@ -13,7 +13,7 @@ import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.biodata.models.variant.avro.StudyEntry;
 import org.opencb.biodata.models.variant.stats.VariantStats;
 import org.opencb.biodata.tools.variant.stats.VariantStatsCalculator;
-import org.opencb.oskar.spark.variant.converters.RowToVariantConverter;
+import org.opencb.oskar.spark.commons.converters.RowToAvroConverter;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
 import scala.collection.mutable.ListBuffer;
 import scala.collection.mutable.WrappedArray;
@@ -217,7 +217,7 @@ public class VariantStatsTransformer extends AbstractTransformer {
         private Map<String, Row> calculateStats(String cohortName, String reference, String alternate, Row study) {
 
 //            List<List<String>> samplesData = RowToVariantConverter.getSamplesData(study);
-            StudyEntry studyEntry = RowToVariantConverter.convert(
+            StudyEntry studyEntry = RowToAvroConverter.convert(
                     study,
                     VariantToRowConverter.STUDY_DATA_TYPE,
                     StudyEntry.getClassSchema());

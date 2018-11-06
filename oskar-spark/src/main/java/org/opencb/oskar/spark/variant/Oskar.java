@@ -12,7 +12,7 @@ import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.commons.utils.FileUtils;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.analysis.VariantStatsTransformer;
-import org.opencb.oskar.spark.variant.converters.DataTypeUtils;
+import org.opencb.oskar.spark.commons.converters.DataTypeUtils;
 import org.opencb.oskar.spark.variant.udf.VariantUdfManager;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package org.opencb.oskar.spark.variant.converters;
+package org.opencb.oskar.spark.commons.converters;
 
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
@@ -11,11 +11,11 @@ import org.apache.spark.sql.types.StructType;
  */
 public class DataTypeUtils {
 
-    public static StructField addMetadata(Metadata metadata, StructField samplesDataSchema) {
+    public static StructField addMetadata(Metadata metadata, StructField structField) {
         return new StructField(
-                samplesDataSchema.name(),
-                samplesDataSchema.dataType(),
-                samplesDataSchema.nullable(),
+                structField.name(),
+                structField.dataType(),
+                structField.nullable(),
                 metadata
         );
     }
