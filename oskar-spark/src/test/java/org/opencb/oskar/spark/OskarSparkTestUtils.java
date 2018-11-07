@@ -52,6 +52,10 @@ public class OskarSparkTestUtils extends ExternalResource {
         return spark;
     }
 
+    public Oskar getOskar() {
+        return oskar;
+    }
+
     public Dataset<Row> getDummyDataset() {
         return spark.range(1, 10).toDF("value");
     }

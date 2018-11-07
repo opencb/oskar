@@ -7,7 +7,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema;
 import org.apache.spark.sql.expressions.UserDefinedFunction;
-import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.Metadata;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.biodata.models.variant.avro.StudyEntry;
@@ -27,8 +27,6 @@ import static org.apache.spark.sql.functions.udf;
 
 /**
  * Created on 08/06/18.
- *
- * TODO: Preserve metadata from studies!
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
@@ -128,30 +126,10 @@ public class VariantStatsTransformer extends AbstractTransformer {
             sampleIdx = Collections.emptySet();
         }
 
-//
-//        datasetRow.withColumn("studies[0].stats", new Column("studies[0].stats"));
-//
-//        UserDefinedFunction mode = udf((Function1<Row, String>) (Row ss) -> "", DataTypes.StringType);
-//
-//        datasetRow.select(mode.apply(col("vs"))).show();
-
-//        datasetRow.map((MapFunction<Row, Row>) row -> {
-//
-//            Row study = (Row) row.getList(row.fieldIndex("studies")).get(0);
-//            List<List<String>> samplesData = RowToVariantConverter.getSamplesData(study);
-//
-////            samplesData.get()
-//
-//            return row;
-//        }, null);
-
-//
-//        StructType schema = datasetRow.schema();
-//        schema.schema.getFieldIndex("studies").
-
-//        UserDefinedFunction stats = udf(new VariantStatsFunction(), STATS_MAP_DATA_TYPE);
-        UserDefinedFunction statsFromStudy = udf(new VariantStatsFromStudiesFunction(studyId, getCohort(), sampleIdx),
-                DataTypes.createArrayType(VariantToRowConverter.STUDY_DATA_TYPE, false));
+        // To preserve the metadata from the schema, use as "returnDataType" the same data type from the input
+        DataType dataType = df.schema().apply("studies").dataType();
+        UserDefinedFunction statsFromStudy = udf(
+                new VariantStatsFromStudiesFunction(studyId, getCohort(), sampleIdx), dataType);
 
         return df.withColumn("studies", statsFromStudy.apply(new ListBuffer<Column>()
                 .$plus$eq(col("reference"))
