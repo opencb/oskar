@@ -10,6 +10,9 @@ import scala.runtime.AbstractFunction2;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.SAMPLES_DATA_IDX;
+import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.STUDY_ID_IDX;
+
 /**
  * Created on 07/09/18.
  *
@@ -39,7 +42,7 @@ public class SampleDataFunction extends AbstractFunction2<Object, String, Wrappe
     }
 
     static WrappedArray<String> getSampleData(GenericRowWithSchema study, String sample) {
-        String studyId = study.getAs("studyId");
+        String studyId = study.getAs(STUDY_ID_IDX);
 
         StructType schema = study.schema();
         Metadata metadata = schema.apply("samplesData").metadata();
@@ -47,7 +50,7 @@ public class SampleDataFunction extends AbstractFunction2<Object, String, Wrappe
         String[] sampleNames = samplesMetadata.getStringArray(studyId);
         int i = Arrays.binarySearch(sampleNames, sample);
         if (i >= 0) {
-            List<WrappedArray<String>> samplesData = study.getList(study.fieldIndex("samplesData"));
+            List<WrappedArray<String>> samplesData = study.getList(SAMPLES_DATA_IDX);
             return samplesData.get(i);
         } else {
             return null;

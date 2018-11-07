@@ -5,6 +5,8 @@ import org.apache.spark.sql.api.java.UDF2;
 import scala.collection.mutable.WrappedArray;
 import scala.runtime.AbstractFunction2;
 
+import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.STUDY_ID_IDX;
+
 /**
  * Created on 04/09/18.
  *
@@ -17,7 +19,7 @@ public class StudyFunction extends AbstractFunction2<WrappedArray<? extends Row>
     public Row call(WrappedArray<? extends Row> studies, String studyId) {
         for (int i = 0; i < studies.length(); i++) {
             Row study = studies.apply(i);
-            if (studyId.equals(study.getString(study.fieldIndex("studyId")))) {
+            if (studyId.equals(study.getString(STUDY_ID_IDX))) {
                 return study;
             }
         }

@@ -7,6 +7,9 @@ import scala.runtime.AbstractFunction2;
 
 import java.util.List;
 
+import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.FILES_IDX;
+import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.FILE_ID_IDX;
+
 /**
  * Created on 04/09/18.
  *
@@ -35,9 +38,9 @@ public class FileFunction extends AbstractFunction2<Object, String, Row> impleme
     }
 
     private Row getFile(Row study, String fileId) {
-        List<Row> files = study.getList(study.fieldIndex("files"));
+        List<Row> files = study.getList(FILES_IDX);
         for (Row file : files) {
-            if (fileId.equals(file.getString(file.fieldIndex("fileId")))) {
+            if (fileId.equals(file.getString(FILE_ID_IDX))) {
                 return file;
             }
         }

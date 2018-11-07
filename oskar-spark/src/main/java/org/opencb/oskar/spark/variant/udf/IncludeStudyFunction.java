@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.STUDY_ID_IDX;
+
 /**
  * Created on 04/09/18.
  *
@@ -26,7 +28,7 @@ public class IncludeStudyFunction
 
         for (int i = 0; i < studies.length(); i++) {
             GenericRowWithSchema study = studies.apply(i);
-            if (set.contains(study.getString(study.fieldIndex("studyId")))) {
+            if (set.contains(study.getString(STUDY_ID_IDX))) {
                 filteredStudies.add(study);
             }
         }

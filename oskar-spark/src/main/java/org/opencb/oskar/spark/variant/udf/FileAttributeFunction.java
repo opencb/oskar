@@ -4,6 +4,8 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.api.java.UDF3;
 import scala.runtime.AbstractFunction3;
 
+import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.FILE_ATTRIBUTES_IDX;
+
 /**
  * Created on 04/09/18.
  *
@@ -16,7 +18,7 @@ public class FileAttributeFunction extends AbstractFunction3<Object, String, Str
     public String call(Object studies, String fileId, String infoField) {
         Row file = new FileFunction().call(studies, fileId);
         if (file != null) {
-            Object infoValue = file.getJavaMap(file.fieldIndex("attributes")).get(infoField);
+            Object infoValue = file.getJavaMap(FILE_ATTRIBUTES_IDX).get(infoField);
             return infoValue == null ? null : infoValue.toString();
         }
         return null;

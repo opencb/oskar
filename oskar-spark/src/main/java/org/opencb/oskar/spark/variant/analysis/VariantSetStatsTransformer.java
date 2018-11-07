@@ -119,7 +119,7 @@ public class VariantSetStatsTransformer extends AbstractTransformer {
                     createStructField("alternate", StringType, false),
                     createStructField("type", StringType, false),
                     createStructField("studies", createArrayType(VariantToRowConverter.STUDY_DATA_TYPE), false),
-                    createStructField("annotation", VariantToRowConverter.VARIANT_ANNOTATION_DATA_TYPE, true),
+                    createStructField("annotation", VariantToRowConverter.ANNOTATION_DATA_TYPE, true),
             });
         }
 

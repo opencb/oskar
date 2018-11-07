@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.*;
+
 /**
  * Created on 04/09/18.
  *
@@ -24,17 +26,17 @@ public class ProteinSubstitutionScoreFunction extends AbstractFunction2<GenericR
     public List<Double> call(GenericRowWithSchema annotation, String source) {
         Double max = Double.MIN_VALUE;
         Double min = Double.MAX_VALUE;
-        WrappedArray<GenericRowWithSchema> consequenceTypes = annotation.getAs("consequenceTypes");
+        WrappedArray<GenericRowWithSchema> consequenceTypes = annotation.getAs(CONSEQUENCE_TYPES_IDX);
         for (int i = 0; i < consequenceTypes.size(); i++) {
             GenericRowWithSchema consequenceType = consequenceTypes.apply(i);
-            GenericRowWithSchema proteinVariantAnnotation = consequenceType.getAs("proteinVariantAnnotation");
+            GenericRowWithSchema proteinVariantAnnotation = consequenceType.getAs(PROTEIN_VARIANT_ANNOTATION_IDX);
             if (proteinVariantAnnotation != null) {
-                WrappedArray<GenericRowWithSchema> substitutionScores = proteinVariantAnnotation.getAs("substitutionScores");
+                WrappedArray<GenericRowWithSchema> substitutionScores = proteinVariantAnnotation.getAs(SUBSTITUTION_SCORES_IDX);
                 if (substitutionScores != null) {
                     for (int i1 = 0; i1 < substitutionScores.size(); i1++) {
                         GenericRowWithSchema substitutionScore = substitutionScores.apply(i1);
-                        if (substitutionScore.<String>getAs("source").equals(source)) {
-                            Double score = substitutionScore.getAs("score");
+                        if (substitutionScore.<String>getAs(SCORE_SOURCE_IDX).equals(source)) {
+                            Double score = substitutionScore.getAs(SCORE_SCORE_IDX);
                             if (score > max) {
                                 max = score;
                             }

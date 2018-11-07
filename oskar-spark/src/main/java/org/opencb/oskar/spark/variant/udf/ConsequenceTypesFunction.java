@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.*;
+
 /**
  * Created on 27/09/18.
  *
@@ -20,12 +22,12 @@ public class ConsequenceTypesFunction extends AbstractFunction1<GenericRowWithSc
     @Override
     public Collection<String> call(GenericRowWithSchema annotation) {
         Set<String> consequenceTypeNames = new HashSet<>();
-        List<GenericRowWithSchema> consequenceTypes = annotation.getList(annotation.fieldIndex("consequenceTypes"));
+        List<GenericRowWithSchema> consequenceTypes = annotation.getList(CONSEQUENCE_TYPES_IDX);
 
         for (GenericRowWithSchema consequenceType : consequenceTypes) {
-            List<GenericRowWithSchema> sequenceOntologyTerms = consequenceType.getList(consequenceType.fieldIndex("sequenceOntologyTerms"));
+            List<GenericRowWithSchema> sequenceOntologyTerms = consequenceType.getList(SEQUENCE_ONTOLOGY_TERM_IDX);
             for (GenericRowWithSchema sequenceOntologyTerm : sequenceOntologyTerms) {
-                consequenceTypeNames.add(sequenceOntologyTerm.getAs("name"));
+                consequenceTypeNames.add(sequenceOntologyTerm.getString(SEQUENCE_ONTOLOGY_TERM_NAME_IDX));
             }
         }
         return consequenceTypeNames;

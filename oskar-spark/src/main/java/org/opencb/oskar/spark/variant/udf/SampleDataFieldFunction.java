@@ -7,6 +7,8 @@ import scala.runtime.AbstractFunction3;
 
 import java.util.List;
 
+import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.FORMAT_IDX;
+
 /**
  * Created on 27/09/18.
  *
@@ -36,7 +38,7 @@ public class SampleDataFieldFunction extends AbstractFunction3<Object, String, S
     }
 
     private String getSampleDataField(GenericRowWithSchema study, String sample, String formatField) {
-        List<String> format = study.getList(study.fieldIndex("format"));
+        List<String> format = study.getList(FORMAT_IDX);
         int idx = format.indexOf(formatField);
         if (idx < 0) {
             return null;

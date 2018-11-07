@@ -87,20 +87,40 @@ public class VariantUdfManager {
         return callUDF(study.name(), studiesColumn, lit(studyId));
     }
 
+    public static Column study(String studiesColumn, String studyId) {
+        return study(col(studiesColumn), studyId);
+    }
+
     public static Column file(Column study, String fileId) {
         return callUDF(file.name(), study, lit(fileId));
+    }
+
+    public static Column file(String study, String fileId) {
+        return file(col(study), fileId);
     }
 
     public static Column fileAttribute(Column studiesColumn, String file, String attributeField) {
         return callUDF(fileAttribute.name(), studiesColumn, lit(file), lit(attributeField));
     }
 
+    public static Column fileAttribute(String studiesColumn, String file, String attributeField) {
+        return fileAttribute(col(studiesColumn), file, attributeField);
+    }
+
     public static Column fileFilter(Column studiesColumn, String file) {
         return callUDF(fileFilter.name(), studiesColumn, lit(file));
     }
 
+    public static Column fileFilter(String studiesColumn, String file) {
+        return fileFilter(col(studiesColumn), file);
+    }
+
     public static Column fileQual(Column studiesColumn, String file) {
         return callUDF(fileQual.name(), studiesColumn, lit(file));
+    }
+
+    public static Column fileQual(String studiesColumn, String file) {
+        return fileQual(col(studiesColumn), file);
     }
 
     public static Column sampleData(String studiesColumn, String sample) {
@@ -153,6 +173,10 @@ public class VariantUdfManager {
 
     public static Column proteinSubstitution(Column annotation, Column source) {
         return callUDF(proteinSubstitution.name(), annotation, source);
+    }
+
+    public static Column populationFrequencyAsMap(String annotation) {
+        return populationFrequencyAsMap(col(annotation));
     }
 
     public static Column populationFrequencyAsMap(Column annotation) {

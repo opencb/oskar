@@ -1,8 +1,6 @@
 package org.opencb.oskar.spark.commons.converters;
 
-import org.apache.spark.sql.types.Metadata;
-import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
+import org.apache.spark.sql.types.*;
 
 /**
  * Created on 27/09/18.
@@ -33,4 +31,22 @@ public class DataTypeUtils {
         return new StructType(fields);
     }
 
+    public static int getFieldIdx(StructType schema, String path) {
+        StructType rootSchema = schema;
+        DataType dataType;
+        String[] split = path.split("\\.");
+        for (int i = 0; i < split.length - 1; i++) {
+            String name = split[i];
+            dataType = schema.apply(name).dataType();
+            while (dataType instanceof ArrayType) {
+                dataType = ((ArrayType) dataType).elementType();
+            }
+            if (dataType instanceof StructType) {
+                schema = ((StructType) dataType);
+            } else {
+                throw new IllegalStateException("Path " + path + " not found in " + rootSchema);
+            }
+        }
+        return schema.fieldIndex(split[split.length - 1]);
+    }
 }

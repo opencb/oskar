@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.*;
+
 /**
  * Created on 04/09/18.
  *
@@ -22,17 +24,17 @@ public class ConsequenceTypesByGeneFunction extends AbstractFunction2<GenericRow
     public Collection<String> call(GenericRowWithSchema annotation, String gene) {
         boolean emptyGene = StringUtils.isEmpty(gene);
         Set<String> ct = new HashSet<>();
-        List<GenericRowWithSchema> consequenceTypes = annotation.getList(annotation.fieldIndex("consequenceTypes"));
+        List<GenericRowWithSchema> consequenceTypes = annotation.getList(CONSEQUENCE_TYPES_IDX);
 
         for (GenericRowWithSchema consequenceType : consequenceTypes) {
             if (emptyGene
-                    || gene.equals(consequenceType.getAs("geneName"))
-                    || gene.equals(consequenceType.getAs("ensemblGeneId"))
-                    || gene.equals(consequenceType.getAs("ensemblTranscriptId"))) {
+                    || gene.equals(consequenceType.getString(CONSEQUENCE_TYPES_GENE_NAME_IDX))
+                    || gene.equals(consequenceType.getString(CONSEQUENCE_TYPES_ENSEMBL_GENE_ID_IDX))
+                    || gene.equals(consequenceType.getString(CONSEQUENCE_TYPES_ENSEMBL_TRANSCRIPT_ID_IDX))) {
                 List<GenericRowWithSchema> sequenceOntologyTerms =
-                        consequenceType.getList(consequenceType.fieldIndex("sequenceOntologyTerms"));
+                        consequenceType.getList(SEQUENCE_ONTOLOGY_TERM_IDX);
                 for (GenericRowWithSchema sequenceOntologyTerm : sequenceOntologyTerms) {
-                    ct.add(sequenceOntologyTerm.getAs("name"));
+                    ct.add(sequenceOntologyTerm.getString(SEQUENCE_ONTOLOGY_TERM_NAME_IDX));
                 }
             }
         }
