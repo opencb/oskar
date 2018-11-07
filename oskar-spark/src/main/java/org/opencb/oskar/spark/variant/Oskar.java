@@ -11,19 +11,17 @@ import org.opencb.biodata.models.variant.metadata.VariantMetadata;
 import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.commons.utils.FileUtils;
 import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.spark.commons.converters.DataTypeUtils;
 import org.opencb.oskar.spark.variant.analysis.VariantSetStatsTransformer;
 import org.opencb.oskar.spark.variant.analysis.VariantStatsTransformer;
-import org.opencb.oskar.spark.commons.converters.DataTypeUtils;
 import org.opencb.oskar.spark.variant.udf.VariantUdfManager;
+import scala.collection.Iterator;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.spark.sql.functions.col;
 
@@ -140,6 +138,35 @@ public class Oskar {
         return new MetadataBuilder()
                 .putMetadata("samples", samplesMetadata.build())
                 .build();
+    }
+
+    public Map<String, List<String>> samples(Dataset<Row> df) {
+        Metadata samplesMetadata = getSamplesMetadata(df);
+
+        Map<String, List<String>> map = new HashMap<>();
+        Iterator<String> it = samplesMetadata.map().keysIterator();
+        while (it.hasNext()) {
+            String studyId = it.next();
+            String[] sampleNames = samplesMetadata.getStringArray(studyId);
+            map.put(studyId, Arrays.asList(sampleNames));
+        }
+
+        return map;
+    }
+
+    public List<String> samples(Dataset<Row> df, String studyId) throws OskarException {
+        Metadata samplesMetadata = getSamplesMetadata(df);
+
+        String[] sampleNames = samplesMetadata.getStringArray(studyId);
+        if (sampleNames == null) {
+            throw OskarException.unknownStudy(studyId, scala.collection.JavaConversions.mapAsJavaMap(samplesMetadata.map()).keySet());
+        }
+        return Arrays.asList(sampleNames);
+    }
+
+    private Metadata getSamplesMetadata(Dataset<Row> df) {
+        return ((StructType) ((ArrayType) df.schema().apply("studies").dataType()).elementType()).apply("samplesData")
+                .metadata().getMetadata("samples");
     }
 
     public Dataset<Row> stats(Dataset<Row> df, String studyId, String cohort, List<String> samples) {
