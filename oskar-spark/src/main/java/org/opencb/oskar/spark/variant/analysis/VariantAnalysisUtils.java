@@ -2,7 +2,7 @@ package org.opencb.oskar.spark.variant.analysis;
 
 import org.apache.spark.sql.SparkSession;
 import org.opencb.biodata.formats.pedigree.PedigreeParser;
-import org.opencb.biodata.models.core.pedigree.Pedigree;
+import org.opencb.biodata.models.clinical.pedigree.Pedigree;
 import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.biodata.tools.variant.converters.VCFExporter;
 import org.opencb.biodata.tools.variant.metadata.VariantMetadataManager;

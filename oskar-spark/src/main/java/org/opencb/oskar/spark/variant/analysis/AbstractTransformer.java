@@ -23,7 +23,7 @@ public abstract class AbstractTransformer extends Transformer {
     }
 
     @Override
-    public String uid() {
+    public final String uid() {
         return getUid();
     }
 
