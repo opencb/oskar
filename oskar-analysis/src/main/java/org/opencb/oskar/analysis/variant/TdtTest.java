@@ -1,17 +1,13 @@
 package org.opencb.oskar.analysis.variant;
 
+import org.opencb.biodata.models.clinical.pedigree.Member;
+import org.opencb.biodata.models.clinical.pedigree.Pedigree;
+import org.opencb.biodata.models.clinical.pedigree.PedigreeManager;
 import org.opencb.biodata.models.commons.Phenotype;
-import org.opencb.biodata.models.core.pedigree.Individual;
-import org.opencb.biodata.models.core.pedigree.Pedigree;
-import org.opencb.biodata.models.core.pedigree.PedigreeManager;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.oskar.analysis.variant.MendelianError.GenotypeCode;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.opencb.oskar.analysis.variant.MendelianError.getAlternateAlleleCount;
 
@@ -28,9 +24,9 @@ public class TdtTest {
         // For each family
         for (Pedigree pedigree : pedigrees) {
             PedigreeManager pedigreeManager = new PedigreeManager(pedigree);
-            Set<Individual> affectedIndividuals = pedigreeManager.getAffectedIndividuals(phenotype);
+            Set<Member> affectedIndividuals = pedigreeManager.getAffectedIndividuals(phenotype);
 
-            for (Individual affectedIndividual : affectedIndividuals) {
+            for (Member affectedIndividual : affectedIndividuals) {
                 // We need father and mother
                 if (affectedIndividual.getFather() == null || affectedIndividual.getMother() == null) {
                     continue;
@@ -55,7 +51,7 @@ public class TdtTest {
 
                 // Consider all offspring in nuclear family
                 for (String siblingId : siblingIds) {
-                    Individual individual = pedigreeManager.getIndividualMap().get(siblingId);
+                    Member individual = pedigreeManager.getIndividualMap().get(siblingId);
                     if (!individual.getPhenotypes().contains(phenotype)) {
                         // Sibling unaffected, continue
                         continue;
