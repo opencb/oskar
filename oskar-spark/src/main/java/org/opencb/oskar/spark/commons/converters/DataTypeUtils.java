@@ -28,7 +28,16 @@ public class DataTypeUtils {
                 fields[i] = field;
             }
         }
-        return new StructType(fields);
+        return DataTypes.createStructType(fields);
+    }
+
+    public static StructType addField(StructType structType, StructField structField) {
+        StructField[] fields = new StructField[structType.size() + 1];
+        for (int i = 0; i < structType.size(); i++) {
+            fields[i] = structType.apply(i);
+        }
+        fields[fields.length - 1] = structField;
+        return DataTypes.createStructType(fields);
     }
 
     public static int getFieldIdx(StructType schema, String path) {
