@@ -120,14 +120,20 @@ public class Oskar {
 
     private Metadata createDatasetMetadata(VariantMetadata variantMetadata) {
         Map<String, List<String>> samplesMap = new HashMap<>();
-        for (VariantStudyMetadata study : variantMetadata.getStudies()) {
+        Map<String, List<String>> phenotypesMap = new HashMap<>();
+        for (VariantStudyMetadata study: variantMetadata.getStudies()) {
             List<String> samples = new ArrayList<>();
+            List<String> phenotypes = new ArrayList<>();
             for (Individual individual : study.getIndividuals()) {
+                String phenotype = individual.getPhenotype() == null ? "" : individual.getPhenotype();
                 for (Sample sample : individual.getSamples()) {
                     samples.add(sample.getId());
+                    // Set phenotype to all samples of that individual
+                    phenotypes.add(phenotype);
                 }
             }
             samplesMap.put(study.getId(), samples);
+            phenotypesMap.put(study.getId(), phenotypes);
         }
 
         MetadataBuilder samplesMetadata = new MetadataBuilder();
@@ -135,11 +141,18 @@ public class Oskar {
             samplesMetadata.putStringArray(entry.getKey(), entry.getValue().toArray(new String[0]));
         }
 
+        MetadataBuilder phenotypesMetadata = new MetadataBuilder();
+        for (Map.Entry<String, List<String>> entry : phenotypesMap.entrySet()) {
+            phenotypesMetadata.putStringArray(entry.getKey(), entry.getValue().toArray(new String[0]));
+        }
+
         return new MetadataBuilder()
                 .putMetadata("samples", samplesMetadata.build())
+                .putMetadata("phenotypes", phenotypesMetadata.build())
                 .build();
     }
 
+    // Sample names management
     public Map<String, List<String>> samples(Dataset<Row> df) {
         Metadata samplesMetadata = getSamplesMetadata(df);
 
@@ -167,6 +180,36 @@ public class Oskar {
     private Metadata getSamplesMetadata(Dataset<Row> df) {
         return ((StructType) ((ArrayType) df.schema().apply("studies").dataType()).elementType()).apply("samplesData")
                 .metadata().getMetadata("samples");
+    }
+
+    // Phenotypes
+    public Map<String, List<String>> phenotypes(Dataset<Row> df) {
+        Metadata phenotypesMetadata = getPhenotypesMetadata(df);
+
+        Map<String, List<String>> map = new HashMap<>();
+        Iterator<String> it = phenotypesMetadata.map().keysIterator();
+        while (it.hasNext()) {
+            String studyId = it.next();
+            String[] phenotypeNames = phenotypesMetadata.getStringArray(studyId);
+            map.put(studyId, Arrays.asList(phenotypeNames));
+        }
+
+        return map;
+    }
+
+    public List<String> phenotypes(Dataset<Row> df, String studyId) throws OskarException {
+        Metadata phenotypesMetadata = getPhenotypesMetadata(df);
+
+        String[] phenotypeNames = phenotypesMetadata.getStringArray(studyId);
+        if (phenotypeNames == null) {
+            throw OskarException.unknownStudy(studyId, scala.collection.JavaConversions.mapAsJavaMap(phenotypesMetadata.map()).keySet());
+        }
+        return Arrays.asList(phenotypeNames);
+    }
+
+    private Metadata getPhenotypesMetadata(Dataset<Row> df) {
+        return ((StructType) ((ArrayType) df.schema().apply("studies").dataType()).elementType()).apply("samplesData")
+                .metadata().getMetadata("phenotypes");
     }
 
     public Dataset<Row> stats(Dataset<Row> df, String studyId, String cohort, List<String> samples) {
