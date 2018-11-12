@@ -263,7 +263,7 @@ public class VariantSetStatsTransformer extends AbstractTransformer {
                     VariantSetStatsBufferUtils.getNumVariants(buffer),
                     0, // TODO: setNumSamples
                     VariantSetStatsBufferUtils.getNumPass(buffer),
-                    (float) (VariantSetStatsBufferUtils.getTransitionsCount(buffer)
+                    ((float) (VariantSetStatsBufferUtils.getTransitionsCount(buffer))
                             / VariantSetStatsBufferUtils.getTransversionsCount(buffer)),
                     (float) meanQual,
                     stdDevQuality,

@@ -19,6 +19,7 @@ setup(
         'pip >= 7.1.2',
         'requests >= 2.7',
         # 'avro == 1.7.7',
+        'numpy',
         'pyspark >= 2.2.2'
     ]
 )
