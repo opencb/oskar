@@ -1,27 +1,30 @@
 package org.opencb.oskar.spark.variant.analysis;
 
 import htsjdk.tribble.util.popgen.HardyWeinbergCalculation;
-import org.apache.spark.ml.Transformer;
 import org.apache.spark.ml.param.Param;
-import org.apache.spark.ml.param.ParamMap;
-import org.apache.spark.ml.util.Identifiable$;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema;
 import org.apache.spark.sql.expressions.UserDefinedFunction;
 import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+import org.opencb.biodata.models.feature.Genotype;
+import org.opencb.oskar.analysis.variant.MendelianError;
 import org.opencb.oskar.spark.variant.udf.StudyFunction;
 import scala.collection.mutable.ListBuffer;
 import scala.collection.mutable.WrappedArray;
 import scala.runtime.AbstractFunction1;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.udf;
+import static org.apache.spark.sql.types.DataTypes.*;
 
 
 /**
@@ -29,9 +32,8 @@ import static org.apache.spark.sql.functions.udf;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class HardyWeinbergTransformer extends Transformer {
+public class HardyWeinbergTransformer extends AbstractTransformer {
 
-    private String uid;
     private Param<String> studyIdParam;
 
     public HardyWeinbergTransformer() {
@@ -39,33 +41,12 @@ public class HardyWeinbergTransformer extends Transformer {
     }
 
     public HardyWeinbergTransformer(String uid) {
-        this.uid = uid;
-    }
-
-    @Override
-    public StructType transformSchema(StructType schema) {
-        return schema;
-    }
-
-    @Override
-    public Transformer copy(ParamMap extra) {
-        return defaultCopy(extra);
-    }
-
-    @Override
-    public String uid() {
-        return getUid();
-    }
-
-    private String getUid() {
-        if (uid == null) {
-            uid = Identifiable$.MODULE$.randomUID("VariantStatsTransformer");
-        }
-        return uid;
+        super(uid);
+        studyIdParam = new Param<>(this, "studyId", "");
     }
 
     public Param<String> studyIdParam() {
-        return studyIdParam = studyIdParam == null ? new Param<>(this, "studyId", "") : studyIdParam;
+        return studyIdParam;
     }
 
     public HardyWeinbergTransformer setStudyId(String studyId) {
@@ -81,11 +62,16 @@ public class HardyWeinbergTransformer extends Transformer {
     public Dataset<Row> transform(Dataset<?> dataset) {
         UserDefinedFunction hardyWeinberg = udf(new HardyWeinbergFunction(getStudyId()), DataTypes.DoubleType);
 
-        return dataset.withColumn("hw", hardyWeinberg.apply(new ListBuffer<Column>()
-                .$plus$eq(col("studies"))
-        ));
+        return dataset.withColumn("HWE", hardyWeinberg.apply(new ListBuffer<Column>()
+                .$plus$eq(col("studies"))));
     }
 
+    @Override
+    public StructType transformSchema(StructType schema) {
+        List<StructField> fields = Arrays.stream(schema.fields()).collect(Collectors.toList());
+        fields.add(createStructField("HWE", DoubleType, false));
+        return createStructType(fields);
+    }
 
     public static class HardyWeinbergFunction extends AbstractFunction1<WrappedArray<GenericRowWithSchema>, Double>
             implements Serializable {
@@ -105,18 +91,15 @@ public class HardyWeinbergTransformer extends Transformer {
 
             List<WrappedArray<String>> samplesData = study.getList(study.fieldIndex("samplesData"));
             for (WrappedArray<String> sampleData : samplesData) {
-                switch (sampleData.apply(0)) {
-                    case "0/0":
-                    case "0|0":
+                MendelianError.GenotypeCode gtCode = MendelianError.getAlternateAlleleCount(new Genotype(sampleData.apply(0)));
+                switch (gtCode) {
+                    case HOM_REF:
                         obsAA++;
                         break;
-                    case "0/1":
-                    case "0|1":
-                    case "1|0":
+                    case HET:
                         obsAB++;
                         break;
-                    case "1/1":
-                    case "1|1":
+                    case HOM_VAR:
                         obsBB++;
                         break;
                     default:
@@ -124,8 +107,9 @@ public class HardyWeinbergTransformer extends Transformer {
                 }
             }
 
+            // This class calculates a HardyWeinberg p-value given three values representing the observed frequences
+            // of homozygous and heterozygous genotypes in the test population
             return HardyWeinbergCalculation.hwCalculate(obsAA, obsAB, obsBB);
         }
     }
-
 }
