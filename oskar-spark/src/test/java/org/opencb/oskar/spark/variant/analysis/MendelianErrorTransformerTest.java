@@ -25,9 +25,11 @@ public class MendelianErrorTransformerTest {
     public void testMendelianErrors() throws IOException, OskarException {
         Dataset<Row> df = sparkTest.getVariantsDataset();
 
-        new MendelianErrorTransformer().setStudyId("hgvauser@platinum:illumina_platinum").setFather("NA12877").transform(df)
+        new MendelianErrorTransformer().setStudyId("hgvauser@platinum:illumina_platinum")
+                .setFather("NA12877").setMother("NA12878").setChild("NA12879")
+                .transform(df)
 //                .where("code != 0").show();
-                .where(col("code").notEqual(0))
+//                .where(col("code").notEqual(0))
                 .show();
     }
 }
