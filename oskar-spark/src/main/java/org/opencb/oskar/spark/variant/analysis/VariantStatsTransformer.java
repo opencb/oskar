@@ -8,12 +8,12 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema;
 import org.apache.spark.sql.expressions.UserDefinedFunction;
 import org.apache.spark.sql.types.DataType;
-import org.apache.spark.sql.types.Metadata;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.biodata.models.variant.avro.StudyEntry;
 import org.opencb.biodata.models.variant.stats.VariantStats;
 import org.opencb.biodata.tools.variant.stats.VariantStatsCalculator;
 import org.opencb.oskar.spark.commons.converters.RowToAvroConverter;
+import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
 import scala.collection.mutable.ListBuffer;
 import scala.collection.mutable.WrappedArray;
@@ -108,15 +108,14 @@ public class VariantStatsTransformer extends AbstractTransformer {
         String studyId = getStudyId();
         if (samples != null && !samples.isEmpty()) {
             sampleIdx = new HashSet<>(samples.size());
-            Metadata metadata = dataset.schema().apply("studies").metadata();
-            Metadata samplesMetadata = metadata.getMetadata("samples");
+            Map<String, List<String>> samplesMap = new Oskar().samples(((Dataset<Row>) dataset));
             if (StringUtils.isEmpty(studyId)) {
-                studyId = samplesMetadata.map().keySet().iterator().next();
+                studyId = samplesMap.keySet().iterator().next();
             }
-            String[] sampleNames = samplesMetadata.getStringArray(studyId);
+            List<String> sampleNames = samplesMap.get(studyId);
 
             for (String sample : samples) {
-                int idx = Arrays.binarySearch(sampleNames, sample);
+                int idx = sampleNames.indexOf(sample);
                 if (idx < 0) {
                     throw new IllegalArgumentException("Sample \"" + sample + "\" not found in study \"" + studyId + "\".");
                 }
