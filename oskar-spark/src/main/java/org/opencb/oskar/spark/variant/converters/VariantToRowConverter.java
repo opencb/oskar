@@ -33,6 +33,8 @@ public class VariantToRowConverter extends AvroToRowConverter implements Convert
             getFieldIdx(STUDY_DATA_TYPE, "studyId");
     public static final int SAMPLES_DATA_IDX =
             getFieldIdx(STUDY_DATA_TYPE, "samplesData");
+    public static final int STATS_IDX =
+            getFieldIdx(STUDY_DATA_TYPE, "stats");
     public static final int FORMAT_IDX =
             getFieldIdx(STUDY_DATA_TYPE, "format");
     public static final int FILES_IDX =

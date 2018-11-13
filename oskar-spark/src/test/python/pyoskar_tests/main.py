@@ -4,7 +4,7 @@
 from pyoskar_tests.test_utils import *
 from pyoskar.core import Oskar
 from pyoskar.spark.sql import *
-from pyoskar.spark.mllib import *
+from pyoskar.spark.analysis import *
 from pyspark.sql.functions import col, udf, count, explode, concat, when, expr
 from pyspark.sql.functions import *
 
@@ -75,21 +75,21 @@ df.withColumn("myFile", file(study("studies", 'hgvauser@platinum:illumina_platin
 df.withColumn("myFile", file(col("studies")[0], "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz")).where("myFile.attributes.QUAL < 10").show(100)
 
 df.where("file(studies[0], 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz').attributes.QUAL > 10").show(100)
-df.select("fileQual(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz')").show(10)
+df.selectExpr("fileQual(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz')").show(10)
 df.select(fileFilter("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz")).show(truncate=False)
 
 df.select(sampleData("studies", "NA12877").alias("NA12877"), sampleData("studies", "NA12878").alias("NA12878")).show(10)
 
 df.createOrReplaceTempView("chr22")
-spark.sql("SELECT id,info(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz', 'HaplotypeScore') from chr22 limit 100").show(100)
-spark.sql("SELECT id,info(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz', 'QUAL') from chr22 where info(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz', 'QUAL') is not null limit 10").show(100)
+spark.sql("SELECT id,fileAttribute(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz', 'HaplotypeScore') from chr22 limit 100").show(100)
+spark.sql("SELECT id,fileAttribute(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz', 'QUAL') from chr22 where fileAttribute(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz', 'QUAL') is not null limit 10").show(100)
 spark.sql("SELECT id,file(studies[0], 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz') from chr22 limit 100").show(100)
 spark.sql("SELECT id,file(studies[0], 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz').attributes.QUAL from chr22 where file(studies[0], 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz').attributes.QUAL > 100 limit 100").show(100)
 spark.sql("SELECT proteinSubstitution(annotation, 'sift') from chr22").show()
 spark.sql("SELECT proteinSubstitution(annotation, 'sift')[0],proteinSubstitution(annotation, 'polyphen')[1] from chr22 where proteinSubstitution(annotation, 'sift')[0] < 0.2").show(100)
 spark.sql("select id,sample(studies, 'NA12877')[0] as NA12877 , sample(studies, 'NA12878')[0] as NA12878 from chr22").show()
 spark.sql("select id,sample(studies, 'NA12877')[0] as NA12877 , sample(studies, 'NA12878')[0] as NA12878 from chr22").where("NA12877=NA12878").groupBy("NA12877").count().sort("count").show(1000)
-df.selectExpr("filter(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz') AS FILTER").where("array_contains(FILTER, 'LowQD')").show(truncate=False)
+df.selectExpr("fileFilter(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz') AS FILTER").where("array_contains(FILTER, 'LowQD')").show(truncate=False)
 
 
 
@@ -122,7 +122,7 @@ plt.show()
 
 # Histogram by QUAL
 # df.selectExpr("int(info(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz', 'QUAL') / 100) * 100  as QUAL").where("QUAL is not null").groupBy("QUAL").count().orderBy("QUAL").show()
-qual_df = HistogramTransformer(step=100,inputCol="QUAL").transform(df.selectExpr("info(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz', 'QUAL') as QUAL").where("QUAL is not null"))
+qual_df = HistogramTransformer(step=100,inputCol="QUAL").transform(df.selectExpr("fileAttribute(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz', 'QUAL') as QUAL").where("QUAL is not null"))
 pandas = qual_df.toPandas()
 pandas.plot(x='QUAL', y='count')
 plt.xlim(0, 4000)
@@ -130,7 +130,7 @@ plt.ylim(0)
 plt.show()
 
 
-pandas = oskar.histogram(step=100, inputCol="QUAL", df=df.selectExpr("qual(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz') as QUAL").where("QUAL is not null")).toPandas()
+pandas = oskar.histogram(step=100, inputCol="QUAL", df=df.selectExpr("fileQual(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz') as QUAL").where("QUAL is not null")).toPandas()
 pandas.plot(x='QUAL', y='count')
 plt.xlim(0, 4000)
 plt.ylim(0)
