@@ -11,7 +11,7 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.feature.AllelesCode;
 import org.opencb.biodata.models.feature.Genotype;
-import org.opencb.oskar.spark.variant.Oskar;
+import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
 import scala.collection.mutable.WrappedArray;
 
@@ -106,8 +106,7 @@ public class InbreedingCoefficientTransformer extends AbstractTransformer {
 
     @Override
     public Dataset<Row> transform(Dataset<?> dataset) {
-        List<String> sampleNames = new Oskar().samples(((Dataset<Row>) dataset)).values().iterator().next();
-
+        List<String> sampleNames = new VariantMetadataManager().samples((Dataset<Row>) dataset).values().iterator().next();
         InbreedingCoefficientUserDefinedAggregationFunction udaf = new InbreedingCoefficientUserDefinedAggregationFunction(
                 sampleNames.size(),
                 getOrDefault(missingGenotypesAsHomRefParam),

@@ -3,7 +3,6 @@ package org.opencb.oskar.spark.variant;
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.types.Metadata;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.opencb.biodata.models.clinical.pedigree.Member;
@@ -16,8 +15,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
-
 public class OskarTest {
     @ClassRule
     public static OskarSparkTestUtils sparkTest = new OskarSparkTestUtils();
@@ -26,7 +23,7 @@ public class OskarTest {
     public void testSamples() throws IOException, OskarException {
         Dataset<Row> df = sparkTest.getVariantsDataset();
 
-        List<String> samples = sparkTest.getOskar().samples(df, "hgvauser@platinum:illumina_platinum");
+        List<String> samples = sparkTest.getOskar().metadata().samples(df, "hgvauser@platinum:illumina_platinum");
         for (String sample: samples) {
             System.out.println(sample);
         }
@@ -36,7 +33,7 @@ public class OskarTest {
     public void testPedigree() throws IOException, OskarException {
         Dataset<Row> df = sparkTest.getVariantsDataset();
 
-        Map<String, List<Pedigree>> pedigreeMap = sparkTest.getOskar().pedigree(df);
+        Map<String, List<Pedigree>> pedigreeMap = sparkTest.getOskar().metadata().pedigree(df);
         for (String studyId : pedigreeMap.keySet()) {
             System.out.println("Study: " + studyId);
             for (Pedigree pedigree : pedigreeMap.get(studyId)) {
