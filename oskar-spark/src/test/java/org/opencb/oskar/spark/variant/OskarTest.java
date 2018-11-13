@@ -23,7 +23,7 @@ public class OskarTest {
     public void testSamples() throws IOException, OskarException {
         Dataset<Row> df = sparkTest.getVariantsDataset();
 
-        List<String> samples = sparkTest.getOskar().samples(df, "hgvauser@platinum:illumina_platinum");
+        List<String> samples = sparkTest.getOskar().metadata().samples(df, "hgvauser@platinum:illumina_platinum");
         for (String sample: samples) {
             System.out.println(sample);
         }
@@ -33,7 +33,7 @@ public class OskarTest {
     public void testPedigree() throws IOException, OskarException {
         Dataset<Row> df = sparkTest.getVariantsDataset();
 
-        Map<String, List<Pedigree>> pedigreeMap = sparkTest.getOskar().pedigree(df);
+        Map<String, List<Pedigree>> pedigreeMap = sparkTest.getOskar().metadata().pedigrees(df);
         for (String studyId : pedigreeMap.keySet()) {
             System.out.println("Study: " + studyId);
             for (Pedigree pedigree : pedigreeMap.get(studyId)) {

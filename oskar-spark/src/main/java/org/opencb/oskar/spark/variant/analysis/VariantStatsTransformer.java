@@ -13,7 +13,7 @@ import org.opencb.biodata.models.variant.avro.StudyEntry;
 import org.opencb.biodata.models.variant.stats.VariantStats;
 import org.opencb.biodata.tools.variant.stats.VariantStatsCalculator;
 import org.opencb.oskar.spark.commons.converters.RowToAvroConverter;
-import org.opencb.oskar.spark.variant.Oskar;
+import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
 import scala.collection.mutable.ListBuffer;
 import scala.collection.mutable.WrappedArray;
@@ -108,7 +108,7 @@ public class VariantStatsTransformer extends AbstractTransformer {
         String studyId = getStudyId();
         if (samples != null && !samples.isEmpty()) {
             sampleIdx = new HashSet<>(samples.size());
-            Map<String, List<String>> samplesMap = new Oskar().samples(((Dataset<Row>) dataset));
+            Map<String, List<String>> samplesMap = new VariantMetadataManager().samples(((Dataset<Row>) dataset));
             if (StringUtils.isEmpty(studyId)) {
                 studyId = samplesMap.keySet().iterator().next();
             }

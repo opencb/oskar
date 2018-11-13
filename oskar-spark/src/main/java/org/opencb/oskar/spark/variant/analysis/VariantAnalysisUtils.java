@@ -52,7 +52,7 @@ public class VariantAnalysisUtils {
     }
 
     /**
-     * Export variant metadata into pedigree file format.
+     * Export variant metadata into pedigrees file format.
      *
      * @param metaFilename  Variant metadata file name
      * @param studyId       Study ID target

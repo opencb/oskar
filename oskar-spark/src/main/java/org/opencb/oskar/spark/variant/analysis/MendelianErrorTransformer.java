@@ -10,7 +10,7 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.oskar.analysis.variant.MendelianError;
-import org.opencb.oskar.spark.variant.Oskar;
+import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import scala.collection.mutable.ListBuffer;
 import scala.runtime.AbstractFunction4;
 
@@ -111,7 +111,7 @@ public class MendelianErrorTransformer extends AbstractTransformer {
         UserDefinedFunction mendelianUdf = udf(new MendelianErrorFunction("X", "Y"), IntegerType);
 
         List<String> samples;
-        Map<String, List<String>> samplesMap = new Oskar().samples(df);
+        Map<String, List<String>> samplesMap = new VariantMetadataManager().samples(df);
         // FIXME: Dataset can be multi-study
         if (StringUtils.isEmpty(getStudyId())) {
             samples = samplesMap.entrySet().iterator().next().getValue();

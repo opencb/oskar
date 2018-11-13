@@ -13,7 +13,6 @@ import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.clinical.pedigree.Pedigree;
 import org.opencb.biodata.models.commons.Phenotype;
 import org.opencb.biodata.models.feature.Genotype;
-import org.opencb.oskar.analysis.variant.MendelianError;
 import org.opencb.oskar.analysis.variant.TdtTest;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
@@ -81,9 +80,9 @@ public class TdtTransformer extends AbstractTransformer {
         Dataset<Row> df = (Dataset<Row>) dataset;
 
         try {
-            List<Pedigree> pedigrees = new Oskar().pedigree(df, getStudyId());
+            List<Pedigree> pedigrees = new Oskar().metadata().pedigrees(df, getStudyId());
             Phenotype phenotype = new Phenotype(getPhenotype(), getPhenotype(), "");
-            List<String> sampleNames = new Oskar().samples(df, getStudyId());
+            List<String> sampleNames = new Oskar().metadata().samples(df, getStudyId());
 
             UserDefinedFunction tdt = udf(new TdtTransformer.TdtFunction(getStudyId(), pedigrees, phenotype,
                             sampleNames), DataTypes.DoubleType);

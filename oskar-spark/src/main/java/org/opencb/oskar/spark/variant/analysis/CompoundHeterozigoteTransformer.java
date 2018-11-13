@@ -10,7 +10,7 @@ import org.apache.spark.sql.expressions.UserDefinedAggregateFunction;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.tools.pedigree.ModeOfInheritance;
-import org.opencb.oskar.spark.variant.Oskar;
+import org.opencb.oskar.spark.variant.VariantMetadataManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -123,7 +123,7 @@ public class CompoundHeterozigoteTransformer extends AbstractTransformer {
         CompoundHeterozigoteUDAF udaf = new CompoundHeterozigoteUDAF(getMissingGenotypeAsReference());
 
         List<String> samples;
-        Map<String, List<String>> samplesMap = new Oskar().samples(df);
+        Map<String, List<String>> samplesMap = new VariantMetadataManager().samples(df);
         // FIXME: Dataset can be multi-study
         if (StringUtils.isEmpty(getStudyId())) {
             samples = samplesMap.entrySet().iterator().next().getValue();

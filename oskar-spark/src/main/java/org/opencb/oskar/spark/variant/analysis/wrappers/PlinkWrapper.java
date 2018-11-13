@@ -154,9 +154,9 @@ public class PlinkWrapper extends VariantAnalysisWrapper {
 //                sb.append(0).append("\t");
 //                sb.append(0);
 //            } else {
-//                int sex = org.opencb.biodata.models.core.pedigree.Individual.Sex
+//                int sex = org.opencb.biodata.models.core.pedigrees.Individual.Sex
 //                        .getEnum(individual.getSex()).getValue();
-//                int phenotype = org.opencb.biodata.models.core.pedigree.Individual.AffectionStatus
+//                int phenotype = org.opencb.biodata.models.core.pedigrees.Individual.AffectionStatus
 //                        .getEnum(individual.getPhenotype()).getValue();
 //                sb.append(individual.getFamily() == null ? 0 : individual.getFamily()).append("\t");
 //                sb.append(sampleName).append("\t");

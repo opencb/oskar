@@ -85,8 +85,8 @@ public class FisherTransformer extends AbstractTransformer {
         // Search affected samples (and take the index)
         Set<Integer> affectedIndexSet = new HashSet<>();
         try {
-            List<String> samples = new Oskar().samples(df, getStudyId());
-            List<Pedigree> pedigrees = new Oskar().pedigree(df, getStudyId());
+            List<String> samples = new Oskar().metadata().samples(df, getStudyId());
+            List<Pedigree> pedigrees = new Oskar().metadata().pedigrees(df, getStudyId());
             int i = 0;
             for (Pedigree pedigree: pedigrees) {
                 for (Member member: pedigree.getMembers()) {

@@ -46,12 +46,12 @@ public class VariantStatsTransformerTest {
     @Test
     public void testPreserveMetadata() throws Exception {
         Dataset<Row> df = sparkTest.getVariantsDataset();
-        Map<String, List<String>> samplesExpected = sparkTest.getOskar().samples(df);
+        Map<String, List<String>> samplesExpected = sparkTest.getOskar().metadata().samples(df);
         assertEquals(1, samplesExpected.size());
 
         VariantStatsTransformer transformer = new VariantStatsTransformer().setCohort("ALL");
         Dataset<Row> transform = transformer.transform(df);
-        Map<String, List<String>> samples = sparkTest.getOskar().samples(transform);
+        Map<String, List<String>> samples = sparkTest.getOskar().metadata().samples(transform);
 
         assertEquals(samplesExpected, samples);
     }
