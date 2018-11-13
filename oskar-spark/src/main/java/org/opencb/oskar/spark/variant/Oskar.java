@@ -312,6 +312,11 @@ public class Oskar {
     }
 
     public List<Pedigree> pedigree(Dataset<Row> df, String studyId) throws OskarException {
+        Map<String, List<Pedigree>> pedigreeMap = pedigree(df);
+        if (!pedigreeMap.containsKey(studyId)) {
+            throw OskarException.unknownStudy(studyId, pedigreeMap.keySet());
+        }
+
         return pedigree(df).get(studyId);
     }
 
