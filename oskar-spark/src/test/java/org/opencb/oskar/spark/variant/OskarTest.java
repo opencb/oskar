@@ -3,7 +3,6 @@ package org.opencb.oskar.spark.variant;
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.types.Metadata;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.opencb.biodata.models.clinical.pedigree.Member;
@@ -15,8 +14,6 @@ import org.opencb.oskar.spark.commons.OskarException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.Assert.*;
 
 public class OskarTest {
     @ClassRule
