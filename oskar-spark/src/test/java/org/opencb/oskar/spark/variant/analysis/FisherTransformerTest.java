@@ -1,19 +1,20 @@
 package org.opencb.oskar.spark.variant.analysis;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.types.ArrayType;
 import org.apache.spark.sql.types.Metadata;
-import org.apache.spark.sql.types.StructType;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.opencb.biodata.models.clinical.pedigree.Member;
+import org.opencb.biodata.models.clinical.pedigree.Pedigree;
+import org.opencb.commons.utils.ListUtils;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.commons.OskarException;
 
 import java.io.IOException;
 import java.util.List;
-
-import static org.junit.Assert.*;
+import java.util.Map;
 
 public class FisherTransformerTest {
     @ClassRule
