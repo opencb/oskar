@@ -52,7 +52,7 @@ public class Oskar {
         }
 
         // Read and add metadata
-        String metadataPath = path + ".meta.json.gz";
+        String metadataPath = vmm.getMetadataPath(path);
 
         if (Paths.get(metadataPath).toFile().exists()) {
             dataset = vmm.addVariantMetadata(dataset, metadataPath);

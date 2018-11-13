@@ -1,6 +1,10 @@
 package org.opencb.oskar.spark.variant;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -20,6 +24,7 @@ import scala.collection.Iterator;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -32,9 +37,20 @@ import static org.apache.spark.sql.functions.col;
  */
 public class VariantMetadataManager {
 
+    private final ObjectMapper objectMapper;
 
-    public VariantMetadata loadMetadata(String path) throws OskarException {
-        ObjectMapper objectMapper = new ObjectMapper();
+    public VariantMetadataManager() {
+        objectMapper = new ObjectMapper()
+                .configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true)
+                .configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false)
+                .setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+    }
+
+    protected String getMetadataPath(String path) {
+        return path + ".meta.json.gz";
+    }
+
+    public VariantMetadata readMetadata(String path) throws OskarException {
         try (InputStream is = FileUtils.newInputStream(Paths.get(path))) {
             return objectMapper.readValue(is, VariantMetadata.class);
         } catch (IOException e) {
@@ -50,8 +66,8 @@ public class VariantMetadataManager {
      * @return  Modified dataset
      * @throws OskarException if there is an error reading the metadata file
      */
-    public Dataset<Row> addVariantMetadata(Dataset<Row> dataset, String metadataPath) throws OskarException {
-        VariantMetadata variantMetadata = loadMetadata(metadataPath);
+    protected Dataset<Row> addVariantMetadata(Dataset<Row> dataset, String metadataPath) throws OskarException {
+        VariantMetadata variantMetadata = readMetadata(metadataPath);
         dataset = addVariantMetadata(dataset, variantMetadata);
         return dataset;
     }
@@ -63,7 +79,7 @@ public class VariantMetadataManager {
      * @param variantMetadata VariantMetadata to add
      * @return  Modified dataset
      */
-    public Dataset<Row> addVariantMetadata(Dataset<Row> dataset, VariantMetadata variantMetadata) {
+    protected Dataset<Row> addVariantMetadata(Dataset<Row> dataset, VariantMetadata variantMetadata) {
         Metadata metadata = createDatasetMetadata(variantMetadata);
 
         ArrayType studiesArrayType = (ArrayType) dataset.schema().apply("studies").dataType();
@@ -77,6 +93,16 @@ public class VariantMetadataManager {
 
         return dataset.withColumn("studies", col("studies").as("studies", metadata))
                 .withColumn("studies", col("studies").cast(new ArrayType(elementType, studiesArrayType.containsNull())));
+    }
+
+    public VariantMetadata variantMetadata(Dataset<Row> df) throws OskarException {
+        Metadata variantMetadata = getMetadata(df).getMetadata("variantMetadata");
+
+        try {
+            return objectMapper.readValue(variantMetadata.toString(), VariantMetadata.class);
+        } catch (IOException e) {
+            throw OskarException.errorLoadingVariantMetadataFile(e, "");
+        }
     }
 
     private Metadata createDatasetMetadata(VariantMetadata variantMetadata) {
@@ -135,9 +161,17 @@ public class VariantMetadataManager {
             pedigreeMetadata.putMetadata(studyId, familyMetadata.build());
         }
 
+        Metadata metadata;
+        try {
+            metadata = Metadata.fromJson(objectMapper.writeValueAsString(variantMetadata));
+        } catch (JsonProcessingException e) {
+            throw new UncheckedIOException(e);
+        }
+
         return new MetadataBuilder()
                 .putMetadata("samples", samplesMetadata.build())
                 .putMetadata("pedigree", pedigreeMetadata.build())
+                .putMetadata("variantMetadata", metadata)
                 .build();
     }
 
@@ -164,11 +198,6 @@ public class VariantMetadataManager {
             throw OskarException.unknownStudy(studyId, scala.collection.JavaConversions.mapAsJavaMap(samplesMetadata.map()).keySet());
         }
         return Arrays.asList(sampleNames);
-    }
-
-    private Metadata getSamplesMetadata(Dataset<Row> df) {
-        return ((StructType) ((ArrayType) df.schema().apply("studies").dataType()).elementType()).apply("samplesData")
-                .metadata().getMetadata("samples");
     }
 
     // Pedigree management
@@ -271,9 +300,18 @@ public class VariantMetadataManager {
         return pedigree(df).get(studyId);
     }
 
+    private Metadata getMetadata(Dataset<Row> df) {
+        ArrayType studies = (ArrayType) df.schema().apply("studies").dataType();
+        StructType studyEntry = (StructType) studies.elementType();
+        return studyEntry.apply("samplesData").metadata();
+    }
+
+    private Metadata getSamplesMetadata(Dataset<Row> df) {
+        return getMetadata(df).getMetadata("samples");
+    }
+
     private Metadata getPedigreeMetadata(Dataset<Row> df) {
-        return ((StructType) ((ArrayType) df.schema().apply("studies").dataType()).elementType()).apply("samplesData")
-                .metadata().getMetadata("pedigree");
+        return getMetadata(df).getMetadata("pedigree");
     }
 
 

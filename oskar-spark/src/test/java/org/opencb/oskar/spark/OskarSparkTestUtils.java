@@ -9,6 +9,7 @@ import org.junit.rules.ExternalResource;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,7 +25,7 @@ import java.util.Date;
  */
 public class OskarSparkTestUtils extends ExternalResource {
 
-    protected static final String PLATINUM_SMALL = "platinum_chr22.small.parquet";
+    public static final String PLATINUM_SMALL = "platinum_chr22.small.parquet";
     private static Path rootDir;
     private transient SparkSession spark;
     private Oskar oskar;
@@ -71,12 +72,19 @@ public class OskarSparkTestUtils extends ExternalResource {
 
     public Dataset<Row> getVariantsDataset() throws OskarException, IOException {
 
-        Files.copy(getClass().getClassLoader().getResourceAsStream(PLATINUM_SMALL),
-                getRootDir().resolve(PLATINUM_SMALL), StandardCopyOption.REPLACE_EXISTING);
-        Files.copy(getClass().getClassLoader().getResourceAsStream(PLATINUM_SMALL + ".meta.json.gz"),
-                getRootDir().resolve(PLATINUM_SMALL + ".meta.json.gz"), StandardCopyOption.REPLACE_EXISTING);
+        Path platinumSmall = getFile(PLATINUM_SMALL).toPath();
+        getFile(PLATINUM_SMALL + ".meta.json.gz");
 
-        return oskar.load(getRootDir().resolve(PLATINUM_SMALL));
+        return oskar.load(platinumSmall);
+    }
+
+    public File getFile(String name) throws IOException {
+        Path path = getRootDir().resolve(name);
+        File file = path.toFile();
+        if (!file.exists()) {
+            Files.copy(getClass().getClassLoader().getResourceAsStream(name), path, StandardCopyOption.REPLACE_EXISTING);
+        }
+        return file;
     }
 
 }
