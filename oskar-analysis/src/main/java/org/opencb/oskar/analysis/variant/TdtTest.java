@@ -22,11 +22,11 @@ public class TdtTest {
         int t2 = 0;
 
         // For each family
-        for (Pedigree pedigree : pedigrees) {
+        for (Pedigree pedigree: pedigrees) {
             PedigreeManager pedigreeManager = new PedigreeManager(pedigree);
             Set<Member> affectedIndividuals = pedigreeManager.getAffectedIndividuals(phenotype);
 
-            for (Member affectedIndividual : affectedIndividuals) {
+            for (Member affectedIndividual: affectedIndividuals) {
                 // We need father and mother
                 if (affectedIndividual.getFather() == null || affectedIndividual.getMother() == null) {
                     continue;
@@ -50,7 +50,7 @@ public class TdtTest {
                 int unB = 0;  // untransmitted allele from second het parent
 
                 // Consider all offspring in nuclear family
-                for (String siblingId : siblingIds) {
+                for (String siblingId: siblingIds) {
                     Member individual = pedigreeManager.getIndividualMap().get(siblingId);
                     if (!individual.getPhenotypes().contains(phenotype)) {
                         // Sibling unaffected, continue
