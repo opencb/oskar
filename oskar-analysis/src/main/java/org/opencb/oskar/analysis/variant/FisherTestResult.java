@@ -3,8 +3,8 @@ package org.opencb.oskar.analysis.variant;
 
 public class FisherTestResult {
 
-    private double oddRatio;
     private double pValue;
+    private double oddRatio;
 
     public FisherTestResult(double pValue, double oddRatio) {
         this.pValue = pValue;
@@ -13,21 +13,28 @@ public class FisherTestResult {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(pValue).append("\t").append(oddRatio).append("\t");
+        final StringBuilder sb = new StringBuilder("FisherTestResult{");
+        sb.append("oddRatio=").append(oddRatio);
+        sb.append(", pValue=").append(pValue);
+        sb.append('}');
         return sb.toString();
     }
 
-    public void setOddRatio(double oddRatio) {
-        this.oddRatio = oddRatio;
-    }
     public double getOddRatio() {
         return oddRatio;
     }
-    public void setPValue(double pValue) {
-        this.pValue = pValue;
+
+    public FisherTestResult setOddRatio(double oddRatio) {
+        this.oddRatio = oddRatio;
+        return this;
     }
-    public double getPValue() {
+
+    public double getpValue() {
         return pValue;
+    }
+
+    public FisherTestResult setpValue(double pValue) {
+        this.pValue = pValue;
+        return this;
     }
 }

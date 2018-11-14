@@ -103,13 +103,13 @@ public class FisherTransformer extends AbstractTransformer {
         UserDefinedFunction fisher = udf(new FisherTransformer.FisherFunction(getStudyId(), affectedIndexSet),
                 DataTypes.DoubleType);
 
-        return dataset.withColumn("fisher", fisher.apply(new ListBuffer<Column>().$plus$eq(col("studies"))));
+        return dataset.withColumn("Fisher p-value", fisher.apply(new ListBuffer<Column>().$plus$eq(col("studies"))));
     }
 
     @Override
     public StructType transformSchema(StructType schema) {
         List<StructField> fields = Arrays.stream(schema.fields()).collect(Collectors.toList());
-        fields.add(createStructField("fisher", DoubleType, false));
+        fields.add(createStructField("Fisher p-value", DoubleType, false));
         return createStructType(fields);
     }
 
@@ -127,15 +127,13 @@ public class FisherTransformer extends AbstractTransformer {
         public Double apply(WrappedArray<GenericRowWithSchema> studies) {
             GenericRowWithSchema study = (GenericRowWithSchema) new StudyFunction().apply(studies, studyId);
 
-            int a = 0; // control allele 0
-            int b = 0; // control allele 1
-            int c = 0; // case allele 0
-            int d = 0; // case allele 1
+            int a = 0; // case #REF
+            int b = 0; // control #REF
+            int c = 0; // case #ALT
+            int d = 0; // control #ALT
 
             List<WrappedArray<String>> samplesData = study.getList(study.fieldIndex("samplesData"));
             for (int i = 0; i < samplesData.size(); i++) {
-                System.out.println(i + ", is affected ?" + affectedIndexSet.contains(i));
-
                 WrappedArray<String> sampleData = samplesData.get(i);
                 MendelianError.GenotypeCode gtCode = MendelianError.getAlternateAlleleCount(new Genotype(sampleData.apply(0)));
                 switch (gtCode) {
@@ -169,7 +167,7 @@ public class FisherTransformer extends AbstractTransformer {
                 }
             }
 
-            return new FisherExactTest().fisherTest(a, b, c, d).getPValue();
+            return new FisherExactTest().fisherTest(a, b, c, d).getpValue();
         }
     }
 }
