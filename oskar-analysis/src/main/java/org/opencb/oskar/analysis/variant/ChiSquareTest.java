@@ -16,7 +16,8 @@ public class ChiSquareTest {
         org.apache.commons.math3.stat.inference.ChiSquareTest test =
                 new org.apache.commons.math3.stat.inference.ChiSquareTest();
         long[][] matrix = new long[][]{{a, b}, {c, d}};
-        return new ChiSquareTestResult(test.chiSquare(matrix), test.chiSquareTest(matrix));
+        return new ChiSquareTestResult(test.chiSquare(matrix), test.chiSquareTest(matrix),
+                FisherExactTest.computeOddRatio(a, b, c, d));
     }
 
 }

@@ -143,7 +143,7 @@ public class FisherExactTest {
         return result;
     }
 
-    private double computeOddRatio(int a, int b, int c, int d) {
+    public static double computeOddRatio(int a, int b, int c, int d) {
         return (double) (a * d) / (b * c);
     }
 }
