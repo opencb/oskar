@@ -4,6 +4,8 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.opencb.oskar.analysis.variant.ChiSquareTest;
+import org.opencb.oskar.analysis.variant.ChiSquareTestResult;
 import org.opencb.oskar.analysis.variant.FisherExactTest;
 import org.opencb.oskar.analysis.variant.FisherTestResult;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
@@ -11,16 +13,16 @@ import org.opencb.oskar.spark.commons.OskarException;
 
 import java.io.IOException;
 
-public class FisherTransformerTest {
+public class ChiSquareTransformerTest {
     @ClassRule
     public static OskarSparkTestUtils sparkTest = new OskarSparkTestUtils();
 
     @Test
-    public void testFisherTransformer() throws IOException, OskarException {
+    public void testChiSquareFisherTransformer() throws IOException, OskarException {
         Dataset<Row> df = sparkTest.getVariantsDataset();
 
-        new FisherTransformer().setStudyId("hgvauser@platinum:illumina_platinum")
-                .setPhenotype("JJ")
+        new ChiSquareTransformer().setStudyId("hgvauser@platinum:illumina_platinum")
+                .setPhenotype("KK")
                 .transform(df)
 //                .where("code != 0").show();
 //                .where(col("code").notEqual(0))
@@ -28,7 +30,7 @@ public class FisherTransformerTest {
     }
 
     @Test
-    public void testFisher() {
+    public void testChiSquare() {
 //        Plink
 //
 //        $ cat test.map
@@ -45,25 +47,23 @@ public class FisherTransformerTest {
 //        6 1 0 0 1  2  C C  T T
 //
 //        Plink result:
-//        CHR  SNP         BP   A1      F_A      F_U   A2            P           OR
-//        1 snp1          1    A   0.1667      0.5    C       0.5455          0.2
-//        1 snp2          2    G   0.1667   0.6667    T       0.2424          0.1
+//        CHR  SNP         BP   A1      F_A      F_U   A2        CHISQ            P           OR
+//        1 snp1          1    A   0.1667      0.5    C          1.5       0.2207          0.2
+//        1 snp2          2    G   0.1667   0.6667    T        3.086      0.07898          0.1
 
-        int mode = FisherExactTest.TWO_SIDED;
-        FisherTestResult fisherTestResult;
-        FisherExactTest fisherExactTest = new FisherExactTest();
+        ChiSquareTestResult chiSquareTestResult;
         int a = 1; // case #REF
         int b = 3; // control #REF
         int c = 5; // case #ALT
         int d = 3; // control #ALT
-        fisherTestResult = fisherExactTest.fisherTest(a, b, c, d, mode);
-        System.out.println(fisherTestResult.toString());
+        chiSquareTestResult = ChiSquareTest.chiSquareTest(a, b, c, d);
+        System.out.println(chiSquareTestResult.toString());
 
         a = 1;
         b = 4;
         c = 5;
         d = 2;
-        fisherTestResult = fisherExactTest.fisherTest(a, b, c, d, mode);
-        System.out.println(fisherTestResult.toString());
+        chiSquareTestResult = ChiSquareTest.chiSquareTest(a, b, c, d);
+        System.out.println(chiSquareTestResult.toString());
     }
 }
