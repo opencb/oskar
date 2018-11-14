@@ -139,27 +139,27 @@ public class ChiSquareTransformer extends AbstractTransformer {
                 switch (gtCode) {
                     case HOM_REF: {
                         if (affectedIndexSet.contains(i)) {
-                            c += 2;
-                        } else {
                             a += 2;
+                        } else {
+                            b += 2;
                         }
                         break;
                     }
                     case HET: {
                         if (affectedIndexSet.contains(i)) {
-                            c++;
-                            d++;
-                        } else {
                             a++;
+                            c++;
+                        } else {
                             b++;
+                            d++;
                         }
                         break;
                     }
                     case HOM_VAR:
                         if (affectedIndexSet.contains(i)) {
-                            d += 2;
+                            c += 2;
                         } else {
-                            b += 2;
+                            d += 2;
                         }
                         break;
                     default:
@@ -167,6 +167,11 @@ public class ChiSquareTransformer extends AbstractTransformer {
                 }
             }
 
+            for (int i = 0; i < study.size(); i++) {
+                System.out.print(study.get(i) + "\t");
+            }
+            System.out.println();
+            System.out.println(study.getString(0) + ": " + a + ", " + b + ", " + c + ", " + d);
             return ChiSquareTest.chiSquareTest(a, b, c, d).getpValue();
         }
     }

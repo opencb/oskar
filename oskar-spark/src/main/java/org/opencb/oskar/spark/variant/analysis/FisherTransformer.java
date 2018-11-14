@@ -139,27 +139,27 @@ public class FisherTransformer extends AbstractTransformer {
                 switch (gtCode) {
                     case HOM_REF: {
                         if (affectedIndexSet.contains(i)) {
-                            c += 2;
-                        } else {
                             a += 2;
+                        } else {
+                            b += 2;
                         }
                         break;
                     }
                     case HET: {
                         if (affectedIndexSet.contains(i)) {
-                            c++;
-                            d++;
-                        } else {
                             a++;
+                            c++;
+                        } else {
                             b++;
+                            d++;
                         }
                         break;
                     }
                     case HOM_VAR:
                         if (affectedIndexSet.contains(i)) {
-                            d += 2;
+                            c += 2;
                         } else {
-                            b += 2;
+                            d += 2;
                         }
                         break;
                     default:
