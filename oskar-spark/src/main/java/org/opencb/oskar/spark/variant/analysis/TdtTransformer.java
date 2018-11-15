@@ -10,22 +10,21 @@ import org.apache.spark.sql.expressions.UserDefinedFunction;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+import org.opencb.biodata.models.clinical.pedigree.Member;
 import org.opencb.biodata.models.clinical.pedigree.Pedigree;
 import org.opencb.biodata.models.commons.Phenotype;
-import org.opencb.biodata.models.feature.Genotype;
+import org.opencb.commons.datastore.core.ObjectMap;
+import org.opencb.commons.utils.ListUtils;
 import org.opencb.oskar.analysis.variant.TdtTest;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.udf.StudyFunction;
 import scala.collection.mutable.ListBuffer;
 import scala.collection.mutable.WrappedArray;
-import scala.runtime.AbstractFunction1;
+import scala.runtime.AbstractFunction2;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.apache.spark.sql.functions.col;
@@ -80,14 +79,46 @@ public class TdtTransformer extends AbstractTransformer {
         Dataset<Row> df = (Dataset<Row>) dataset;
 
         try {
+            // Prepare families and affected samples from pedigree and phenotype name
+            ObjectMap families = new ObjectMap();
+            Set<String> affectedSamples = new HashSet<>();
             List<Pedigree> pedigrees = new Oskar().metadata().pedigrees(df, getStudyId());
-            Phenotype phenotype = new Phenotype(getPhenotype(), getPhenotype(), "");
+            for (Pedigree pedigree: pedigrees) {
+                ObjectMap family = new ObjectMap();
+                for (Member member: pedigree.getMembers()) {
+                    ObjectMap sample = new ObjectMap();
+                    if (member.getFather() != null) {
+                        sample.put("father", member.getFather().getId());
+                    }
+                    if (member.getMother() != null) {
+                        sample.put("mother", member.getMother().getId());
+                    }
+                    if (member.getMultiples() != null && ListUtils.isNotEmpty(member.getMultiples().getSiblings())) {
+                        sample.put("siblings", member.getMultiples().getSiblings());
+                    }
+                    // Add the sample to the family
+                    family.put(member.getId(), sample);
+
+                    // Is an affected member ?
+                    for (Phenotype phenotype: member.getPhenotypes()) {
+                        if (getPhenotype().equals(phenotype.getId())) {
+                            affectedSamples.add(member.getId());
+                            break;
+                        }
+                    }
+                }
+                // Add the family
+                families.put(pedigree.getName(), family);
+            }
+
             List<String> sampleNames = new Oskar().metadata().samples(df, getStudyId());
 
-            UserDefinedFunction tdt = udf(new TdtTransformer.TdtFunction(getStudyId(), pedigrees, phenotype,
+            UserDefinedFunction tdt = udf(new TdtTransformer.TdtFunction(getStudyId(), families, affectedSamples,
                             sampleNames), DataTypes.DoubleType);
 
-            return dataset.withColumn("TDT", tdt.apply(new ListBuffer<Column>().$plus$eq(col("studies"))));
+
+            ListBuffer<Column> seq = new ListBuffer<Column>().$plus$eq(col("studies")).$plus$eq(col("chromosome"));
+            return dataset.withColumn("TDT", tdt.apply(seq));
         } catch (OskarException e) {
             throw Throwables.propagate(e);
         }
@@ -100,36 +131,33 @@ public class TdtTransformer extends AbstractTransformer {
         return createStructType(fields);
     }
 
-    public static class TdtFunction extends AbstractFunction1<WrappedArray<GenericRowWithSchema>,
-            Double> implements Serializable {
+    public static class TdtFunction extends AbstractFunction2<WrappedArray<GenericRowWithSchema>, String,
+                Double> implements Serializable {
         private final String studyId;
-        private final List<Pedigree> pedigrees;
-        private final Phenotype phenotype;
-        private final List<String> sampleNames;;
+        private final ObjectMap families;
+        private final Set<String> affectedSamples;
+        private final List<String> sampleNames;
 
-        public TdtFunction(String studyId, List<Pedigree> pedigrees, Phenotype phenotype, List<String> sampleNames) {
+        public TdtFunction(String studyId, ObjectMap families, Set<String> affectedSamples, List<String> sampleNames) {
             this.studyId = studyId;
-            this.pedigrees = pedigrees;
-            this.phenotype = phenotype;
+            this.families = families;
+            this.affectedSamples = affectedSamples;
             this.sampleNames = sampleNames;
         }
 
         @Override
-        public Double apply(WrappedArray<GenericRowWithSchema> studies) {
+        public Double apply(WrappedArray<GenericRowWithSchema> studies, String chromosome) {
             GenericRowWithSchema study = (GenericRowWithSchema) new StudyFunction().apply(studies, studyId);
 
             // Prepare genotype map
-            Map<String, Genotype> genotypes = new HashMap<>();
+            Map<String, String> genotypes = new HashMap<>();
             List<WrappedArray<String>> samplesData = study.getList(study.fieldIndex("samplesData"));
             for (int i = 0; i < sampleNames.size(); i++) {
                 WrappedArray<String> sampleData = samplesData.get(i);
-                genotypes.put(sampleNames.get(i), new Genotype(sampleData.apply(0)));
+                genotypes.put(sampleNames.get(i), sampleData.apply(0));
             }
 
-            // Get chromosome
-            String chromosome = study.getString(study.fieldIndex("chromosome"));
-
-            return new TdtTest().computeTdtTest(genotypes, pedigrees, phenotype, chromosome).getpValue();
+            return new TdtTest().computeTdtTest(families, genotypes, affectedSamples, chromosome).getpValue();
         }
     }
 }
