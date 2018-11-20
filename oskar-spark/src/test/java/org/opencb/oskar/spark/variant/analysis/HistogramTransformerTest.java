@@ -3,7 +3,6 @@ package org.opencb.oskar.spark.variant.analysis;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.IntegerType;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,7 +14,7 @@ import org.opencb.oskar.spark.variant.udf.VariantUdfManager;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
-import static org.apache.spark.sql.functions.col;
+import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.*;
 
 /**
  * Created on 20/11/18.
@@ -47,7 +46,7 @@ public class HistogramTransformerTest {
 
         Dataset<Row> df = sparkTest.getVariantsDataset();
 
-        df = df.select(VariantUdfManager.populationFrequency("annotation", "GNOMAD_GENOMES", "ALL").as("pf"));
+        df = df.select(population_frequency("annotation", "GNOMAD_GENOMES", "ALL").as("pf"));
         df = new HistogramTransformer().setStep(0.1).setInputCol("pf").transform(df);
         df.show();
 
