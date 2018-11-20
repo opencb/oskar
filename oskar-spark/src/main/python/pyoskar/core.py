@@ -53,12 +53,15 @@ class Oskar(JavaWrapper):
         """
         return IBSTransformer(skipReference=skipReference, samples=samples, numPairs=numPairs).transform(df)
 
-    def mendel(self, df):
+    def mendel(self, df,  father, mother, child, studyId=None):
         """
 
         :type df: DataFrame
         """
-        return MendelianErrorTransformer().transform(df)
+        transformer = MendelianErrorTransformer().setFather(father).setMother(mother).setChild(child)
+        if studyId is not None:
+            transformer.setStudyId(studyId)
+        return transformer.transform(df)
 
     # def de_novo(self, df):
     # def ld_matrix(self, df):
