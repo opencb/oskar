@@ -34,13 +34,28 @@ public class VariantStatsTransformerTest {
 
         VariantStatsTransformer transformer = new VariantStatsTransformer().setCohort("ALL");
         Dataset<Row> transform = transformer.transform(df);
-        transform.show();
 
         long withStats = transform.filter(size(col("studies").getItem(0).getField("stats")).equalTo(1)).count();
         assertEquals(count, withStats);
 
-        transform.select(col("studies").getItem(0).getField("stats").getField("ALL").as("ALL")).selectExpr("ALL.*").show(false);
-//        df.select(col("studies").getItem(0).getField("samplesData"), col("studies").getItem(0).getField("stats")).show(false);
+//        transform.select(col("studies").getItem(0).getField("stats").getField("ALL").as("ALL")).selectExpr("ALL.*").show(false);
+    }
+
+    @Test
+    public void testVariantStatsMissingAsRef() throws Exception {
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+
+        long count = df.count();
+        long noStats = df.filter(size(col("studies").getItem(0).getField("stats")).equalTo(0)).count();
+        assertEquals(count, noStats);
+
+        VariantStatsTransformer transformer = new VariantStatsTransformer().setCohort("ALL").setMissingAsReference(true);
+        Dataset<Row> transform = transformer.transform(df);
+
+        long withMissing = transform.filter(col("studies").getItem(0).getField("stats").getField("ALL").getField("missingAlleleCount").gt(0)).count();
+        assertEquals(0, withMissing);
+
+//        transform.select(col("studies").getItem(0).getField("stats").getField("ALL").as("ALL")).selectExpr("ALL.*").show(false);
     }
 
     @Test

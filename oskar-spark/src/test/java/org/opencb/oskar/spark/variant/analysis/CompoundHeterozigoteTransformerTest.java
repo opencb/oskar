@@ -6,13 +6,15 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.spark.variant.udf.VariantUdfManager;
 
 import java.io.IOException;
 
 import static org.apache.spark.sql.functions.array_contains;
 import static org.apache.spark.sql.functions.col;
+import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.*;
 import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.genes;
-import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.sampleDataField;
+import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.sample_data_field;
 
 /**
  * Created on 07/11/18.
@@ -39,9 +41,9 @@ public class CompoundHeterozigoteTransformerTest {
         df.join(compound, df.apply("id").equalTo(compound.apply("variant")))
                 .select(
                         col("id"),
-                        sampleDataField("studies", "NA12877", "GT").as("Father"),
-                        sampleDataField("studies", "NA12878", "GT").as("Mother"),
-                        sampleDataField("studies", "NA12879", "GT").as("Child"),
+                        sample_data_field("studies", "NA12877", "GT").as("Father"),
+                        sample_data_field("studies", "NA12878", "GT").as("Mother"),
+                        sample_data_field("studies", "NA12879", "GT").as("Child"),
                         genes("annotation")
                 ).show();
 

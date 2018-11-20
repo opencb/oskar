@@ -3,11 +3,10 @@ package org.opencb.oskar.spark.variant.analysis;
 import org.apache.spark.ml.param.Param;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
+import org.apache.spark.sql.types.*;
+import org.opencb.oskar.spark.commons.converters.DataTypeUtils;
 
-import static org.apache.spark.sql.functions.col;
+import static org.apache.spark.sql.functions.expr;
 
 /**
  * Created on 05/09/18.
@@ -29,6 +28,16 @@ public class HistogramTransformer extends AbstractTransformer {
 //        setDefault(inputColParam(), true);
     }
 
+    public HistogramTransformer setStep(double step) {
+        set(stepParam(), step);
+        return this;
+    }
+
+    public HistogramTransformer setInputCol(String inputCol) {
+        set(inputColParam(), inputCol);
+        return this;
+    }
+
     public Param<Double> stepParam() {
         return stepParam == null ? stepParam = new Param<>(uid(), "step", "") : stepParam;
     }
@@ -42,11 +51,19 @@ public class HistogramTransformer extends AbstractTransformer {
         String inputCol = get(inputColParam()).get();
         Double step = get(stepParam()).get();
 
+        DataType inputColumnType = DataTypeUtils.getField(dataset.schema(), inputCol).dataType();
+
+        if (!(inputColumnType instanceof NumericType)) {
+            throw new IllegalArgumentException("Input column must be NumericalType."
+                    + " Input column '" + inputCol + "' is type " + inputColumnType.typeName());
+        }
+
         return dataset
-                .select(col(inputCol)
+                .select(expr(inputCol)
                         .divide(step)
                         .cast(DataTypes.IntegerType)
                         .multiply(step)
+                        .cast(inputColumnType)
                         .alias(inputCol))
                 .groupBy(inputCol)
                 .count()

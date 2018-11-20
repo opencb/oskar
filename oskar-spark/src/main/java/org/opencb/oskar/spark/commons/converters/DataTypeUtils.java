@@ -41,9 +41,20 @@ public class DataTypeUtils {
     }
 
     public static int getFieldIdx(StructType schema, String path) {
-        StructType rootSchema = schema;
-        DataType dataType;
         String[] split = path.split("\\.");
+        schema = getStructType(schema, path, split);
+        return schema.fieldIndex(split[split.length - 1]);
+    }
+
+    public static StructField getField(StructType schema, String path) {
+        String[] split = path.split("\\.");
+        schema = getStructType(schema, path, split);
+        return schema.apply(split[split.length - 1]);
+    }
+
+    private static StructType getStructType(StructType schema, String path, String[] split) {
+        DataType dataType;
+        StructType rootSchema = schema;
         for (int i = 0; i < split.length - 1; i++) {
             String name = split[i];
             dataType = schema.apply(name).dataType();
@@ -56,6 +67,6 @@ public class DataTypeUtils {
                 throw new IllegalStateException("Path " + path + " not found in " + rootSchema);
             }
         }
-        return schema.fieldIndex(split[split.length - 1]);
+        return schema;
     }
 }

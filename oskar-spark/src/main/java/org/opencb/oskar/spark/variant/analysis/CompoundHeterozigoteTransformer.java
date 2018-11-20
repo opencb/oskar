@@ -20,7 +20,7 @@ import java.util.Map;
 import static org.apache.spark.sql.functions.*;
 import static org.apache.spark.sql.types.DataTypes.*;
 import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.genes;
-import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.sampleDataField;
+import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.sample_data_field;
 
 /**
  * Created on 07/11/18.
@@ -151,9 +151,9 @@ public class CompoundHeterozigoteTransformer extends AbstractTransformer {
             df = df.select(
                     explode(genes("annotation")).as("gene"),
                     concat(col("chromosome"), lit(":"), col("start"), lit(":"), col("reference"), lit(":"), col("alternate")).as("id"),
-                    sampleDataField("studies", father, "GT").as("father"),
-                    sampleDataField("studies", mother, "GT").as("mother"),
-                    sampleDataField("studies", child, "GT").as("child"));
+                    sample_data_field("studies", father, "GT").as("father"),
+                    sample_data_field("studies", mother, "GT").as("mother"),
+                    sample_data_field("studies", child, "GT").as("child"));
         }
         return df.filter(col("gene").notEqual(""))
                 .groupBy("gene")
