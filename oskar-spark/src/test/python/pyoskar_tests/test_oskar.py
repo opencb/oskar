@@ -2,8 +2,9 @@ from unittest import TestCase
 
 from pyspark.sql import DataFrame
 
+from pyoskar.spark.analysis import MendelianErrorTransformer
 from pyoskar.spark.sql import *
-from pyoskar.core import Oskar
+from pyoskar.core import Oskar, VariantMetadataManager
 from pyoskar_tests.test_utils import *
 
 
@@ -31,7 +32,7 @@ class TestOskar(TestCase):
         self.df.show()
 
     def test_samples(self):
-        samples = self.oskar.samples(self.df)
+        samples = self.oskar.metadata.samples(self.df)
         assert len(samples) == 17
         for i in range(0, 17):
             assert samples[i] == "NA" + str(12877 + i)

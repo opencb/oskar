@@ -1,6 +1,4 @@
-
 from pyspark.sql.dataframe import DataFrame
-
 from pyoskar.spark.analysis import *
 
 __all__ = ['Oskar']
@@ -10,57 +8,17 @@ class Oskar(JavaWrapper):
 
     def __init__(self, spark):
         super(Oskar, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.Oskar")
-        """
-        :type spark: SparkSession
-        """
-        from pyoskar.spark.sql import VariantUdfManager
-        VariantUdfManager().loadVariantUdfs(spark)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.Oskar", spark._jsparkSession)
         self.spark = spark
+        self.metadata = VariantMetadataManager()
 
     def load(self, file_path):
         """
         :type file_path: str
         """
-        df = None  # type: DataFrame
-        if file_path.endswith("avro") or file_path.endswith("avro.gz"):
-            # Do not fail if the file extension is "avro.gz"
-            self.spark.sparkContext._jsc.hadoopConfiguration().set('avro.mapred.ignore.inputs.without.extension', 'false')
-
-            df = self.spark.read.format("com.databricks.spark.avro").load(file_path)
-        elif file_path.endswith("parquet"):
-            df = self.spark.read.format("parquet").load(file_path)
-        else:
-            raise OskarException("Unsupported format for file " + file_path)
-
-        # Read and add metadata
-        meta_path = file_path + ".meta.json.gz"
-
-        import os
-        if os.path.exists(meta_path):
-            df = self.add_variant_metadata(df, meta_path)
+        df = self._call_java("load", file_path)
 
         return df
-
-    def add_variant_metadata(self, df, meta_path):
-        return self._call_java("addVariantMetadata", df, meta_path)
-
-    def load_metadata(self, meta_path):
-        import json
-        import gzip
-        with gzip.open(meta_path, "rb") as f:
-            return json.loads(f.read().decode("ascii"))
-
-    def samples(self, df, study=None):
-        samples_ = df.schema["studies"].dataType.elementType["samplesData"].metadata["samples"]
-        if study is None:
-            if len(samples_) == 1:
-                for study in samples_:
-                    return samples_[study]
-            else:
-                raise OskarException("Missing study. Select one from " + samples_.keys())
-        else:
-            return samples_[study]
 
     def stats(self, df, studyId=None, cohort="ALL", samples=None):
         """
@@ -109,6 +67,54 @@ class Oskar(JavaWrapper):
     # def concordance(self, df):
     # def cancer_signature(self, df): #https://cancer.sanger.ac.uk/cosmic/signatures
 
+
+class VariantMetadataManager(JavaWrapper):
+
+    def __init__(self):
+        super(VariantMetadataManager, self).__init__()
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.VariantMetadataManager")
+
+    def readMetadata(self, meta_path):
+        """
+
+        :type meta_path: str
+        :param meta_path: Path to the metadata file
+        :return: An instance of VariantMetadata
+        """
+        return self._call_java("readMetadata", meta_path)
+
+    def samples(self, df, studyId = None):
+        if studyId is None:
+            return self._call_java("samples", df)
+        else:
+            return self._call_java("samples", df, studyId)
+
+    def variantMetadata(self, df):
+        java_vm = self._call_java("variantMetadata", df)
+        json_vm = java_vm.toString()
+        import json
+        return json.loads(json_vm)
+
+    def pedigrees(self, df, studyId = None):
+        import json
+        if studyId is None:
+            pedigrees_dict = {}
+            java_vm = self._call_java("pedigrees", df)
+            it = java_vm.entrySet().iterator()
+            while it.hasNext():
+                entry = it.next()
+                studyId = entry.getKey()
+                pedigrees = entry.getValue()
+                pedigrees_dict[studyId] = []
+                for i in range(0, pedigrees.size()):
+                    pedigrees_dict[studyId].append(json.loads(pedigrees.get(i).toJSON()))
+            return pedigrees_dict
+        else:
+            java_vm = self._call_java("pedigrees", df, studyId)
+            pedigrees = []
+            for i in range(0, java_vm.size()):
+                pedigrees.append(json.loads(java_vm.get(i).toJSON()))
+            return pedigrees
 
 
 class OskarException(Exception):

@@ -3,6 +3,7 @@
 
 from pyoskar_tests.test_utils import *
 from pyoskar.core import Oskar
+from pyoskar.spark.analysis import *
 from pyoskar.spark.sql import *
 from pyoskar.spark.analysis import *
 from pyspark.sql.functions import col, udf, count, explode, concat, when, expr
@@ -14,8 +15,10 @@ oskar = Oskar(spark)
 
 df = oskar.load(PLATINUM_SMALL) # type: DataFrame
 
+print(oskar.metadata.samples(df))
+
 df.createOrReplaceTempView("chr22")
-oskar.samples(df)
+oskar.metadata.samples(df)
 oskar.hardy_weinberg(df)
 
 # Group by type
