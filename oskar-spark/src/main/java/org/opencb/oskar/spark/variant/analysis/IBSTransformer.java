@@ -1,31 +1,25 @@
 package org.opencb.oskar.spark.variant.analysis;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.spark.ml.Transformer;
+import org.apache.spark.ml.param.BooleanParam;
+import org.apache.spark.ml.param.IntParam;
 import org.apache.spark.ml.param.Param;
-import org.apache.spark.ml.param.ParamMap;
-import org.apache.spark.ml.util.Identifiable$;
-import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.catalyst.analysis.UnresolvedExtractValue;
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema;
 import org.apache.spark.sql.expressions.MutableAggregationBuffer;
 import org.apache.spark.sql.expressions.UserDefinedAggregateFunction;
 import org.apache.spark.sql.types.DataType;
-import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.feature.AllelesCode;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.biodata.tools.variant.algorithm.IdentityByState;
 import org.opencb.biodata.tools.variant.algorithm.IdentityByStateClustering;
+import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import scala.collection.Seq;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.apache.spark.sql.functions.*;
 import static org.apache.spark.sql.types.DataTypes.*;
@@ -40,43 +34,60 @@ import static org.apache.spark.sql.types.DataTypes.*;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class IBSTransformer extends Transformer {
+public class IBSTransformer extends AbstractTransformer {
 
-    private String uid;
-    private Param<List<Integer>> samplesParam;
-    private Param<Boolean> skipReferenceParam;
-    private Param<Boolean> skipMultiAllelicParam;
-    private Param<Integer> numPairsParam;
+    private final Param<List<String>> samplesParam;
+    private final BooleanParam skipReferenceParam;
+    private final BooleanParam skipMultiAllelicParam;
+    private final IntParam numPairsParam;
+
+    protected static final StructType RETURN_SCHEMA_TYPE = createStructType(Arrays.asList(
+            createStructField("samplePair", createArrayType(StringType), false),
+            createStructField("distance", DoubleType, false),
+            createStructField("counts", createArrayType(IntegerType, false), false),
+            createStructField("variants", IntegerType, false),
+            createStructField("skip", IntegerType, false)));
 
     public IBSTransformer() {
         this(null);
     }
 
     public IBSTransformer(String uid) {
-        this.uid = uid;
-        setDefault(samplesParam(), Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+        super(uid);
+        samplesParam = new Param<>(this, "samples",
+                "List of samples to use for calculating the IBS");
+        skipMultiAllelicParam = new BooleanParam(this, "skipMultiAllelic",
+                "Skip variants where any of the samples has a secondary alternate");
+        skipReferenceParam = new BooleanParam(this, "skipReference",
+                "Skip variants where both samples of the pair are HOM_REF");
+        numPairsParam = new IntParam(this, "numPairs", "");
+
+        setDefault(samplesParam(), Collections.emptyList());
         setDefault(skipReferenceParam(), false);
         setDefault(skipMultiAllelicParam(), true);
         setDefault(numPairsParam(), 5);
     }
 
-    public Param<List<Integer>> samplesParam() {
-        return samplesParam = samplesParam == null ? new Param<>(this, "samples", "") : samplesParam;
+    public Param<List<String>> samplesParam() {
+        return samplesParam;
     }
 
-    public IBSTransformer setSamples(List<Integer> studyId) {
-        set(samplesParam, studyId);
+    public IBSTransformer setSamples(List<String> samples) {
+        set(samplesParam, samples);
         return this;
     }
 
-    public List<Integer> getSamples() {
+    public IBSTransformer setSamples(String... samples) {
+        set(samplesParam, Arrays.asList(samples));
+        return this;
+    }
+
+    public List<String> getSamples() {
         return getOrDefault(samplesParam);
     }
 
-    public Param<Boolean> skipReferenceParam() {
-        return skipReferenceParam = skipReferenceParam == null
-                ? new Param<>(this, "skipReference", "")
-                : skipReferenceParam;
+    public BooleanParam skipReferenceParam() {
+        return skipReferenceParam;
     }
 
     public IBSTransformer setSkipReference(boolean skipReference) {
@@ -85,11 +96,11 @@ public class IBSTransformer extends Transformer {
     }
 
     public boolean getSkipReference() {
-        return getOrDefault(skipReferenceParam);
+        return (boolean) getOrDefault(skipReferenceParam);
     }
 
-    public Param<Boolean> skipMultiAllelicParam() {
-        return skipMultiAllelicParam = skipMultiAllelicParam == null ? new Param<>(this, "skipMultiAllelic", "") : skipMultiAllelicParam;
+    public BooleanParam skipMultiAllelicParam() {
+        return skipMultiAllelicParam;
     }
 
     public IBSTransformer setSkipMultiAllelic(boolean skipMultiAllelic) {
@@ -98,11 +109,11 @@ public class IBSTransformer extends Transformer {
     }
 
     public boolean getSkipMultiAllelic() {
-        return getOrDefault(skipMultiAllelicParam);
+        return (boolean) getOrDefault(skipMultiAllelicParam);
     }
 
-    public Param<Integer> numPairsParam() {
-        return numPairsParam = numPairsParam == null ? new Param<>(this, "numPairs", "") : numPairsParam;
+    public IntParam numPairsParam() {
+        return numPairsParam;
     }
 
     public IBSTransformer setNumPairs(int numPairs) {
@@ -111,7 +122,7 @@ public class IBSTransformer extends Transformer {
     }
 
     public int getNumPairs() {
-        return getOrDefault(numPairsParam);
+        return (int) getOrDefault(numPairsParam);
     }
 
     @Override
@@ -119,153 +130,66 @@ public class IBSTransformer extends Transformer {
         Dataset<Row> df = (Dataset<Row>) dataset;
 
         int numPairs = getNumPairs();
-        List<Integer> samples = getSamples();
+        List<String> samples = getSamples();
+        boolean skipReference = getSkipReference();
+        boolean skipMultiAllelic = getSkipMultiAllelic();
 
-        IdentityByStateAggregateFunction ibs = new IdentityByStateAggregateFunction(numPairs, getSkipReference(),
-                getSkipMultiAllelic(), samples);
+        Map.Entry<String, List<String>> entry = new VariantMetadataManager().samples(df).entrySet().iterator().next();
+        String studyId = entry.getKey();
+        List<String> allSamples = entry.getValue();
 
-        if (true) {
-            int numSamples = samples.size();
-            List<String> startingPairs = new ArrayList<>();
-            // First pair
-            startingPairs.add(samples.get(0) + "," + samples.get(1));
-            int count = 0;
-            for (int i = 0; i < numSamples; i++) {
-                for (int f = i + 1; f < numSamples; f++) {
-                    if (count == numPairs) {
-                        startingPairs.add(samples.get(i) + "," + samples.get(f));
-                        count = 0;
-                    }
-                    count++;
+        List<Integer> sampleIdx = new ArrayList<>(samples.size());
+        Map<Integer, String> sampleIdxMap = new HashMap<>(samples.size());
+        if (samples.isEmpty()) {
+            samples = allSamples;
+        }
+        for (String sample : samples) {
+            int idx = allSamples.indexOf(sample);
+            if (idx < 0) {
+                throw new IllegalArgumentException("Sample '" + sample + "' not found in study '" + studyId + "'");
+            }
+            sampleIdx.add(idx);
+            sampleIdxMap.put(idx, sample);
+        }
+
+        IdentityByStateAggregateFunction ibs = new IdentityByStateAggregateFunction(numPairs, skipReference,
+                skipMultiAllelic, sampleIdx, sampleIdxMap);
+
+        int numSamples = sampleIdx.size();
+        List<String> startingPairs = new ArrayList<>();
+        // First pair
+        startingPairs.add(sampleIdx.get(0) + "," + sampleIdx.get(1));
+        int count = 0;
+        for (int i = 0; i < numSamples; i++) {
+            for (int f = i + 1; f < numSamples; f++) {
+                if (count == numPairs) {
+                    startingPairs.add(sampleIdx.get(i) + "," + sampleIdx.get(f));
+                    count = 0;
                 }
+                count++;
             }
-            if (df.sparkSession().sparkContext().version().startsWith("2.0")) {
-                // Lit of array not supported yet
-                df = df.withColumn("startingPairs", lit(String.join("_", startingPairs)))
-                        .withColumn("startingPair", explode(split(col("startingPairs"), "_")));
-            } else {
-                df = df.withColumn("startingPair", lit(startingPairs.toArray(new String[startingPairs.size()])))
-                        .withColumn("startingPair", explode(col("startingPair")));
-            }
-
-            return df.select(col("startingPair"), col("studies").getItem(0).getField("samplesData").as("samples"))
-                    .groupBy("startingPair")
-                    .agg(ibs.apply(col("startingPair"), col("samples")).alias("ibs"))
-                    .withColumn("ibs", explode(col("ibs")))
-                    .select("ibs.*")
-                    .orderBy("samplePair");
-        } else if (df.sparkSession().sparkContext().version().startsWith("2.0")) {
-            // Get sample pairs
-            StringBuilder sb = new StringBuilder();
-            int numSamples = samples.size();
-            for (int i = 0; i < numSamples; i++) {
-                for (int f = i + 1; f < numSamples; f++) {
-                    if (sb.length() > 0) {
-                        if (i % numPairs == 0) {
-                            sb.append("_");
-                        }
-//                        else {
-//                            sb.append("=");
-//                        }
-                    }
-                    sb.append(samples.get(i)).append(",").append(samples.get(f));
-                }
-            }
-
-
-            // lit(List) is not available in spark 2.0.x
-            // See https://issues-test.apache.org/jira/browse/SPARK-17683
-            Column[] columns = new Column[numPairs * 2];
-            for (int i = 0; i < numPairs * 2; i++) {
-                columns[i] = col("samplesPair").getItem(i).cast(DataTypes.IntegerType);
-            }
-            df = df.withColumn("samples", lit(sb.toString()))
-                    .withColumn("samplesPair", explode(split(col("samples"), "_")))
-                    .withColumn("samplesPair", split(col("samplesPair"), ","))
-                    .withColumn("samplesPair", array(columns));
+        }
+        if (df.sparkSession().sparkContext().version().startsWith("2.0")) {
+            // Lit of array not supported in Spark 2.0.x
+            df = df.withColumn("startingPairs", lit(String.join("_", startingPairs)))
+                    .withColumn("startingPair", explode(split(col("startingPairs"), "_")));
         } else {
-            // Get sample pairs
-            List<int[]> samplePairs = new ArrayList<>();
-            int[] pairs = new int[numPairs * 2];
-            samplePairs.add(pairs);
-            int pairsCount = 0;
-            int numSamples = samples.size();
-            for (int i = 0; i < numSamples; i++) {
-                for (int f = i + 1; f < numSamples; f++) {
-                    if (pairsCount == numPairs) {
-                        pairs = new int[numPairs * 2];
-                        samplePairs.add(pairs);
-                        pairsCount = 0;
-                    }
-                    pairs[pairsCount * 2] = samples.get(i);
-                    pairs[pairsCount * 2 + 1] = samples.get(f);
-                    pairsCount++;
-                }
-            }
-
-            df = df.withColumn("samples", lit(samplePairs.toArray(new int[samplePairs.size()][])))
-                    .withColumn("samplesPair", explode(col("samples")));
+            df = df.withColumn("startingPair", lit(startingPairs.toArray(new String[0])))
+                    .withColumn("startingPair", explode(col("startingPair")));
         }
 
-        Column[] selectColumns = new Column[1 + numPairs * 2];
-        Column[] applyColumns = new Column[numPairs * 2];
-        for (int pairIdx = 0; pairIdx < numPairs; pairIdx++) {
-            selectColumns[pairIdx * 2] = new Column(new UnresolvedExtractValue(
-                    col("studies").getItem(0).getField("samplesData").expr(),
-                    col("samplesPair").getItem(pairIdx * 2).expr())).getItem(0).alias("gt_" + pairIdx + "_1");
-            selectColumns[pairIdx * 2 + 1] = new Column(new UnresolvedExtractValue(
-                    col("studies").getItem(0).getField("samplesData").expr(),
-                    col("samplesPair").getItem(pairIdx * 2 + 1).expr())).getItem(0).alias("gt_" + pairIdx + "_2");
+        return df.select(col("startingPair"), col("studies").getItem(0).getField("samplesData").as("samples"))
+                .groupBy("startingPair")
+                .agg(ibs.apply(col("startingPair"), col("samples")).alias("ibs"))
+                .withColumn("ibs", explode(col("ibs")))
+                .select("ibs.*")
+                .orderBy("samplePair");
 
-            applyColumns[pairIdx * 2] = col("gt_" + pairIdx + "_1");
-            applyColumns[pairIdx * 2 + 1] = col("gt_" + pairIdx + "_2");
-        }
-        selectColumns[numPairs * 2] = col("samplesPair");
-
-
-        return df.select(selectColumns)
-                .groupBy("samplesPair")
-                .agg(ibs.apply(applyColumns).alias("ibs"))
-                .select(col("samplesPair"), posexplode(col("ibs")))
-                .withColumn("samplesPair", array(
-                        new Column(new UnresolvedExtractValue(
-                                col("samplesPair").expr(), col("pos").multiply(2).expr())),
-                        new Column(new UnresolvedExtractValue(
-                                col("samplesPair").expr(), col("pos").multiply(2).plus(1).expr()))
-                ))
-                .select("samplesPair", "col.*");
-//        return df.select(col("samplesPair"),
-//                new Column(new UnresolvedExtractValue(col("studies").getItem(0).getField("samplesData").expr(),
-//                        col("samplesPair").getItem(0).expr())).getItem(0).alias("gt1"),
-//                new Column(new UnresolvedExtractValue(col("studies").getItem(0).getField("samplesData").expr(),
-//                        col("samplesPair").getItem(1).expr())).getItem(0).alias("gt2")
-//        )
-//                .groupBy("samplesPair")
-//                .agg(ibs.apply(
-//                        col("gt1"),
-//                        col("gt2")).alias("ibs"));
     }
 
     @Override
     public StructType transformSchema(StructType schema) {
-        return createStructType(Collections.singletonList(createStructField("ibs", DoubleType, false)));
-    }
-
-    @Override
-    public Transformer copy(ParamMap extra) {
-        return defaultCopy(extra);
-    }
-
-    @Override
-    public String uid() {
-        return getUid();
-    }
-
-    private String getUid() {
-        if (uid == null) {
-            uid = Identifiable$.MODULE$.randomUID("VariantStatsTransformer");
-        }
-        return uid;
+        return RETURN_SCHEMA_TYPE;
     }
 
     private static class IdentityByStateAggregateFunction extends UserDefinedAggregateFunction {
@@ -284,33 +208,20 @@ public class IBSTransformer extends Transformer {
         private final List<Integer> samples;
         private final boolean skipReference;
         private final boolean skipMultiAllelic;
+        private final Map<Integer, String> sampleIdxMap;
 
         IdentityByStateAggregateFunction(int numPairs, boolean skipReference,
-                                         boolean skipMultiAllelic, List<Integer> samples) {
+                                         boolean skipMultiAllelic, List<Integer> samples, Map<Integer, String> sampleIdxMap) {
             this.numPairs = numPairs;
             this.numSamples = samples.size();
             this.samples = samples;
             this.skipReference = skipReference;
             this.skipMultiAllelic = skipMultiAllelic;
+            this.sampleIdxMap = sampleIdxMap;
         }
-
-//        @Override
-//        public StructType inputSchema() {
-//            List<StructField> fields = new ArrayList<>(2 * numPairs);
-//            for (int i = 0; i < numPairs; i++) {
-//                fields.add(createStructField("gt_" + i + "_1", StringType, true));
-//                fields.add(createStructField("gt_" + i + "_2", StringType, true));
-//            }
-//            return createStructType(fields);
-//        }
 
         @Override
         public StructType inputSchema() {
-//            List<StructField> fields = new ArrayList<>(2 * numPairs);
-//            for (int i = 0; i < numPairs; i++) {
-//                fields.add(createStructField("startingPair", StringType, true));
-//                fields.add(createStructField("samples", createArrayType(createArrayType(StringType)), true));
-//            }
             return createStructType(new StructField[]{
                     createStructField("startingPair", StringType, true),
                     createStructField("samples", createArrayType(createArrayType(StringType)), true),
@@ -335,17 +246,11 @@ public class IBSTransformer extends Transformer {
 
         @Override
         public DataType dataType() {
-//            return DoubleType;
             return createArrayType(structDataType());
         }
 
         private StructType structDataType() {
-            return createStructType(Arrays.asList(
-                    createStructField("samplePair", createArrayType(IntegerType), false),
-                    createStructField("distance", DoubleType, false),
-                    createStructField("counts", createArrayType(IntegerType, false), false),
-                    createStructField("variants", IntegerType, false),
-                    createStructField("skip", IntegerType, false)));
+            return RETURN_SCHEMA_TYPE;
         }
 
         @Override
@@ -361,13 +266,6 @@ public class IBSTransformer extends Transformer {
             buffer.update(numPairs * BUFFER_SCHEMA_SIZE, null);
         }
 
-//        @Override
-//        public void update(MutableAggregationBuffer buffer, Row input) {
-//            for (int pairIdx = 0; pairIdx < numPairs; pairIdx++) {
-//                updatePair(buffer, pairIdx, getGt1(input, pairIdx), getGt2(input, pairIdx));
-//            }
-//        }
-
         @Override
         public void update(MutableAggregationBuffer buffer, Row input) {
 
@@ -380,42 +278,8 @@ public class IBSTransformer extends Transformer {
                 String gt1 = ((Seq<String>) seq.apply(sample1)).apply(0);
                 String gt2 = ((Seq<String>) seq.apply(sample2)).apply(0);
 
-                boolean skip = updatePair(buffer, pairIdx, gt1, gt2);
-//                if (sample1 == 0 && sample2 == 2) {
-//                    if (skip) {
-//                        System.out.println("-- " + gt1 + " " + gt2);
-//                    } else {
-//                        System.out.println("++ " + gt1 + " " + gt2);
-//                    }
-//                }
+                updatePair(buffer, pairIdx, gt1, gt2);
             });
-//            String startingPair = input.getString(0);
-//            int idx = startingPair.indexOf(',');
-//            int p1 = Integer.valueOf(startingPair.substring(0, idx));
-//            int p2 = Integer.valueOf(startingPair.substring(idx + 1));
-//
-//            Seq<Object> seq = (Seq<Object>) input.getSeq(1);
-//
-//            int pairIdx = 0;
-//            for (int i = p1; i < numSamples; i++) {
-//                for (int f = p2 >= 0 ? p2 : i + 1; f < numSamples; f++) {
-//                    p2 = -1; // invalidate p2
-//
-//                    int sample1 = samples.get(i);
-//                    int sample2 = samples.get(f);
-//
-//                    String gt1 = ((Seq<String>) seq.apply(sample1)).apply(0);
-//                    String gt2 = ((Seq<String>) seq.apply(sample2)).apply(0);
-//
-//                    updatePair(buffer, pairIdx, gt1, gt2);
-//
-//                    pairIdx++;
-//                    if (pairIdx == numPairs) {
-//                        return;
-//                    }
-//                    pairIdx++;
-//                }
-//            }
 
         }
 
@@ -453,44 +317,27 @@ public class IBSTransformer extends Transformer {
         private boolean updatePair(MutableAggregationBuffer buffer, int pairIdx, String gt1Str, String gt2Str) {
             IdentityByStateClustering ibsc = new IdentityByStateClustering();
             final boolean skip;
-            if (gt1Str == null || gt1Str.isEmpty()
-                    || gt2Str == null || gt2Str.isEmpty()) {
+            if (gt1Str == null || gt1Str.isEmpty() || gt2Str == null || gt2Str.isEmpty()) {
                 skip = true;
             } else {
-                if (gt1Str.equals("?/?")) {
-                    gt1Str = DEFAULT_UNKNOWN_GENOTYPE;
-                }
-                if (gt2Str.equals("?/?")) {
-                    gt2Str = DEFAULT_UNKNOWN_GENOTYPE;
-                }
-//                if (gt1Str.equals("./.") || gt1Str.equals(".")) {
-//                    gt1Str = "0/0";
-//                }
-//                if (gt2Str.equals("./.") || gt2Str.equals(".")) {
-//                    gt2Str = "0/0";
-//                }
-                if (skipReference && gt1Str.equals("0/0") && gt2Str.equals("0/0")) {
+                Genotype gt1 = buildGenotype(gt1Str);
+                Genotype gt2 = buildGenotype(gt2Str);
+                if (gt1.getPloidy() != 2 || gt2.getPloidy() != 2) {
+                    // Skip ploidy != 2
+                    skip = true;
+                } else if (anyGtMissing(gt1, gt2)) {
+                    // Always skip if ANY sample is missing
+                    skip = true;
+                } else if (skipReference && allReference(gt1, gt2)) {
+                    // If skipReference, skip if ALL are reference
+                    skip = true;
+                } else if (skipMultiAllelic && anyGtMiltuallelic(gt1, gt2)) {
+                    // If skipMultiAllelic, skip if ANY sample is multi allelic
                     skip = true;
                 } else {
-                    Genotype gt1 = buildGenotype(gt1Str);
-                    Genotype gt2 = buildGenotype(gt2Str);
-                    if (gt1.getPloidy() == 2 && gt2.getPloidy() == 2
-                            && ((skipMultiAllelic && gt1.getCode() == AllelesCode.ALLELES_OK && gt2.getCode() == AllelesCode.ALLELES_OK)
-                            || (!skipMultiAllelic
-                            && (gt1.getCode() == AllelesCode.ALLELES_OK || gt1.getCode() == AllelesCode.MULTIPLE_ALTERNATES)
-                            && (gt2.getCode() == AllelesCode.ALLELES_OK || gt2.getCode() == AllelesCode.MULTIPLE_ALTERNATES)))) {
-//                    if (gt1.getPloidy() == 2 && gt2.getPloidy() == 2 &&
-//                            gt1.getCode() == AllelesCode.ALLELES_OK && gt2.getCode() == AllelesCode.ALLELES_OK) {
-
-                        int sharedAlleles = ibsc.countSharedAlleles(gt1.getPloidy(), gt1, gt2);
-//                    if (gt1.equals(gt2) && sharedAlleles != 2) {
-//                        System.out.println("gt = " + gt1 + " shared = " + sharedAlleles);
-//                    }
-                        updateSharedAllelesCount(buffer, pairIdx, sharedAlleles);
-                        skip = false;
-                    } else {
-                        skip = true;
-                    }
+                    int sharedAlleles = ibsc.countSharedAlleles(gt1.getPloidy(), gt1, gt2);
+                    updateSharedAllelesCount(buffer, pairIdx, sharedAlleles);
+                    skip = false;
                 }
             }
 
@@ -500,6 +347,20 @@ public class IBSTransformer extends Transformer {
                 ok(buffer, pairIdx);
             }
             return skip;
+        }
+
+        private boolean allReference(Genotype gt1, Genotype gt2) {
+            int[] allelesIdx = gt1.getAllelesIdx();
+            int[] allelesIdx2 = gt2.getAllelesIdx();
+            return allelesIdx[0] == 0 && allelesIdx[1] == 0 && allelesIdx2[0] == 0 && allelesIdx2[1] == 0;
+        }
+
+        private boolean anyGtMiltuallelic(Genotype gt1, Genotype gt2) {
+            return gt1.getCode() == AllelesCode.MULTIPLE_ALTERNATES || gt2.getCode() == AllelesCode.MULTIPLE_ALTERNATES;
+        }
+
+        private boolean anyGtMissing(Genotype gt1, Genotype gt2) {
+            return gt1.getCode() == AllelesCode.ALLELES_MISSING || gt2.getCode() == AllelesCode.ALLELES_MISSING;
         }
 
         private Genotype buildGenotype(String gt) {
@@ -516,6 +377,7 @@ public class IBSTransformer extends Transformer {
                     return ALT;
                 case "1/2":
                     return MULTI;
+                case "?/?":
                 case "./.":
                 case ".":
                     return MISS;
@@ -574,7 +436,7 @@ public class IBSTransformer extends Transformer {
 
                 double distance = ibsc.getDistance(counts);
                 values[pairIdx] = new GenericRowWithSchema(new Object[]{
-                        new int[]{sample1, sample2},
+                        new String[]{sampleIdxMap.get(sample1), sampleIdxMap.get(sample2)},
                         distance,
                         counts.ibs,
                         buffer.getInt(3 + offset),
@@ -587,22 +449,6 @@ public class IBSTransformer extends Transformer {
             } else {
                 return values;
             }
-
-//            for (int pairIdx = 0; pairIdx < numPairs; pairIdx++) {
-//                int offset = getBufferOffset(pairIdx);
-//
-//                counts.ibs = new int[]{
-//                        buffer.getInt(offset),
-//                        buffer.getInt(offset + 1),
-//                        buffer.getInt(offset + 2)};
-//
-//                double distance = ibsc.getDistance(counts);
-//                values[pairIdx] = new GenericRowWithSchema(new Object[]{
-//                        distance,
-//                        counts.ibs,
-//                        buffer.getInt(3 + offset),
-//                        buffer.getInt(4 + offset)}, structDataType());
-//            }
 
         }
 
