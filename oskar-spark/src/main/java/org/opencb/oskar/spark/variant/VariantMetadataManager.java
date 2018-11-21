@@ -62,13 +62,13 @@ public class VariantMetadataManager {
      * Writes the VariantMetadata into the schema metadata from the given dataset.
      *
      * @param dataset Dataset to modify
-     * @param metadataPath VariantMetadata to add
+     * @param metadataPath VariantMetadata to set
      * @return  Modified dataset
      * @throws OskarException if there is an error reading the metadata file
      */
-    protected Dataset<Row> addVariantMetadata(Dataset<Row> dataset, String metadataPath) throws OskarException {
+    protected Dataset<Row> setVariantMetadata(Dataset<Row> dataset, String metadataPath) throws OskarException {
         VariantMetadata variantMetadata = readMetadata(metadataPath);
-        dataset = addVariantMetadata(dataset, variantMetadata);
+        dataset = setVariantMetadata(dataset, variantMetadata);
         return dataset;
     }
 
@@ -76,10 +76,10 @@ public class VariantMetadataManager {
      * Writes the VariantMetadata into the schema metadata from the given dataset.
      *
      * @param dataset Dataset to modify
-     * @param variantMetadata VariantMetadata to add
+     * @param variantMetadata VariantMetadata to set
      * @return  Modified dataset
      */
-    protected Dataset<Row> addVariantMetadata(Dataset<Row> dataset, VariantMetadata variantMetadata) {
+    public Dataset<Row> setVariantMetadata(Dataset<Row> dataset, VariantMetadata variantMetadata) {
         Metadata metadata = createDatasetMetadata(variantMetadata);
 
         ArrayType studiesArrayType = (ArrayType) dataset.schema().apply("studies").dataType();
