@@ -1,5 +1,6 @@
 package org.opencb.oskar.spark.variant.analysis;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.ml.param.Param;
 import org.apache.spark.sql.Column;
@@ -10,9 +11,14 @@ import org.apache.spark.sql.expressions.UserDefinedFunction;
 import org.apache.spark.sql.types.DataType;
 import org.opencb.biodata.models.feature.AllelesCode;
 import org.opencb.biodata.models.feature.Genotype;
+import org.opencb.biodata.models.metadata.Cohort;
+import org.opencb.biodata.models.metadata.SampleSetType;
 import org.opencb.biodata.models.variant.StudyEntry;
+import org.opencb.biodata.models.variant.metadata.VariantMetadata;
+import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.biodata.models.variant.stats.VariantStats;
 import org.opencb.biodata.tools.variant.stats.VariantStatsCalculator;
+import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
 import scala.collection.mutable.ListBuffer;
@@ -129,18 +135,22 @@ public class VariantStatsTransformer extends AbstractTransformer {
     @Override
     public Dataset<Row> transform(Dataset<?> dataset) {
         Dataset<Row> df = (Dataset<Row>) dataset;
+        VariantMetadataManager vmm = new VariantMetadataManager();
+
+
+        String studyId = getStudyId();
+        Map<String, List<String>> samplesMap = vmm.samples(df);
+        if (StringUtils.isEmpty(studyId)) {
+            studyId = samplesMap.keySet().iterator().next();
+        }
 
         List<String> samples = getSamples();
         Set<Integer> sampleIdx;
-        String studyId = getStudyId();
-        if (samples != null && !samples.isEmpty()) {
+        if (!CollectionUtils.isNotEmpty(samples)) {
+            sampleIdx = Collections.emptySet();
+        } else {
             sampleIdx = new HashSet<>(samples.size());
-            Map<String, List<String>> samplesMap = new VariantMetadataManager().samples(((Dataset<Row>) dataset));
-            if (StringUtils.isEmpty(studyId)) {
-                studyId = samplesMap.keySet().iterator().next();
-            }
             List<String> sampleNames = samplesMap.get(studyId);
-
             for (String sample : samples) {
                 int idx = sampleNames.indexOf(sample);
                 if (idx < 0) {
@@ -148,14 +158,26 @@ public class VariantStatsTransformer extends AbstractTransformer {
                 }
                 sampleIdx.add(idx);
             }
-        } else {
-            sampleIdx = Collections.emptySet();
         }
 
-        // To preserve the metadata from the schema, use as "returnDataType" the same data type from the input
-        DataType dataType = df.schema().apply("studies").dataType();
+        // We want to preserve the metadata, and add the new Cohort to the VariantMetadata.
+        // Use the new dataType with the modified metadata as "returnDataType" of the UDF.
+        DataType dataTypeWithNewMetadata;
+        try {
+            VariantMetadata variantMetadata = vmm.variantMetadata(df);
+            for (VariantStudyMetadata study : variantMetadata.getStudies()) {
+                if (study.getId().equals(studyId)) {
+                    study.getCohorts().add(new Cohort(getCohort(), getSamples(), SampleSetType.UNKNOWN));
+                }
+            }
+            // Only get resulting data type. Avoid unnecessary casts
+            dataTypeWithNewMetadata = vmm.setVariantMetadata(df, variantMetadata).schema().apply("studies").dataType();
+        } catch (OskarException e) {
+            throw new IllegalStateException(e);
+        }
+
         UserDefinedFunction statsFromStudy = udf(
-                new VariantStatsFromStudiesFunction(studyId, getCohort(), sampleIdx, getMissingAsReference()), dataType);
+                new VariantStatsFromStudiesFunction(studyId, getCohort(), sampleIdx, getMissingAsReference()), dataTypeWithNewMetadata);
 
         return df.withColumn("studies", statsFromStudy.apply(new ListBuffer<Column>()
                 .$plus$eq(col("reference"))

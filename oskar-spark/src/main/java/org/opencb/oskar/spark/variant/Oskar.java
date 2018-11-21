@@ -55,7 +55,7 @@ public class Oskar {
         String metadataPath = vmm.getMetadataPath(path);
 
         if (Paths.get(metadataPath).toFile().exists()) {
-            dataset = vmm.addVariantMetadata(dataset, metadataPath);
+            dataset = vmm.setVariantMetadata(dataset, metadataPath);
         }
 
         return dataset;
