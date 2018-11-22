@@ -33,8 +33,18 @@ public class HistogramTransformer extends AbstractTransformer {
         return stepParam == null ? stepParam = new Param<>(uid(), "step", "") : stepParam;
     }
 
+    public HistogramTransformer setStep(double step) {
+        set(stepParam(), step);
+        return this;
+    }
+
     public Param<String> inputColParam() {
         return inputColParam == null ? inputColParam = new Param<>(uid(), "inputCol", "") : inputColParam;
+    }
+
+    public HistogramTransformer setInputCol(String inputCol) {
+        set(inputColParam(), inputCol);
+        return this;
     }
 
     @Override

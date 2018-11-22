@@ -1,7 +1,10 @@
 package org.opencb.oskar.spark.variant.analysis;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.spark.ml.feature.Bucketizer;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.functions;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.opencb.oskar.analysis.variant.FisherExactTest;
@@ -11,9 +14,200 @@ import org.opencb.oskar.spark.commons.OskarException;
 
 import java.io.IOException;
 
+import static org.apache.spark.sql.functions.col;
+import static org.apache.spark.sql.functions.explode;
+import static org.apache.spark.sql.functions.*;
+import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.biotypes;
+
+
 public class FisherTransformerTest {
     @ClassRule
     public static OskarSparkTestUtils sparkTest = new OskarSparkTestUtils();
+
+    @Test
+    public void kk() throws IOException, OskarException {
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+        df.groupBy("annotation.consequenceTypes.biotype", "type").count().show(false);
+    }
+
+    @Test
+    public void ii() throws IOException, OskarException {
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+        Dataset<Row> df0 = df.withColumn("conservation", explode(col("annotation.conservation")))
+                .selectExpr("*", "conservation.*").filter("source = 'gerp'")
+                .withColumnRenamed("score", "conservationScore")
+                .withColumnRenamed("source", "conservationSource")
+                .groupBy("type", "conservationScore")
+                .count()
+                .orderBy("type", "conservationScore")
+                ;
+
+        double[] splits = {Double.NEGATIVE_INFINITY, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, Double.POSITIVE_INFINITY};
+        Bucketizer bucketizer = new Bucketizer()
+                .setInputCol("conservationScore")
+                .setOutputCol("range")
+                .setSplits(splits);
+
+        Dataset<Row> df1 = df0.filter("type = 'INDEL'");
+        Dataset<Row> bucketedData1 = bucketizer.transform(df1).groupBy("range").count().orderBy("range")
+                .withColumn("type", functions.lit("INDEL"));
+
+        Dataset<Row> df2 = df0.filter("type = 'SNV'");
+        Dataset<Row> bucketedData2 = bucketizer.transform(df2).groupBy("range").count().orderBy("range")
+                .withColumn("type", functions.lit("SNV"));
+
+        Dataset<Row> df00 = bucketedData1.union(bucketedData2);
+        df00.show();
+
+//        df.withColumn("biotype", explode(biotypes("annotation")))
+//                .withColumn("conservationSource", explode(col("annotation.conservation.source")))
+//                .withColumn("conservationScore", explode(col("annotation.conservation.score")))
+//                .show();
+        //.groupBy("annotation.consequenceTypes.biotype", "type").count().show(false);
+    }
+
+    @Test
+    public void jj() throws IOException, OskarException {
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+        Dataset<Row> df0 =
+                df.withColumn("conservation", explode(col("annotation.conservation")))
+                        .withColumn("functionalScore", explode(col("annotation.functionalScore")))
+                        .selectExpr("id", "chromosome", "start", "end", "reference", "alternate", "strand", "type",
+                                "conservation.source as conservationSource",
+                                "conservation.score as conservationScore",
+                                "functionalScore.source as functionalSource",
+                                "functionalScore.score as functionalScore")
+                        .drop("conservation", "functionalScore")
+//                        .filter("source = 'gerp'")
+//                .withColumnRenamed("score", "conservationScore")
+//                .withColumnRenamed("source", "conservationSource")
+////                .withColumn("biotypes", col("annotation.consequenceTypes.biotype"))
+//                .withColumn("biotype", explode(biotypes("annotation")))
+//                .groupBy("type", "biotype", "conservationScore").count()
+//                        .filter("id = '22:16149692:G:T'")
+//                        .show(100)
+//                .groupBy("type", "conservationScore")
+//                .count()
+//                .orderBy("type", "conservationScore")
+                ;
+
+        df0.show(false);
+
+//        System.out.println("Number of biotypes = " + df0.select("biotype").distinct().collectAsList().size());
+        //System.out.println(StringUtils.join(df0.select("type").distinct().collectAsList(), ","));
+        //System.out.println(StringUtils.join(df0.select("biotype").distinct().collectAsList(), ","));
+
+//        df0.show(false);
+//        double[] splits = {Double.NEGATIVE_INFINITY, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, Double.POSITIVE_INFINITY};
+//        Bucketizer bucketizer = new Bucketizer()
+//                .setInputCol("conservationScore")
+//                .setOutputCol("range")
+//                .setSplits(splits);
+//
+//        Dataset<Row> df1 = df0.filter("type = 'INDEL'");
+//        Dataset<Row> bucketedData1 = bucketizer.transform(df1).groupBy("range").count().orderBy("range")
+//                .withColumn("type", functions.lit("INDEL"));
+//
+//        Dataset<Row> df2 = df0.filter("type = 'SNV'");
+//        Dataset<Row> bucketedData2 = bucketizer.transform(df2).groupBy("range").count().orderBy("range")
+//                .withColumn("type", functions.lit("SNV"));
+//
+//        Dataset<Row> df00 = bucketedData1.union(bucketedData2);
+//        df00.show();
+    }
+
+    @Test
+    public void oo() throws IOException, OskarException {
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+
+        df.withColumn("biotype", explode(biotypes("annotation"))).filter("type != 'SNV'")
+                .select("type", "biotype").groupBy("type", "biotype").count()
+                .orderBy("type", "biotype").show();
+    }
+
+    @Test
+    public void tt() throws IOException, OskarException {
+        int chunkSize = 1000000;
+
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+
+
+        df.withColumn("biotype", explode(biotypes("annotation")));
+//                .select("type", "biotype").groupBy("type", "biotype").count()
+//                .orderBy("type", "biotype").show();
+
+//        df.withColumn("new", explode(col("annotation.conservation"))).select("new")
+//                .withColumn("score", element_at(col("new"), 0)).show(false);
+
+//        df.withColumn("biotype", explode(col("annotation.consequenceTypes.biotype")))
+//                .filter("biotype != ''").groupBy("type", "biotype").count()
+//                .orderBy("type", "biotype").show();
+
+
+//        df.select(populationFrequency("annotation", "1kG_phase3", "ALL").as("pf")).filter(col("pf").gt(0)).show();
+
+//        df.withColumn("biotype", explode(biotypes("annotation")))
+//                .select("type", "biotype").groupBy("type", "biotype").count()
+//                .orderBy("type", "biotype").show();
+
+//        df.select("type", explode(biotypes("annotation")).alias("biotype")).groupBy("type", "biotype").count().orderBy("type", "biotype").show();
+
+//        df.select(col("start").divide(chunkSize).cast(DataTypes.IntegerType).multiply(chunkSize).alias("rangeIdx"))
+//                .groupBy("rangeIdx").count().orderBy("rangeIdx").show();
+
+//        return dataset
+//                .select(col(inputCol)
+//                        .divide(step)
+//                        .cast(DataTypes.IntegerType)
+//                        .multiply(step)
+//                        .alias(inputCol))
+//                .groupBy(inputCol)
+//                .count()
+//                .orderBy(inputCol);
+
+
+//        int chromLength = 45000000;
+//        int chunkSize = 1000000;
+//        double[] splits = new double[chromLength / chunkSize + 1];
+//        for (int j=0, i = 1; i < chromLength; i += chunkSize, j++) {
+//            splits[j] = i;
+//        }
+//        splits[splits.length - 1] = Double.POSITIVE_INFINITY;
+//
+//        //= {Double.NEGATIVE_INFINITY, -0.5, 0.0, 0.5, 1.0, 1.5, Double.POSITIVE_INFINITY};
+//
+////        List<Row> data = Arrays.asList(
+////                RowFactory.create(-999.9),
+////                RowFactory.create(-0.5),
+////                RowFactory.create(0.1),
+////                RowFactory.create(-0.3),
+////                RowFactory.create(0.0),
+////                RowFactory.create(0.3),
+////                RowFactory.create(0.2),
+////                RowFactory.create(999.9)
+////        );
+////        StructType schema = new StructType(new StructField[]{
+////                new StructField("features", DataTypes.DoubleType, false, Metadata.empty())
+////        });
+////        Dataset<Row> dataFrame = sparkTest.getSpark().createDataFrame(data, schema);
+//
+//        Bucketizer bucketizer = new Bucketizer()
+//                .setInputCol("start")
+//                .setOutputCol("range")
+//                .setSplits(splits);
+//
+//        // Transform original data into its bucket index.
+//        System.out.println("Bucketizer output with " + (bucketizer.getSplits().length-1) + " buckets");
+//
+//        Dataset<Row> df = sparkTest.getVariantsDataset();
+//        Dataset<Row> bucketedData = bucketizer.transform(df);
+//        //bucketedData.show();
+//
+//        Dataset<Row> count = bucketedData.groupBy("range").count();//.filter("count > 0");
+//
+//        bucketedData.show();
+//        count.sort("range").show();
+    }
 
     @Test
     public void testFisherTransformer() throws IOException, OskarException {
