@@ -20,12 +20,12 @@ class Oskar(JavaWrapper):
 
         return df
 
-    def stats(self, df, studyId=None, cohort="ALL", samples=None):
+    def stats(self, df, studyId=None, cohort="ALL", samples=None, missingAsReference=False):
         """
 
         :type df: DataFrame
         """
-        return VariantStatsTransformer(studyId=studyId, cohort=cohort, samples=samples).transform(df)
+        return VariantStatsTransformer(studyId=studyId, cohort=cohort, samples=samples, missingAsReference=missingAsReference).transform(df)
 
     # def sample_stats(self, df, samples, studyId=None):
 

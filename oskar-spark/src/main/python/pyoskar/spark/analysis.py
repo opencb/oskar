@@ -17,12 +17,17 @@ from pyspark.sql import DataFrame
 
 
 class VariantStatsTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
-    cohort = Param(Params._dummy(), "cohort", "TODO: Description", typeConverter=TypeConverters.toString)
-    samples = Param(Params._dummy(), "samples", "TODO: Description", typeConverter=TypeConverters.toListString)
-    studyId = Param(Params._dummy(), "studyId", "TODO: Description", typeConverter=TypeConverters.toString)
+    cohort = Param(Params._dummy(), "cohort", "Name of the cohort to calculate stats from. By default, ALL",
+                   typeConverter=TypeConverters.toString)
+    samples = Param(Params._dummy(), "samples", "Samples belonging to the cohort. If empty, will try to read from metadata. "
+                    + "If missing, will use all samples from the dataset.", typeConverter=TypeConverters.toListString)
+    studyId = Param(Params._dummy(), "studyId", "Id of the study to calculate the stats from.", typeConverter=TypeConverters.toString)
+    missingAsReference = Param(Params._dummy(), "missingAsReference", "Count missing alleles as reference alleles.",
+                               typeConverter=TypeConverters.toBoolean)
+
 
     @keyword_only
-    def __init__(self, studyId=None, cohort="ALL", samples=None):
+    def __init__(self, studyId=None, cohort="ALL", samples=None, missingAsReference=False):
         super(VariantStatsTransformer, self).__init__()
         # Create the underlying java object transformer instance
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.VariantStatsTransformer", self.uid)
@@ -50,6 +55,12 @@ class VariantStatsTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable,
 
     def setStudyId(self, value):
         return self._set(studyId=value)
+
+    def getMissingAsReference(self):
+        return self.getOrDefault(self.missingAsReference)
+
+    def setMissingAsReference(self, value):
+        return self._set(missingAsReference=value)
 
     def transformDataframe(self, df):
         return self._call_java(df)
