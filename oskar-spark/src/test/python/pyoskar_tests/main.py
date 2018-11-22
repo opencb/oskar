@@ -19,7 +19,7 @@ print(oskar.metadata.samples(df))
 
 df.createOrReplaceTempView("chr22")
 oskar.metadata.samples(df)
-oskar.hardy_weinberg(df)
+oskar.hardyWeinberg(df)
 
 # Group by type
 df.groupBy("type").count().show()

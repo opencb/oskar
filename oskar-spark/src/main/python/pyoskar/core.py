@@ -29,7 +29,7 @@ class Oskar(JavaWrapper):
 
     # def sample_stats(self, df, samples, studyId=None):
 
-    def global_stats(self, df, studyId=None, fileId=None):
+    def globalStats(self, df, studyId=None, fileId=None):
         """
 
         :type df: DataFrame
@@ -43,7 +43,7 @@ class Oskar(JavaWrapper):
         """
         return HistogramTransformer(step=step, inputCol=inputCol).transform(df)
 
-    def hardy_weinberg(self, df, studyId=None):
+    def hardyWeinberg(self, df, studyId=None):
         return HardyWeinbergTransformer(studyId=studyId).transform(df)
 
     def ibs(self, df, skipReference=None, samples=None, numPairs=None):
