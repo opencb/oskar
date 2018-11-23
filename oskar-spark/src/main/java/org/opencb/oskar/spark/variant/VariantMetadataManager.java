@@ -46,7 +46,7 @@ public class VariantMetadataManager {
                 .setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
     }
 
-    protected String getMetadataPath(String path) {
+    public String getMetadataPath(String path) {
         return path + ".meta.json.gz";
     }
 

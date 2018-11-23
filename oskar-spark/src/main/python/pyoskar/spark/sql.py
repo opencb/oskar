@@ -27,7 +27,6 @@ class VariantUdfManager(JavaWrapper):
     def loadVariantUdfs(self, spark):
         self._call_java("loadVariantUdfs", spark._jsparkSession)
 
-
 def revcomp(allele):
     jc = VariantUdfManager._java_class().revcomp(_to_java_column(allele))
     return Column(jc)
@@ -36,8 +35,8 @@ def include(column, include):
     jc = VariantUdfManager._java_class().include(_to_java_column(column), include)
     return Column(jc)
 
-def includeStudies(column, include):
-    jc = VariantUdfManager._java_class().includeStudies(_to_java_column(column), include)
+def include_studies(column, include):
+    jc = VariantUdfManager._java_class().include_studies(_to_java_column(column), include)
     return Column(jc)
 
 def study(column, studyId):
@@ -48,47 +47,47 @@ def file(column, fileId):
     jc = VariantUdfManager._java_class().file(_to_java_column(column), fileId)
     return Column(jc)
 
-def fileAttribute(column, fileId, info):
-    jc = VariantUdfManager._java_class().fileAttribute(_to_java_column(column), fileId, info)
+def file_attribute(column, fileId, info):
+    jc = VariantUdfManager._java_class().file_attribute(_to_java_column(column), fileId, info)
     return Column(jc)
 
-def fileFilter(column, fileId):
-    jc = VariantUdfManager._java_class().fileFilter(_to_java_column(column), fileId)
+def file_filter(column, fileId):
+    jc = VariantUdfManager._java_class().file_filter(_to_java_column(column), fileId)
     return Column(jc)
 
-def fileQual(column, fileId):
-    jc = VariantUdfManager._java_class().fileQual(_to_java_column(column), fileId)
+def file_qual(column, fileId):
+    jc = VariantUdfManager._java_class().file_qual(_to_java_column(column), fileId)
     return Column(jc)
 
-def sampleData(column, sample):
-    jc = VariantUdfManager._java_class().sampleData(_to_java_column(column), sample)
+def sample_data(column, sample):
+    jc = VariantUdfManager._java_class().sample_data(_to_java_column(column), sample)
     return Column(jc)
 
-def sampleDataField(column, sample):
-    jc = VariantUdfManager._java_class().sampleDataField(_to_java_column(column), sample)
+def sample_data_field(column, sample, formatField):
+    jc = VariantUdfManager._java_class().sample_data_field(_to_java_column(column), sample, formatField)
     return Column(jc)
 
 def genes(annotationCol):
     jc = VariantUdfManager._java_class().genes(_to_java_column(annotationCol))
     return Column(jc)
 
-def consequenceTypes(annotationCol):
-    jc = VariantUdfManager._java_class().consequenceTypes(_to_java_column(annotationCol))
+def consequence_types(annotationCol):
+    jc = VariantUdfManager._java_class().consequence_types(_to_java_column(annotationCol))
     return Column(jc)
 
-def consequenceTypesByGene(annotationCol, gene):
-    jc = VariantUdfManager._java_class().consequenceTypesByGene(_to_java_column(annotationCol), gene)
+def consequence_types_by_gene(annotationCol, gene):
+    jc = VariantUdfManager._java_class().consequence_types_by_gene(_to_java_column(annotationCol), gene)
     return Column(jc)
 
-def proteinSubstitution(annotationCol, score):
-    jc = VariantUdfManager._java_class().proteinSubstitution(_to_java_column(annotationCol), score)
+def protein_substitution(annotationCol, score):
+    jc = VariantUdfManager._java_class().protein_substitution(_to_java_column(annotationCol), score)
     return Column(jc)
 
-def populationFrequency(annotationCol, study, population):
-    jc = VariantUdfManager._java_class().populationFrequency(_to_java_column(annotationCol), study, population)
+def population_frequency(annotationCol, study, population):
+    jc = VariantUdfManager._java_class().population_frequency(_to_java_column(annotationCol), study, population)
     return Column(jc)
 
-def populationFrequencyAsMap(annotationCol):
-    jc = VariantUdfManager._java_class().populationFrequencyAsMap(_to_java_column(annotationCol))
+def population_frequency_as_map(annotationCol):
+    jc = VariantUdfManager._java_class().population_frequency_as_map(_to_java_column(annotationCol))
     return Column(jc)
 
