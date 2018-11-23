@@ -20,6 +20,7 @@ import org.opencb.biodata.models.variant.stats.VariantStats;
 import org.opencb.biodata.tools.variant.stats.VariantStatsCalculator;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
+import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
 import scala.collection.mutable.ListBuffer;
 import scala.collection.mutable.WrappedArray;
@@ -37,10 +38,9 @@ import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.SA
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class VariantStatsTransformer extends AbstractTransformer {
+public class VariantStatsTransformer extends AbstractTransformer implements HasStudyId {
 
     private final Param<String> cohortParam;
-    private final Param<String> studyIdParam;
     private final Param<List<String>> samplesParam;
     private final Param<Boolean> missingAsReferenceParam;
 
@@ -63,8 +63,6 @@ public class VariantStatsTransformer extends AbstractTransformer {
 
     public VariantStatsTransformer(String uid) {
         super(uid);
-        studyIdParam = new Param<>(this, "studyId",
-                "Id of the study to calculate the stats from.");
         cohortParam = new Param<>(this, "cohort",
                 "Name of the cohort to calculate stats from. By default, " + StudyEntry.DEFAULT_COHORT);
         samplesParam = new Param<>(this, "samples",
@@ -74,7 +72,7 @@ public class VariantStatsTransformer extends AbstractTransformer {
                 "Count missing alleles as reference alleles.");
 
         setDefault(cohortParam, StudyEntry.DEFAULT_COHORT);
-        setDefault(studyIdParam, "");
+        setDefault(studyIdParam(), "");
         setDefault(samplesParam, Collections.emptyList());
         setDefault(missingAsReferenceParam, false);
 
@@ -93,17 +91,10 @@ public class VariantStatsTransformer extends AbstractTransformer {
         return getOrDefault(cohortParam());
     }
 
-    public Param<String> studyIdParam() {
-        return studyIdParam;
-    }
-
+    @Override
     public VariantStatsTransformer setStudyId(String studyId) {
         set(studyIdParam(), studyId);
         return this;
-    }
-
-    public String getStudyId() {
-        return getOrDefault(studyIdParam());
     }
 
     public Param<List<String>> samplesParam() {

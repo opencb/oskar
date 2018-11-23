@@ -1,7 +1,6 @@
 package org.opencb.oskar.spark.variant.analysis;
 
 import htsjdk.tribble.util.popgen.HardyWeinbergCalculation;
-import org.apache.spark.ml.param.Param;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -12,6 +11,7 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.oskar.analysis.variant.MendelianError;
+import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.udf.StudyFunction;
 import scala.collection.mutable.ListBuffer;
 import scala.collection.mutable.WrappedArray;
@@ -32,9 +32,7 @@ import static org.apache.spark.sql.types.DataTypes.*;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class HardyWeinbergTransformer extends AbstractTransformer {
-
-    private Param<String> studyIdParam;
+public class HardyWeinbergTransformer extends AbstractTransformer implements HasStudyId {
 
     public HardyWeinbergTransformer() {
         this(null);
@@ -42,20 +40,12 @@ public class HardyWeinbergTransformer extends AbstractTransformer {
 
     public HardyWeinbergTransformer(String uid) {
         super(uid);
-        studyIdParam = new Param<>(this, "studyId", "");
     }
 
-    public Param<String> studyIdParam() {
-        return studyIdParam;
-    }
-
+    @Override
     public HardyWeinbergTransformer setStudyId(String studyId) {
         set(studyIdParam(), studyId);
         return this;
-    }
-
-    public String getStudyId() {
-        return getOrDefault(studyIdParam());
     }
 
     @Override

@@ -11,6 +11,8 @@ import org.opencb.biodata.models.commons.Phenotype;
 import org.opencb.biodata.tools.pedigree.ModeOfInheritance;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
+import org.opencb.oskar.spark.variant.analysis.params.HasPhenotype;
+import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.udf.VariantUdfManager;
 
 import java.util.List;
@@ -31,17 +33,15 @@ import static org.apache.spark.sql.functions.lit;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class ModeOfInheritanceTransformer extends AbstractTransformer {
+public class ModeOfInheritanceTransformer extends AbstractTransformer implements HasStudyId, HasPhenotype {
 
     protected static final String MONOALLELIC = "monoallelic";
     protected static final String BIALLELIC = "biallelic";
     protected static final String X_LINKED = "xLinked";
     protected static final String Y_LINKED = "yLinked";
 
-    private final Param<String> studyIdParam;
     private final Param<String> familyParam;
     private final Param<String> modeOfInheritanceParam;
-    private final Param<String> phenotypeParam;
     private final Param<Boolean> incompletePenetranceParam;
     private final Param<Boolean> missingAsReferenceParam;
 
@@ -58,27 +58,16 @@ public class ModeOfInheritanceTransformer extends AbstractTransformer {
 
     public ModeOfInheritanceTransformer(String uid) {
         super(uid);
-        studyIdParam = new Param<>(this, "studyId", "Id of the study of the family.");
         familyParam = new Param<>(this, "family", "Select family to apply the filter");
         modeOfInheritanceParam = new Param<>(this, "modeOfInheritance", "Filter by mode of inheritance from a given family. "
                 + "Accepted values: monoallelic (dominant), biallelic (recessive), xLinked, yLinked");
-        phenotypeParam = new Param<>(this, "phenotype", "Specify the phenotype to use for the mode  of inheritance");
         incompletePenetranceParam = new Param<>(this, "incompletePenetrance",
                 "Allow variants with an incomplete penetrance mode of inheritance");
         missingAsReferenceParam = new Param<>(this, "missingAsReference", "");
 
-        setDefault(studyIdParam, "");
+        setDefault(studyIdParam(), "");
         setDefault(incompletePenetranceParam, false);
         setDefault(missingAsReferenceParam, false);
-    }
-
-    public Param<String> studyIdParam() {
-        return studyIdParam;
-    }
-
-    public ModeOfInheritanceTransformer setStudyId(String study) {
-        set(studyIdParam, study);
-        return this;
     }
 
     public Param<String> familyParam() {
@@ -96,15 +85,6 @@ public class ModeOfInheritanceTransformer extends AbstractTransformer {
 
     public ModeOfInheritanceTransformer setModeOfInheritance(String modeOfInheritance) {
         set(modeOfInheritanceParam, modeOfInheritance);
-        return this;
-    }
-
-    public Param<String> phenotypeParam() {
-        return phenotypeParam;
-    }
-
-    public ModeOfInheritanceTransformer setPhenotype(String phenotype) {
-        set(phenotypeParam, phenotype);
         return this;
     }
 
@@ -133,8 +113,8 @@ public class ModeOfInheritanceTransformer extends AbstractTransformer {
         VariantMetadataManager vmm = new VariantMetadataManager();
         String family = getOrDefault(familyParam);
         String moi = getOrDefault(modeOfInheritanceParam);
-        String phenotype = getOrDefault(phenotypeParam);
-        String studyId = getOrDefault(studyIdParam);
+        String phenotype = getPhenotype();
+        String studyId = getStudyId();
         Boolean incompletePenetrance = getOrDefault(incompletePenetranceParam);
         Boolean missingAsReference = getOrDefault(missingAsReferenceParam);
 

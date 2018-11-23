@@ -14,6 +14,7 @@ import org.opencb.biodata.models.variant.StudyEntry;
 import org.opencb.biodata.models.variant.metadata.ChromosomeStats;
 import org.opencb.biodata.models.variant.metadata.VariantSetStats;
 import org.opencb.biodata.models.variant.stats.VariantStats;
+import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
 import scala.Option;
 import scala.Tuple2;
@@ -33,9 +34,8 @@ import static scala.collection.JavaConversions.mapAsJavaMap;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class VariantSetStatsTransformer extends AbstractTransformer {
+public class VariantSetStatsTransformer extends AbstractTransformer implements HasStudyId  {
 
-    private Param<String> studyIdParam;
     private Param<String> fileIdParam;
 
     public VariantSetStatsTransformer() {
@@ -58,17 +58,10 @@ public class VariantSetStatsTransformer extends AbstractTransformer {
         setDefault(fileIdParam(), "");
     }
 
-    public Param<String> studyIdParam() {
-        return studyIdParam = studyIdParam == null ? new Param<>(this, "studyId", "") : studyIdParam;
-    }
-
+    @Override
     public VariantSetStatsTransformer setStudyId(String studyId) {
         set(studyIdParam(), studyId);
         return this;
-    }
-
-    public String getStudyId() {
-        return getOrDefault(studyIdParam());
     }
 
     public Param<String> fileIdParam() {

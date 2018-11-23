@@ -1,7 +1,6 @@
 package org.opencb.oskar.spark.variant.analysis;
 
 import com.google.common.base.Throwables;
-import org.apache.spark.ml.param.Param;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -18,6 +17,8 @@ import org.opencb.commons.utils.ListUtils;
 import org.opencb.oskar.analysis.variant.TdtTest;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
+import org.opencb.oskar.spark.variant.analysis.params.HasPhenotype;
+import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.udf.StudyFunction;
 import scala.collection.mutable.ListBuffer;
 import scala.collection.mutable.WrappedArray;
@@ -31,9 +32,7 @@ import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.udf;
 import static org.apache.spark.sql.types.DataTypes.*;
 
-public class TdtTransformer extends AbstractTransformer {
-    private Param<String> studyIdParam;
-    private Param<String> phenotypeParam;
+public class TdtTransformer extends AbstractTransformer implements HasStudyId, HasPhenotype {
 
     public TdtTransformer() {
         this(null);
@@ -41,36 +40,18 @@ public class TdtTransformer extends AbstractTransformer {
 
     public TdtTransformer(String uid) {
         super(uid);
-        studyIdParam = new Param<>(this, "studyId", "");
-        phenotypeParam = new Param<>(this, "phenotype", "");
     }
 
-    // Study ID parameter
-    public Param<String> studyIdParam() {
-        return studyIdParam;
-    }
-
+    @Override
     public TdtTransformer setStudyId(String studyId) {
         set(studyIdParam(), studyId);
         return this;
     }
 
-    public String getStudyId() {
-        return getOrDefault(studyIdParam());
-    }
-
-    // Phenotype parameter
-    public Param<String> phenotypeParam() {
-        return phenotypeParam;
-    }
-
+    @Override
     public TdtTransformer setPhenotype(String phenotype) {
         set(phenotypeParam(), phenotype);
         return this;
-    }
-
-    public String getPhenotype() {
-        return getOrDefault(phenotypeParam());
     }
 
     // Main function
