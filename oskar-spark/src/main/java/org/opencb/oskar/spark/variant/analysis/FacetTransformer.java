@@ -12,6 +12,7 @@ import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.MetadataBuilder;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.commons.utils.ListUtils;
+import org.opencb.oskar.spark.variant.converters.DataframeToFacetFieldConverter;
 import scala.collection.mutable.ListBuffer;
 import scala.collection.mutable.WrappedArray;
 import scala.runtime.AbstractFunction1;
@@ -20,31 +21,13 @@ import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.*;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.apache.spark.sql.functions.*;
+import static org.opencb.oskar.spark.variant.converters.DataframeToFacetFieldConverter.*;
 import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.biotypes;
 import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.genes;
 
 public class FacetTransformer extends AbstractTransformer {
-
-
-    public enum FacetType {
-        CATEGORICAL,
-        RANGE,
-        AGGREGATION
-    }
-
-    public static final String FACET_SEPARATOR = ";";
-    public static final String LABEL_SEPARATOR = "___";
-    private static final String NESTED_FACET_SEPARATOR = ">>";
-    private static final String NESTED_SUBFACET_SEPARATOR = ",";
-    public static final String INCLUDE_SEPARATOR = ",";
-    private static final String RANGE_IDENTIFIER = "..";
-    private static final String AGGREGATION_IDENTIFIER = "(";
-    // aggregation to add: unique, percentile, sumsq
-    private static final String[] AGGREGATION_FUNCTIONS = {"sum", "avg", "max", "min", "unique", "variance", "stddev"};
-    public static final Pattern CATEGORICAL_PATTERN = Pattern.compile("^([a-zA-Z][a-zA-Z0-9_.]+)(\\[[a-zA-Z0-9_.\\-,*]+])?(:\\*|:\\d+)?$");
 
     private Param<String> facetParam;
 
@@ -52,15 +35,19 @@ public class FacetTransformer extends AbstractTransformer {
     private Map<String, String> validRangeFields;
     private Set<String> isExplode;
 
+    private DataframeToFacetFieldConverter converter;
+
     public FacetTransformer() {
         this(null);
     }
 
     public FacetTransformer(String uid) {
         super(uid);
+        converter = new DataframeToFacetFieldConverter();
         facetParam = new Param<>(this, "facet", "");
 
         init();
+
     }
 
     // Study ID parameter
@@ -84,20 +71,20 @@ public class FacetTransformer extends AbstractTransformer {
         }
 
         String facet = get(facetParam()).get();
-        if (facet.contains(NESTED_FACET_SEPARATOR)) {
+        if (facet.contains(converter.NESTED_FACET_SEPARATOR)) {
             // Nested facet
-            String[] facets = facet.split(NESTED_FACET_SEPARATOR);
+            String[] facets = facet.split(converter.NESTED_FACET_SEPARATOR);
 
             // Sanity check
             for (int i = 0; i < facets.length - 1; i++) {
-                if (getFacetType(facets[i]) == FacetType.AGGREGATION) {
+                if (converter.getFacetType(facets[i]) == FacetType.AGGREGATION) {
                     throw new InvalidParameterException("In nested facets, aggregations must be in last place: " + facet);
                 }
             }
             List<String> fieldNames = new LinkedList<>();
             List<String> facetNames = new LinkedList<>();
             for (String simpleFacet: facets) {
-                String fieldName = getFieldName(simpleFacet);
+                String fieldName = converter.getFieldName(simpleFacet);
                 if (fieldNames.contains(fieldName)) {
                     throw new InvalidParameterException("In nested facets, repeating facets are not allowed: " + facet);
                 }
@@ -216,7 +203,7 @@ public class FacetTransformer extends AbstractTransformer {
         // Validate aggregation function
         String aggFunction = facet.substring(0, facet.indexOf("("));
         boolean found = false;
-        for (String agg: AGGREGATION_FUNCTIONS) {
+        for (String agg: DataframeToFacetFieldConverter.AGGREGATION_FUNCTIONS) {
             if (agg.equals(aggFunction)) {
                 found = true;
                 break;
@@ -336,27 +323,5 @@ public class FacetTransformer extends AbstractTransformer {
             }
         }
         return new ArrayList<>();
-    }
-
-    private String getFieldName(String facet) {
-        if (facet.contains(AGGREGATION_IDENTIFIER)) {
-            return facet.substring(facet.indexOf('(') + 1, facet.indexOf(')'));
-        } else {
-            if (facet.contains("[")) {
-                return facet.substring(0, facet.indexOf('['));
-            } else {
-                return facet;
-            }
-        }
-    }
-
-    private FacetType getFacetType(String facet) {
-        if (facet.contains(RANGE_IDENTIFIER)) {
-            return FacetType.RANGE;
-        } else if (facet.contains(AGGREGATION_IDENTIFIER)) {
-            return FacetType.AGGREGATION;
-        } else {
-            return FacetType.CATEGORICAL;
-        }
     }
 }

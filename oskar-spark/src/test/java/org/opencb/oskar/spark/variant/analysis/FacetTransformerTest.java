@@ -9,10 +9,12 @@ import org.apache.spark.sql.types.*;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.opencb.biodata.models.feature.Genotype;
+import org.opencb.commons.datastore.core.result.FacetQueryResult;
 import org.opencb.oskar.analysis.variant.FisherExactTest;
 import org.opencb.oskar.analysis.variant.MendelianError;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.spark.variant.converters.DataframeToFacetFieldConverter;
 import org.opencb.oskar.spark.variant.udf.StudyFunction;
 import scala.collection.mutable.ListBuffer;
 import scala.collection.mutable.WrappedArray;
@@ -55,6 +57,8 @@ public class FacetTransformerTest {
 
         Dataset<Row> res = facetTransformer.transform(df);
         res.show();
+
+        FacetQueryResult.Field field = new DataframeToFacetFieldConverter().convert(res);
     }
 
     @Test
@@ -103,6 +107,8 @@ public class FacetTransformerTest {
 
         Dataset<Row> res = facetTransformer.transform(df);
         res.show();
+
+        new DataframeToFacetFieldConverter().convert(res);
     }
 
     @Test
@@ -148,6 +154,21 @@ public class FacetTransformerTest {
 
         Dataset<Row> res = facetTransformer.transform(df);
         res.show(100);
+
+        System.out.println(new DataframeToFacetFieldConverter().convert(res).toString());
+    }
+
+    @Test
+    public void aggFacet() throws IOException, OskarException {
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+        String facet = "avg(gerp)";
+        FacetTransformer facetTransformer = new FacetTransformer();
+        facetTransformer.setFacet(facet);
+
+        Dataset<Row> res = facetTransformer.transform(df);
+        res.show(100);
+
+        System.out.println(new DataframeToFacetFieldConverter().convert(res).toString());
     }
 
     @Test
@@ -161,5 +182,7 @@ public class FacetTransformerTest {
         res.show(100);
 
         System.out.println(res.schema().apply("count").metadata().getString("facet"));
+
+        System.out.println(new DataframeToFacetFieldConverter().convert(res).toString());
     }
 }
