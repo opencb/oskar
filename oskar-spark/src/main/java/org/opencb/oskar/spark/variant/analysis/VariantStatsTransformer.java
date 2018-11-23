@@ -1,5 +1,6 @@
 package org.opencb.oskar.spark.variant.analysis;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.ml.param.Param;
 import org.apache.spark.sql.Column;
@@ -8,11 +9,16 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema;
 import org.apache.spark.sql.expressions.UserDefinedFunction;
 import org.apache.spark.sql.types.DataType;
+import org.opencb.biodata.models.feature.AllelesCode;
 import org.opencb.biodata.models.feature.Genotype;
-import org.opencb.biodata.models.variant.avro.StudyEntry;
+import org.opencb.biodata.models.metadata.Cohort;
+import org.opencb.biodata.models.metadata.SampleSetType;
+import org.opencb.biodata.models.variant.StudyEntry;
+import org.opencb.biodata.models.variant.metadata.VariantMetadata;
+import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.biodata.models.variant.stats.VariantStats;
 import org.opencb.biodata.tools.variant.stats.VariantStatsCalculator;
-import org.opencb.oskar.spark.commons.converters.RowToAvroConverter;
+import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
 import scala.collection.mutable.ListBuffer;
@@ -24,6 +30,7 @@ import java.util.*;
 
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.udf;
+import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.SAMPLES_DATA_IDX;
 
 /**
  * Created on 08/06/18.
@@ -32,9 +39,10 @@ import static org.apache.spark.sql.functions.udf;
  */
 public class VariantStatsTransformer extends AbstractTransformer {
 
-    private Param<String> cohortParam;
-    private Param<String> studyIdParam;
-    private Param<List<String>> samplesParam;
+    private final Param<String> cohortParam;
+    private final Param<String> studyIdParam;
+    private final Param<List<String>> samplesParam;
+    private final Param<Boolean> missingAsReferenceParam;
 
     public VariantStatsTransformer(String studyId, String cohort, List<String> samples) {
         this(null);
@@ -55,13 +63,25 @@ public class VariantStatsTransformer extends AbstractTransformer {
 
     public VariantStatsTransformer(String uid) {
         super(uid);
-        setDefault(cohortParam(), "ALL");
-        setDefault(studyIdParam(), "");
-        setDefault(samplesParam(), Collections.emptyList());
+        studyIdParam = new Param<>(this, "studyId",
+                "Id of the study to calculate the stats from.");
+        cohortParam = new Param<>(this, "cohort",
+                "Name of the cohort to calculate stats from. By default, " + StudyEntry.DEFAULT_COHORT);
+        samplesParam = new Param<>(this, "samples",
+                "Samples belonging to the cohort. If empty, will try to read from metadata. "
+                        + "If missing, will use all samples from the dataset.");
+        missingAsReferenceParam = new Param<>(this, "missingAsReference",
+                "Count missing alleles as reference alleles.");
+
+        setDefault(cohortParam, StudyEntry.DEFAULT_COHORT);
+        setDefault(studyIdParam, "");
+        setDefault(samplesParam, Collections.emptyList());
+        setDefault(missingAsReferenceParam, false);
+
     }
 
     public Param<String> cohortParam() {
-        return cohortParam = cohortParam == null ? new Param<>(this, "cohort", "") : cohortParam;
+        return cohortParam;
     }
 
     public VariantStatsTransformer setCohort(String cohort) {
@@ -74,7 +94,7 @@ public class VariantStatsTransformer extends AbstractTransformer {
     }
 
     public Param<String> studyIdParam() {
-        return studyIdParam = studyIdParam == null ? new Param<>(this, "studyId", "") : studyIdParam;
+        return studyIdParam;
     }
 
     public VariantStatsTransformer setStudyId(String studyId) {
@@ -87,7 +107,7 @@ public class VariantStatsTransformer extends AbstractTransformer {
     }
 
     public Param<List<String>> samplesParam() {
-        return samplesParam = samplesParam == null ? new Param<>(this, "samples", "") : samplesParam;
+        return samplesParam;
     }
 
     public VariantStatsTransformer setSamples(List<String> samples) {
@@ -99,21 +119,38 @@ public class VariantStatsTransformer extends AbstractTransformer {
         return getOrDefault(samplesParam());
     }
 
+    public Param<Boolean> missingAsReferenceParam() {
+        return missingAsReferenceParam;
+    }
+
+    public VariantStatsTransformer setMissingAsReference(Boolean missingAsReference) {
+        set(missingAsReferenceParam(), missingAsReference);
+        return this;
+    }
+
+    public Boolean getMissingAsReference() {
+        return getOrDefault(missingAsReferenceParam());
+    }
+
     @Override
     public Dataset<Row> transform(Dataset<?> dataset) {
         Dataset<Row> df = (Dataset<Row>) dataset;
+        VariantMetadataManager vmm = new VariantMetadataManager();
+
+
+        String studyId = getStudyId();
+        Map<String, List<String>> samplesMap = vmm.samples(df);
+        if (StringUtils.isEmpty(studyId)) {
+            studyId = samplesMap.keySet().iterator().next();
+        }
 
         List<String> samples = getSamples();
         Set<Integer> sampleIdx;
-        String studyId = getStudyId();
-        if (samples != null && !samples.isEmpty()) {
+        if (!CollectionUtils.isNotEmpty(samples)) {
+            sampleIdx = Collections.emptySet();
+        } else {
             sampleIdx = new HashSet<>(samples.size());
-            Map<String, List<String>> samplesMap = new VariantMetadataManager().samples(((Dataset<Row>) dataset));
-            if (StringUtils.isEmpty(studyId)) {
-                studyId = samplesMap.keySet().iterator().next();
-            }
             List<String> sampleNames = samplesMap.get(studyId);
-
             for (String sample : samples) {
                 int idx = sampleNames.indexOf(sample);
                 if (idx < 0) {
@@ -121,14 +158,26 @@ public class VariantStatsTransformer extends AbstractTransformer {
                 }
                 sampleIdx.add(idx);
             }
-        } else {
-            sampleIdx = Collections.emptySet();
         }
 
-        // To preserve the metadata from the schema, use as "returnDataType" the same data type from the input
-        DataType dataType = df.schema().apply("studies").dataType();
+        // We want to preserve the metadata, and add the new Cohort to the VariantMetadata.
+        // Use the new dataType with the modified metadata as "returnDataType" of the UDF.
+        DataType dataTypeWithNewMetadata;
+        try {
+            VariantMetadata variantMetadata = vmm.variantMetadata(df);
+            for (VariantStudyMetadata study : variantMetadata.getStudies()) {
+                if (study.getId().equals(studyId)) {
+                    study.getCohorts().add(new Cohort(getCohort(), getSamples(), SampleSetType.UNKNOWN));
+                }
+            }
+            // Only get resulting data type. Avoid unnecessary casts
+            dataTypeWithNewMetadata = vmm.setVariantMetadata(df, variantMetadata).schema().apply("studies").dataType();
+        } catch (OskarException e) {
+            throw new IllegalStateException(e);
+        }
+
         UserDefinedFunction statsFromStudy = udf(
-                new VariantStatsFromStudiesFunction(studyId, getCohort(), sampleIdx), dataType);
+                new VariantStatsFromStudiesFunction(studyId, getCohort(), sampleIdx, getMissingAsReference()), dataTypeWithNewMetadata);
 
         return df.withColumn("studies", statsFromStudy.apply(new ListBuffer<Column>()
                 .$plus$eq(col("reference"))
@@ -143,13 +192,15 @@ public class VariantStatsTransformer extends AbstractTransformer {
         private final String cohortName;
         private final String studyId;
         private final Set<Integer> samplesIdx;
+        private final Boolean missingAsReference;
         //        List<Integer> samplePositions;
         private final VariantToRowConverter converter = new VariantToRowConverter();
 
-        public VariantStatsFromStudiesFunction(String studyId, String cohortName, Set<Integer> samplesIdx) {
+        public VariantStatsFromStudiesFunction(String studyId, String cohortName, Set<Integer> samplesIdx, Boolean missingAsReference) {
             this.cohortName = cohortName;
             this.studyId = studyId;
             this.samplesIdx = samplesIdx;
+            this.missingAsReference = missingAsReference;
         }
 
         @Override
@@ -193,30 +244,30 @@ public class VariantStatsTransformer extends AbstractTransformer {
 
         private Map<String, Row> calculateStats(String cohortName, String reference, String alternate, Row study) {
 
-//            List<List<String>> samplesData = RowToVariantConverter.getSamplesData(study);
-            StudyEntry studyEntry = RowToAvroConverter.convert(
-                    study,
-                    VariantToRowConverter.STUDY_DATA_TYPE,
-                    StudyEntry.getClassSchema());
-            List<List<String>> samplesData = studyEntry.getSamplesData();
+            List<WrappedArray<String>> samplesData = study.getList(SAMPLES_DATA_IDX);
 
             Map<String, Integer> map = new HashMap<>();
             if (samplesIdx != null && !samplesIdx.isEmpty()) {
                 for (Integer sampleIdx : samplesIdx) {
-                    map.compute(samplesData.get(sampleIdx).get(0), (k, i) -> i == null ? 1 : i + 1);
+                    map.compute(samplesData.get(sampleIdx).apply(0), (k, i) -> i == null ? 1 : i + 1);
                 }
             } else {
-                for (List<String> sampleData : samplesData) {
-                    map.compute(sampleData.get(0), (k, i) -> i == null ? 1 : i + 1);
+                for (WrappedArray<String> sampleData : samplesData) {
+                    map.compute(sampleData.apply(0), (k, i) -> i == null ? 1 : i + 1);
                 }
             }
             Map<Genotype, Integer> gtMap = new HashMap<>();
             map.forEach((gtStr, count) -> {
                 Genotype gt;
                 if (gtStr.equals("?/?")) {
-                    gt = new Genotype("./.", reference, alternate);
+                    gt = new Genotype(missingAsReference ? "0/0" : "./.");
+                } else if (missingAsReference && gtStr.equals("./.")) {
+                    gt = new Genotype("0/0");
                 } else {
-                    gt = new Genotype(gtStr, reference, alternate);
+                    gt = new Genotype(gtStr);
+                    if (missingAsReference && gt.getCode().equals(AllelesCode.ALLELES_MISSING)) {
+                        gt = new Genotype(gtStr.replace('.', '0'));
+                    }
                 }
                 gtMap.compute(gt, (k, i) -> i == null ? count : i + count);
             });

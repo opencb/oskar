@@ -24,19 +24,19 @@ public class VariantUdfManager {
 
         study(new StudyFunction(), VariantToRowConverter.STUDY_DATA_TYPE),
         file(new FileFunction(), VariantToRowConverter.FILE_DATA_TYPE),
-        fileAttribute(new FileAttributeFunction(), DataTypes.StringType),
-        fileQual(new FileQualFunction(), DataTypes.DoubleType),
-        fileFilter(new FileFilterFunction(), new ArrayType(DataTypes.StringType, false)),
-        sampleData(new SampleDataFunction(), new ArrayType(DataTypes.StringType, false)),
-        sampleDataField(new SampleDataFieldFunction(), DataTypes.StringType),
+        file_attribute(new FileAttributeFunction(), DataTypes.StringType),
+        file_qual(new FileQualFunction(), DataTypes.DoubleType),
+        file_filter(new FileFilterFunction(), new ArrayType(DataTypes.StringType, false)),
+        sample_data(new SampleDataFunction(), new ArrayType(DataTypes.StringType, false)),
+        sample_data_field(new SampleDataFieldFunction(), DataTypes.StringType),
 
         genes(new GenesFunction(), new ArrayType(DataTypes.StringType, false)),
-        consequenceTypes(new ConsequenceTypesFunction(), new ArrayType(DataTypes.StringType, false)),
-        consequenceTypesByGene(new ConsequenceTypesByGeneFunction(), new ArrayType(DataTypes.StringType, false)),
+        consequence_types(new ConsequenceTypesFunction(), new ArrayType(DataTypes.StringType, false)),
+        consequence_types_by_gene(new ConsequenceTypesByGeneFunction(), new ArrayType(DataTypes.StringType, false)),
         biotypes(new BiotypesFunction(), new ArrayType(DataTypes.StringType, false)),
-        proteinSubstitution(new ProteinSubstitutionScoreFunction(), new ArrayType(DataTypes.DoubleType, false)),
-        populationFrequencyAsMap(new PopulationFrequencyAsMapFunction(), new MapType(DataTypes.StringType, DataTypes.DoubleType, false)),
-        populationFrequency(new PopulationFrequencyFunction(), DataTypes.DoubleType);
+        protein_substitution(new ProteinSubstitutionScoreFunction(), new ArrayType(DataTypes.DoubleType, false)),
+        population_frequency_as_map(new PopulationFrequencyAsMapFunction(), new MapType(DataTypes.StringType, DataTypes.DoubleType, false)),
+        population_frequency(new PopulationFrequencyFunction(), DataTypes.DoubleType);
 
         private final DataType returnType;
         private final UserDefinedFunction udf;
@@ -99,44 +99,44 @@ public class VariantUdfManager {
         return file(col(study), fileId);
     }
 
-    public static Column fileAttribute(Column studiesColumn, String file, String attributeField) {
-        return callUDF(fileAttribute.name(), studiesColumn, lit(file), lit(attributeField));
+    public static Column file_attribute(Column studiesColumn, String file, String attributeField) {
+        return callUDF(file_attribute.name(), studiesColumn, lit(file), lit(attributeField));
     }
 
-    public static Column fileAttribute(String studiesColumn, String file, String attributeField) {
-        return fileAttribute(col(studiesColumn), file, attributeField);
+    public static Column file_attribute(String studiesColumn, String file, String attributeField) {
+        return file_attribute(col(studiesColumn), file, attributeField);
     }
 
-    public static Column fileFilter(Column studiesColumn, String file) {
-        return callUDF(fileFilter.name(), studiesColumn, lit(file));
+    public static Column file_filter(Column studiesColumn, String file) {
+        return callUDF(file_filter.name(), studiesColumn, lit(file));
     }
 
-    public static Column fileFilter(String studiesColumn, String file) {
-        return fileFilter(col(studiesColumn), file);
+    public static Column file_filter(String studiesColumn, String file) {
+        return file_filter(col(studiesColumn), file);
     }
 
-    public static Column fileQual(Column studiesColumn, String file) {
-        return callUDF(fileQual.name(), studiesColumn, lit(file));
+    public static Column file_qual(Column studiesColumn, String file) {
+        return callUDF(file_qual.name(), studiesColumn, lit(file));
     }
 
-    public static Column fileQual(String studiesColumn, String file) {
-        return fileQual(col(studiesColumn), file);
+    public static Column file_qual(String studiesColumn, String file) {
+        return file_qual(col(studiesColumn), file);
     }
 
-    public static Column sampleData(String studiesColumn, String sample) {
-        return sampleData(col(studiesColumn), sample);
+    public static Column sample_data(String studiesColumn, String sample) {
+        return sample_data(col(studiesColumn), sample);
     }
 
-    public static Column sampleData(Column studiesColumn, String sample) {
-        return callUDF(sampleData.name(), studiesColumn, lit(sample));
+    public static Column sample_data(Column studiesColumn, String sample) {
+        return callUDF(sample_data.name(), studiesColumn, lit(sample));
     }
 
-    public static Column sampleDataField(String studiesColumn, String sample, String formatFiel) {
-        return sampleDataField(col(studiesColumn), sample, formatFiel);
+    public static Column sample_data_field(String studiesColumn, String sample, String formatFiel) {
+        return sample_data_field(col(studiesColumn), sample, formatFiel);
     }
 
-    public static Column sampleDataField(Column studiesColumn, String sample, String formatField) {
-        return callUDF(sampleDataField.name(), studiesColumn, lit(sample), lit(formatField));
+    public static Column sample_data_field(Column studiesColumn, String sample, String formatField) {
+        return callUDF(sample_data_field.name(), studiesColumn, lit(sample), lit(formatField));
     }
 
     public static Column genes(String annotation) {
@@ -147,20 +147,24 @@ public class VariantUdfManager {
         return callUDF(genes.name(), annotation);
     }
 
-    public static Column consequenceTypes(String annotation) {
-        return consequenceTypes(col(annotation));
+    public static Column consequence_types(String annotation) {
+        return consequence_types(col(annotation));
     }
 
-    public static Column consequenceTypes(Column annotation) {
-        return callUDF(consequenceTypes.name(), annotation);
+    public static Column consequence_types(Column annotation) {
+        return callUDF(consequence_types.name(), annotation);
     }
 
-    public static Column consequenceTypesByGene(Column annotation, String gene) {
-        return callUDF(consequenceTypesByGene.name(), annotation, lit(gene));
+    public static Column consequence_types_by_gene(Column annotation, String gene) {
+        return callUDF(consequence_types_by_gene.name(), annotation, lit(gene));
     }
 
-    public static Column proteinSubstitution(Column annotation, String source) {
-        return proteinSubstitution(annotation, lit(source));
+    public static Column protein_substitution(Column annotation, String source) {
+        return protein_substitution(annotation, lit(source));
+    }
+
+    public static Column protein_substitution(Column annotation, Column source) {
+        return callUDF(protein_substitution.name(), annotation, source);
     }
 
     public static Column biotypes(String annotation) {
@@ -171,24 +175,20 @@ public class VariantUdfManager {
         return callUDF(biotypes.name(), annotation);
     }
 
-    public static Column proteinSubstitution(Column annotation, Column source) {
-        return callUDF(proteinSubstitution.name(), annotation, source);
+    public static Column population_frequency_as_map(String annotation) {
+        return population_frequency_as_map(col(annotation));
     }
 
-    public static Column populationFrequencyAsMap(String annotation) {
-        return populationFrequencyAsMap(col(annotation));
+    public static Column population_frequency_as_map(Column annotation) {
+        return callUDF(population_frequency_as_map.name(), annotation);
     }
 
-    public static Column populationFrequencyAsMap(Column annotation) {
-        return callUDF(populationFrequencyAsMap.name(), annotation);
+    public static Column population_frequency(String annotation, String study, String population) {
+        return population_frequency(col(annotation), study, population);
     }
 
-    public static Column populationFrequency(String annotation, String study, String population) {
-        return populationFrequency(col(annotation), study, population);
-    }
-
-    public static Column populationFrequency(Column annotation, String study, String population) {
-        return callUDF(populationFrequency.name(), annotation, lit(study), lit(population));
+    public static Column population_frequency(Column annotation, String study, String population) {
+        return callUDF(population_frequency.name(), annotation, lit(study), lit(population));
     }
 
 //    public static Column includeStudy(Column studiesColumn, String studies) {

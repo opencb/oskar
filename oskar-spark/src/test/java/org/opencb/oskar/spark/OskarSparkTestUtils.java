@@ -25,6 +25,28 @@ import java.util.Date;
  */
 public class OskarSparkTestUtils extends ExternalResource {
 
+
+    public static final String PLATINUM_STUDY = "hgvauser@platinum:illumina_platinum";
+
+    public static final String NA12877 = "NA12877";
+    public static final String NA12878 = "NA12878";
+    public static final String NA12879 = "NA12879";
+    public static final String NA12880 = "NA12880";
+    public static final String NA12881 = "NA12881";
+    public static final String NA12882 = "NA12882";
+    public static final String NA12883 = "NA12883";
+    public static final String NA12884 = "NA12884";
+    public static final String NA12885 = "NA12885";
+    public static final String NA12886 = "NA12886";
+    public static final String NA12887 = "NA12887";
+    public static final String NA12888 = "NA12888";
+    public static final String NA12889 = "NA12889";
+    public static final String NA12890 = "NA12890";
+    public static final String NA12891 = "NA12891";
+    public static final String NA12892 = "NA12892";
+    public static final String NA12893 = "NA12893";
+
+
     public static final String PLATINUM_SMALL = "platinum_chr22.small.parquet";
     private static Path rootDir;
     private transient SparkSession spark;

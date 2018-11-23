@@ -38,10 +38,10 @@ public class VariantUdfManagerTest {
         Dataset<Row> df = sparkTest.getVariantsDataset();
 
 
-        new SQLTransformer().setStatement("select *,populationFrequency(annotation, '1kG_phase3','ALL') as 1kg from __THIS__").transform(df).show();
+        new SQLTransformer().setStatement("select *,population_frequency(annotation, '1kG_phase3','ALL') as 1kg from __THIS__").transform(df).show();
 
 
-        SQLTransformer sql = new SQLTransformer().setStatement("select *,populationFrequency(annotation, '1kG_phase3','ALL') as 1kg from __THIS__");
+        SQLTransformer sql = new SQLTransformer().setStatement("select *,population_frequency(annotation, '1kG_phase3','ALL') as 1kg from __THIS__");
         Bucketizer bucket = new Bucketizer().setInputCol("1kg").setOutputCol("bucket").setSplits(new double[]{Double.NEGATIVE_INFINITY, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 2});
 
 
@@ -53,11 +53,11 @@ public class VariantUdfManagerTest {
     public void testUDFs() throws Exception {
         Dataset<Row> df = sparkTest.getVariantsDataset();
 
-        df.select(populationFrequency("annotation", "1kG_phase3", "ALL").as("pf")).filter(col("pf").gt(0)).show();
-        df.select(populationFrequencyAsMap("annotation").apply("1kG_phase3:ALL").as("pf")).filter(col("pf").gt(0)).show();
+        df.select(population_frequency("annotation", "1kG_phase3", "ALL").as("pf")).filter(col("pf").gt(0)).show();
+        df.select(population_frequency_as_map("annotation").apply("1kG_phase3:ALL").as("pf")).filter(col("pf").gt(0)).show();
         df.select(genes("annotation")).show();
-        df.select(sampleData("studies", "NA12877").as("NA12877")).show();
-        df.select(sampleDataField("studies", "NA12877", "GT").as("NA12877")).show();
+        df.select(sample_data("studies", "NA12877").as("NA12877")).show();
+        df.select(sample_data_field("studies", "NA12877", "GT").as("NA12877")).show();
     }
 
     @Test
@@ -82,8 +82,8 @@ public class VariantUdfManagerTest {
                                 col("alternate").equalTo(""),
                                 lit("-"))
                                 .otherwise(col("alternate"))).as("ALT"),
-                fileQual("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz").as("QUAL"),
-                fileFilter("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz").as("FILTER"),
+                file_qual("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz").as("QUAL"),
+                file_filter("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz").as("FILTER"),
 //                concat_ws(";", fileFilter("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz")).as("FILTER"),
 //                concat(
 //                        lit("AF="), expr("studies[0].stats['ALL'].altAlleleFreq"),
@@ -94,9 +94,9 @@ public class VariantUdfManagerTest {
                         lit("AC"), expr("studies[0].stats['ALL'].altAlleleCount"),
                         lit("AN"), expr("studies[0].stats['ALL'].alleleCount")).as("INFO"),
                 lit("GT").as("FORMAT"),
-                sampleDataField("studies", "NA12877", "GT").as("NA12877"),
-                sampleDataField("studies", "NA12878", "GT").as("NA12878"),
-                sampleDataField("studies", "NA12879", "GT").as("NA12879")).show(false);
+                sample_data_field("studies", "NA12877", "GT").as("NA12877"),
+                sample_data_field("studies", "NA12878", "GT").as("NA12878"),
+                sample_data_field("studies", "NA12879", "GT").as("NA12879")).show(false);
 
     }
 
@@ -119,7 +119,7 @@ public class VariantUdfManagerTest {
                 "LIMIT 10").show();
 
         spark.sql("SELECT " +
-                "populationFrequencyAsMap(annotation)," +
+                "population_frequency_as_map(annotation)," +
                 "chromosome,start,end,reference,alternate,type," +
                 "studies[0].format as FORMAT," +
                 "studies[0].samplesData[0] as NA12877," +
@@ -131,41 +131,41 @@ public class VariantUdfManagerTest {
 
 
         spark.sql("SELECT " +
-                "consequenceTypes(annotation)," +
+                "consequence_types(annotation)," +
                 "chromosome,start,reference,alternate," +
-                "populationFrequency(annotation, '1kG_phase3','ALL') as 1kG_phase3_ALL " +
+                "population_frequency(annotation, '1kG_phase3','ALL') as 1kG_phase3_ALL " +
                 "FROM chr22 " +
-                "WHERE populationFrequency(annotation, '1kG_phase3','ALL') between 0.000001 and 0.01 " +
+                "WHERE population_frequency(annotation, '1kG_phase3','ALL') between 0.000001 and 0.01 " +
                 "LIMIT 10 ").show(false);
 
         spark.sql("SELECT " +
                 "chromosome,start,reference,alternate," +
-                "consequenceTypesByGene(annotation, 'MICAL3')," +
-                "populationFrequency(annotation, '1kG_phase3','ALL') as 1kG_phase3_ALL " +
+                "consequence_types_by_gene(annotation, 'MICAL3')," +
+                "population_frequency(annotation, '1kG_phase3','ALL') as 1kG_phase3_ALL " +
                 "FROM chr22 " +
-                "WHERE consequenceTypesByGene(annotation, 'MICAL3')[0] is not null " +
+                "WHERE consequence_types_by_gene(annotation, 'MICAL3')[0] is not null " +
                 "limit 10 ").show(false);
 
         spark.sql("SELECT " +
                 "chromosome,start,reference,alternate," +
-                "consequenceTypesByGene(annotation, 'MICAL3')," +
-                "populationFrequency(annotation, '1kG_phase3','ALL') as 1kG_phase3_ALL " +
+                "consequence_types_by_gene(annotation, 'MICAL3')," +
+                "population_frequency(annotation, '1kG_phase3','ALL') as 1kG_phase3_ALL " +
                 "FROM chr22 " +
                 "WHERE array_contains(annotation.consequenceTypes.geneName,'MICAL3') " +
-                "AND populationFrequency(annotation, '1kG_phase3','ALL') between 0.000001 and 0.1 " +
+                "AND population_frequency(annotation, '1kG_phase3','ALL') between 0.000001 and 0.1 " +
                 "limit 10 ").show(false);
 
 
 
         spark.sql("SELECT " +
                 "chromosome,start,reference,alternate," +
-                "consequenceTypesByGene(annotation, 'MICAL3')," +
+                "consequence_types_by_gene(annotation, 'MICAL3')," +
                 "genes(annotation)," +
-                "populationFrequency(annotation, '1kG_phase3','ALL') as 1kG_phase3_ALL " +
+                "population_frequency(annotation, '1kG_phase3','ALL') as 1kG_phase3_ALL " +
                 "FROM chr22 " +
                 "WHERE " +
                 "array_contains(genes(annotation),'MICAL3') " +
-                "AND populationFrequency(annotation, '1kG_phase3','ALL') between 0.000001 and 0.1 " +
+                "AND population_frequency(annotation, '1kG_phase3','ALL') between 0.000001 and 0.1 " +
                 "limit 10 ").show(false);
 
     }

@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.opencb.biodata.models.variant.metadata.VariantSetStats;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.commons.converters.RowToAvroConverter;
-import org.opencb.oskar.spark.variant.udf.VariantUdfManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +38,7 @@ public class VariantSetStatsTransformerTest {
         assertEquals(df.count(), stats.getNumVariants().longValue());
 
         Map<String, Integer> ctMap = new HashMap<>();
-        for (Row ct : df.select(explode(consequenceTypes("annotation")).alias("ct")).groupBy("ct").count().collectAsList()) {
+        for (Row ct : df.select(explode(consequence_types("annotation")).alias("ct")).groupBy("ct").count().collectAsList()) {
             ctMap.put(ct.getString(0), ((int) ct.getLong(1)));
         }
         assertEquals(ctMap, stats.getConsequenceTypesCounts());
@@ -66,12 +65,12 @@ public class VariantSetStatsTransformerTest {
         GenericRowWithSchema result = (GenericRowWithSchema) transformer.transform(df).collectAsList().get(0);
         VariantSetStats stats = RowToAvroConverter.convert(result, new VariantSetStats());
 
-        long expectedNumPass = df.selectExpr("fileAttribute(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz', 'FILTER') as FILTER")
+        long expectedNumPass = df.selectExpr("file_attribute(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz', 'FILTER') as FILTER")
                 .filter("FILTER == 'PASS'")
                 .count();
         assertEquals(expectedNumPass, stats.getNumPass().longValue());
 
-        Row row = df.selectExpr("fileAttribute(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz', 'QUAL') as QUAL")
+        Row row = df.selectExpr("file_attribute(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz', 'QUAL') as QUAL")
                 .agg(mean("QUAL"), stddev_pop("QUAL"))
                 .collectAsList().get(0);
         double expectedMeanQual = row.getDouble(0);
