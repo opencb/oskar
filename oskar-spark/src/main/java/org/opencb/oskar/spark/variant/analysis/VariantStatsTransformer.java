@@ -145,7 +145,7 @@ public class VariantStatsTransformer extends AbstractTransformer implements HasS
             for (String sample : samples) {
                 int idx = sampleNames.indexOf(sample);
                 if (idx < 0) {
-                    throw new IllegalArgumentException("Sample \"" + sample + "\" not found in study \"" + studyId + "\".");
+                    throw OskarException.unknownSample(studyId, sample, sampleNames);
                 }
                 sampleIdx.add(idx);
             }
@@ -153,19 +153,16 @@ public class VariantStatsTransformer extends AbstractTransformer implements HasS
 
         // We want to preserve the metadata, and add the new Cohort to the VariantMetadata.
         // Use the new dataType with the modified metadata as "returnDataType" of the UDF.
-        DataType dataTypeWithNewMetadata;
-        try {
-            VariantMetadata variantMetadata = vmm.variantMetadata(df);
-            for (VariantStudyMetadata study : variantMetadata.getStudies()) {
-                if (study.getId().equals(studyId)) {
-                    study.getCohorts().add(new Cohort(getCohort(), getSamples(), SampleSetType.UNKNOWN));
-                }
+        VariantMetadata variantMetadata = vmm.variantMetadata(df);
+        for (VariantStudyMetadata study : variantMetadata.getStudies()) {
+            if (study.getId().equals(studyId)) {
+                study.getCohorts().add(new Cohort(getCohort(), getSamples(), SampleSetType.UNKNOWN));
             }
-            // Only get resulting data type. Avoid unnecessary casts
-            dataTypeWithNewMetadata = vmm.setVariantMetadata(df, variantMetadata).schema().apply("studies").dataType();
-        } catch (OskarException e) {
-            throw new IllegalStateException(e);
         }
+        // Only get resulting data type. Avoid unnecessary casts
+        DataType dataTypeWithNewMetadata = vmm.setVariantMetadata(df, variantMetadata).schema().apply("studies").dataType();
+
+
 
         UserDefinedFunction statsFromStudy = udf(
                 new VariantStatsFromStudiesFunction(studyId, getCohort(), sampleIdx, getMissingAsReference()), dataTypeWithNewMetadata);

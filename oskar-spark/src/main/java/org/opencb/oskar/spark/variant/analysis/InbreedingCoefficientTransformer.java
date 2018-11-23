@@ -13,6 +13,7 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.feature.AllelesCode;
 import org.opencb.biodata.models.feature.Genotype;
+import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
@@ -113,17 +114,17 @@ public class InbreedingCoefficientTransformer extends AbstractTransformer implem
     @Override
     public Dataset<Row> transform(Dataset<?> dataset) {
         Map<String, List<String>> samplesMap = new VariantMetadataManager().samples((Dataset<Row>) dataset);
-        boolean multiStudy = samplesMap.size() == 1;
+        boolean multiStudy = samplesMap.size() != 1;
         List<String> sampleNames;
         String studyId = getStudyId();
         if (StringUtils.isNotEmpty(studyId)) {
             sampleNames = samplesMap.get(studyId);
             if (sampleNames == null) {
-                throw new IllegalArgumentException("Study '" + studyId + "' not found");
+                throw OskarException.unknownStudy(studyId, samplesMap.keySet());
             }
         } else {
             if (multiStudy) {
-                throw new IllegalArgumentException("Missing studyId param");
+                throw OskarException.missingStudy(samplesMap.keySet());
             } else {
                 studyId = samplesMap.keySet().iterator().next();
                 sampleNames = samplesMap.values().iterator().next();

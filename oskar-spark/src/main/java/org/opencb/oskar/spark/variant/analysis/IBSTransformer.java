@@ -16,6 +16,7 @@ import org.opencb.biodata.models.feature.AllelesCode;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.biodata.tools.variant.algorithm.IdentityByState;
 import org.opencb.biodata.tools.variant.algorithm.IdentityByStateClustering;
+import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import scala.collection.Seq;
 
@@ -146,7 +147,7 @@ public class IBSTransformer extends AbstractTransformer {
         for (String sample : samples) {
             int idx = allSamples.indexOf(sample);
             if (idx < 0) {
-                throw new IllegalArgumentException("Sample '" + sample + "' not found in study '" + studyId + "'");
+                throw OskarException.unknownSample(studyId, sample, allSamples);
             }
             sampleIdx.add(idx);
             sampleIdxMap.put(idx, sample);

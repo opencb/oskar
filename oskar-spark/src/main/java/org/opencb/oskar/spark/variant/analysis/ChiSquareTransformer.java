@@ -1,6 +1,5 @@
 package org.opencb.oskar.spark.variant.analysis;
 
-import com.google.common.base.Throwables;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -15,7 +14,6 @@ import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.commons.utils.ListUtils;
 import org.opencb.oskar.analysis.variant.ChiSquareTest;
 import org.opencb.oskar.analysis.variant.MendelianError;
-import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.analysis.params.HasPhenotype;
 import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
@@ -64,20 +62,16 @@ public class ChiSquareTransformer extends AbstractTransformer implements HasStud
 
         // Search affected samples (and take the index)
         Set<Integer> affectedIndexSet = new HashSet<>();
-        try {
-            List<String> samples = new Oskar().metadata().samples(df, getStudyId());
-            List<Pedigree> pedigrees = new Oskar().metadata().pedigrees(df, getStudyId());
-            int i = 0;
-            for (Pedigree pedigree: pedigrees) {
-                for (Member member: pedigree.getMembers()) {
-                    if (ListUtils.isNotEmpty(member.getPhenotypes())
-                            && member.getPhenotypes().contains(getPhenotype())) {
-                        affectedIndexSet.add(samples.indexOf(member.getId()));
-                    }
+        List<String> samples = new Oskar().metadata().samples(df, getStudyId());
+        List<Pedigree> pedigrees = new Oskar().metadata().pedigrees(df, getStudyId());
+        int i = 0;
+        for (Pedigree pedigree: pedigrees) {
+            for (Member member: pedigree.getMembers()) {
+                if (ListUtils.isNotEmpty(member.getPhenotypes())
+                        && member.getPhenotypes().contains(getPhenotype())) {
+                    affectedIndexSet.add(samples.indexOf(member.getId()));
                 }
             }
-        } catch (OskarException e) {
-            throw Throwables.propagate(e);
         }
 
         UserDefinedFunction chiSquare = udf(new ChiSquareTransformer.ChiSquareFunction(getStudyId(), affectedIndexSet),

@@ -122,7 +122,7 @@ public class ModeOfInheritanceTransformer extends AbstractTransformer implements
         boolean multiStudy = samplesMap.size() > 1;
         if (StringUtils.isEmpty(studyId)) {
             if (multiStudy) {
-                throw new IllegalArgumentException("Missing study. Multiple studies found: " + samplesMap.keySet());
+                throw OskarException.missingStudy(samplesMap.keySet());
             }
             studyId = samplesMap.keySet().iterator().next();
         }
@@ -148,15 +148,10 @@ public class ModeOfInheritanceTransformer extends AbstractTransformer implements
                 gtsMap = ModeOfInheritance.yLinked(pedigree, new Phenotype(phenotype, phenotype, null));
                 break;
             default:
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Unknown mode of inheritance '" + moi + "'.");
         }
 
-        List<String> samples;
-        try {
-            samples = vmm.samples(df, studyId);
-        } catch (OskarException e) {
-            throw new IllegalArgumentException(e);
-        }
+        List<String> samples = vmm.samples(df, studyId);
 
         for (Map.Entry<String, List<String>> entry : gtsMap.entrySet()) {
             String sample = entry.getKey();
