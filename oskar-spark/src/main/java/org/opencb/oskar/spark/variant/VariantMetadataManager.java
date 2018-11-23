@@ -238,21 +238,19 @@ public class VariantMetadataManager {
                     // Father
                     if (attrMetadata.contains("father")) {
                         fatherId = attrMetadata.getString("father");
-                        if (!membersMap.containsKey(fatherId)) {
-                            Member father = new Member().setId(fatherId);
-                            membersMap.put(fatherId, father);
+                        if (StringUtils.isNotEmpty(fatherId)) {
+                            Member father = membersMap.computeIfAbsent(fatherId, id -> new Member().setId(id));
+                            member.setFather(father);
                         }
-                        member.setFather(membersMap.get(fatherId));
                     }
 
                     // Mother
                     if (attrMetadata.contains("mother")) {
                         motherId = attrMetadata.getString("mother");
-                        if (!membersMap.containsKey(motherId)) {
-                            Member mother = new Member().setId(motherId);
-                            membersMap.put(motherId, mother);
+                        if (StringUtils.isNotEmpty(motherId)) {
+                            Member mother = membersMap.computeIfAbsent(motherId, id -> new Member().setId(id));
+                            member.setFather(mother);
                         }
-                        member.setMother(membersMap.get(motherId));
                     }
 
                     if (StringUtils.isNotEmpty(fatherId) && StringUtils.isNotEmpty(motherId)) {
@@ -298,6 +296,15 @@ public class VariantMetadataManager {
 
     public List<Pedigree> pedigrees(Dataset<Row> df, String studyId) throws OskarException {
         return pedigrees(df).get(studyId);
+    }
+
+    public Pedigree pedigree(Dataset<Row> df, String studyId, String family) {
+        for (Pedigree pedigree : pedigrees(df).get(studyId)) {
+            if (pedigree.getName().equals(family)) {
+                return pedigree;
+            }
+        }
+        return null;
     }
 
     private Metadata getMetadata(Dataset<Row> df) {

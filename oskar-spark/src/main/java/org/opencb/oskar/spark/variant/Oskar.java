@@ -4,6 +4,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.spark.variant.analysis.ModeOfInheritanceTransformer;
 import org.opencb.oskar.spark.variant.analysis.VariantSetStatsTransformer;
 import org.opencb.oskar.spark.variant.analysis.VariantStatsTransformer;
 import org.opencb.oskar.spark.variant.udf.VariantUdfManager;
@@ -72,4 +73,18 @@ public class Oskar {
     public Dataset<Row> globalStats(Dataset<Row> df, String studyId, String fileId) {
         return new VariantSetStatsTransformer(studyId, fileId).transform(df);
     }
+
+    /**
+     * Filter variants that match a given Mode Of Inheritance pattern.
+     *
+     * @param df                    Input variants dataframe
+     * @param modeOfInheritance     Mode of inheritance pattern
+     * @param family                Family to apply the filter
+     * @param phenotype             Phenotype to match the mode of inheritance
+     * @return                      Filtered dataframe with the same schema
+     */
+    public Dataset<Row> modeOfInheritance(Dataset<Row> df, String modeOfInheritance, String family, String phenotype) {
+        return new ModeOfInheritanceTransformer(modeOfInheritance, family, phenotype).transform(df);
+    }
+
 }
