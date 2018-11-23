@@ -128,7 +128,10 @@ public class FacetTransformer extends AbstractTransformer {
             }
             if (aggregation) {
                 // Special case, we have aggregations
-                res = res.groupBy(cols).agg(expr(facets[facets.length - 1]), count(lit(1)).as("count")).orderBy(cols);
+                int index = facets.length - 1;
+                String aggFunct = facets[index].substring(0, facets[index].indexOf("("));
+                res = res.groupBy(cols).agg(getAggregationExpr(aggFunct, fieldNames.get(index)),
+                        count(lit(1)).as("count")).orderBy(cols);
             } else {
                 res = res.groupBy(cols).count().orderBy(cols);
             }
@@ -154,7 +157,8 @@ public class FacetTransformer extends AbstractTransformer {
                     // Aggregation facet
                     Dataset<Row> cached = processAggregationFacet(facet, fieldName, (Dataset<Row>) df);
                     long count = cached.count();
-                    res = cached.agg(expr(facet)).withColumn("count", lit(count));
+                    String aggFunct = facet.substring(0, facet.indexOf("("));
+                    res = cached.agg(getAggregationExpr(aggFunct, fieldName)).withColumn("count", lit(count));
                     break;
                 }
                 default:
@@ -165,6 +169,20 @@ public class FacetTransformer extends AbstractTransformer {
         // Save facet in metadata
         Metadata facetMetadata = new MetadataBuilder().putString("facet", facet).build();
         return res.withColumn("count", col("count").as("count", facetMetadata));
+    }
+
+    private Column getAggregationExpr(String aggFunct, String fieldName) {
+        String label = aggFunct + "(" + fieldName + ")";
+        if (aggFunct.equals("sumsq")) {
+            return expr("sum(power(" + fieldName + ", 2))").as(label);
+        } else if (aggFunct.equals("percentile")) {
+            return expr("percentile(" + fieldName + ", array(0.1, 0.25, 0.5, 0.75, 0.0))").as(label);
+        } else if (aggFunct.equals("unique")) {
+            return expr("collect_set(" + fieldName + ")").as(label);
+        } else {
+            return expr(label);
+        }
+
     }
 
     private Dataset<Row> processCategoricalFacet(String facet, String fieldName, String facetName, Dataset<Row> df) {
@@ -213,9 +231,13 @@ public class FacetTransformer extends AbstractTransformer {
             throw new InvalidParameterException("Aggregation function unknown: " + aggFunction);
         }
 
-        UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
-        ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
-        return df.withColumn(fieldName, scoreFunction.apply(functScoreSeq));
+        if (isExplode.contains(fieldName)) {
+            UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
+            ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
+            return df.withColumn(fieldName, scoreFunction.apply(functScoreSeq));
+        } else {
+            return df;
+        }
     }
 
     private ListBuffer<Column> createFunctScoreSeq(String fieldName) {

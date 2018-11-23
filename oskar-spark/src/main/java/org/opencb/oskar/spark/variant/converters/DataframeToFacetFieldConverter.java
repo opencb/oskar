@@ -1,5 +1,6 @@
 package org.opencb.oskar.spark.variant.converters;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.opencb.biodata.tools.Converter;
@@ -7,6 +8,7 @@ import org.opencb.commons.datastore.core.result.FacetQueryResult;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -26,8 +28,8 @@ public class DataframeToFacetFieldConverter implements Converter<Dataset<Row>, F
     public static final String INCLUDE_SEPARATOR = ",";
     private static final String RANGE_IDENTIFIER = "..";
     private static final String AGGREGATION_IDENTIFIER = "(";
-    // aggregation to add: unique, percentile, sumsq
-    public static final String[] AGGREGATION_FUNCTIONS = {"sum", "avg", "max", "min", "unique", "variance", "stddev"};
+    public static final String[] AGGREGATION_FUNCTIONS = {"sum", "avg", "max", "min", "unique", "variance", "stddev",
+            "unique", "percentile", "sumsq", };
     public static final Pattern CATEGORICAL_PATTERN = Pattern.compile("^([a-zA-Z][a-zA-Z0-9_.]+)(\\[[a-zA-Z0-9_.\\-,*]+])?(:\\*|:\\d+)?$");
 
     @Override
@@ -52,23 +54,37 @@ public class DataframeToFacetFieldConverter implements Converter<Dataset<Row>, F
                 // Update field count
                 field.setCount(field.getCount() + count);
 
-                // Check if the bucket exists
-                String bucketValue = row.get(i).toString();
-                FacetQueryResult.Bucket bucket = getBucket(bucketValue, field.getBuckets());
-                if (bucket == null) {
-                    // Create a new bucket with the
-                    bucket = new FacetQueryResult.Bucket(bucketValue, 0, new ArrayList<>());
-                    field.getBuckets().add(bucket);
-                }
-                // Update bucket count
-                bucket.setCount(bucket.getCount() + count);
+                if (StringUtils.isEmpty(field.getAggregationName())) {
+                    // Check if the bucket exists
+                    String bucketValue = row.get(i).toString();
+                    FacetQueryResult.Bucket bucket = getBucket(bucketValue, field.getBuckets());
+                    if (bucket == null) {
+                        // Create a new bucket with the
+                        bucket = new FacetQueryResult.Bucket(bucketValue, 0, new ArrayList<>());
+                        field.getBuckets().add(bucket);
+                    }
+                    // Update bucket count
+                    bucket.setCount(bucket.getCount() + count);
 
-                // Nested facet ?
-                if (i + 1 < countIdx) {
-                    // Nested facet, then create a new facet field inside the bucket
-                    FacetQueryResult.Field newField = createFacetField(facets[i + 1]).setBuckets(new ArrayList<>());
-                    bucket.getFields().add(newField);
-                    field = newField;
+                    // Nested facet ?
+                    if (i + 1 < countIdx) {
+                        // Nested facet, then create a new facet field inside the bucket
+                        FacetQueryResult.Field newField = createFacetField(facets[i + 1]).setBuckets(new ArrayList<>());
+                        bucket.getFields().add(newField);
+                        field = newField;
+                    }
+                } else {
+                    // Aggregation
+                    // FIXME: support integer values, maybe AggregationValues should be of type Number
+                    if (field.getAggregationName().equals("percentile")
+                            || field.getAggregationName().equals("unique")) {
+                        field.setAggregationValues(row.getList(i));
+                    } else {
+                        field.setAggregationValues(Collections.singletonList(Double.parseDouble("" + row.get(i))));
+                    }
+
+                    // Aggregation must be last one!!!
+                    break;
                 }
             }
         }
