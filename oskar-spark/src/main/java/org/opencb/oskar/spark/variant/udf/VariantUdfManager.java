@@ -131,8 +131,8 @@ public class VariantUdfManager {
         return callUDF(sample_data.name(), studiesColumn, lit(sample));
     }
 
-    public static Column sample_data_field(String studiesColumn, String sample, String formatFiel) {
-        return sample_data_field(col(studiesColumn), sample, formatFiel);
+    public static Column sample_data_field(String studiesColumn, String sample, String formatField) {
+        return sample_data_field(col(studiesColumn), sample, formatField);
     }
 
     public static Column sample_data_field(Column studiesColumn, String sample, String formatField) {
