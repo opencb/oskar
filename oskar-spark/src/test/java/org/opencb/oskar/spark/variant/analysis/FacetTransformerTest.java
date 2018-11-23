@@ -1,36 +1,15 @@
 package org.opencb.oskar.spark.variant.analysis;
 
-import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema;
-import org.apache.spark.sql.expressions.UserDefinedFunction;
-import org.apache.spark.sql.types.*;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.commons.datastore.core.result.FacetQueryResult;
-import org.opencb.oskar.analysis.variant.FisherExactTest;
-import org.opencb.oskar.analysis.variant.MendelianError;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.converters.DataframeToFacetFieldConverter;
-import org.opencb.oskar.spark.variant.udf.StudyFunction;
-import scala.collection.mutable.ListBuffer;
-import scala.collection.mutable.WrappedArray;
-import scala.runtime.AbstractFunction1;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import static org.apache.spark.sql.functions.*;
-import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.STUDY_ID_IDX;
-import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.biotypes;
-import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.consequenceTypes;
-import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.genes;
 
 public class FacetTransformerTest {
 
