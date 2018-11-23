@@ -12,6 +12,7 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.clinical.pedigree.Member;
 import org.opencb.biodata.models.clinical.pedigree.Pedigree;
+import org.opencb.biodata.models.commons.Phenotype;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.commons.utils.ListUtils;
 import org.opencb.oskar.analysis.variant.FisherExactTest;
@@ -90,9 +91,13 @@ public class FisherTransformer extends AbstractTransformer {
             int i = 0;
             for (Pedigree pedigree: pedigrees) {
                 for (Member member: pedigree.getMembers()) {
-                    if (ListUtils.isNotEmpty(member.getPhenotypes())
-                            && member.getPhenotypes().contains(getPhenotype())) {
-                        affectedIndexSet.add(samples.indexOf(member.getId()));
+                    if (ListUtils.isNotEmpty(member.getPhenotypes())) {
+                        for (Phenotype phenotype: member.getPhenotypes()) {
+                            if (getPhenotype().equals(phenotype.getId())) {
+                                affectedIndexSet.add(samples.indexOf(member.getId()));
+                                break;
+                            }
+                        }
                     }
                 }
             }
