@@ -15,16 +15,17 @@ from pyspark.ml.common import inherit_doc
 from pyspark.sql.functions import lit
 from pyspark.sql import DataFrame
 
+DEFAULT_COHORT = "ALL"
+
 
 class VariantStatsTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
-    cohort = Param(Params._dummy(), "cohort", "Name of the cohort to calculate stats from. By default, ALL",
+    cohort = Param(Params._dummy(), "cohort", "Name of the cohort to calculate stats from. By default, " + DEFAULT_COHORT,
                    typeConverter=TypeConverters.toString)
     samples = Param(Params._dummy(), "samples", "Samples belonging to the cohort. If empty, will try to read from metadata. "
                     + "If missing, will use all samples from the dataset.", typeConverter=TypeConverters.toListString)
     studyId = Param(Params._dummy(), "studyId", "Id of the study to calculate the stats from.", typeConverter=TypeConverters.toString)
     missingAsReference = Param(Params._dummy(), "missingAsReference", "Count missing alleles as reference alleles.",
                                typeConverter=TypeConverters.toBoolean)
-
 
     @keyword_only
     def __init__(self, studyId=None, cohort="ALL", samples=None, missingAsReference=False):
