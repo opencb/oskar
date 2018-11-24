@@ -1,7 +1,5 @@
 package org.opencb.oskar.spark.variant.analysis;
 
-import com.google.common.base.Throwables;
-import org.apache.spark.ml.param.Param;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -12,12 +10,14 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.clinical.pedigree.Member;
 import org.opencb.biodata.models.clinical.pedigree.Pedigree;
+import org.opencb.biodata.models.commons.Phenotype;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.commons.utils.ListUtils;
 import org.opencb.oskar.analysis.variant.FisherExactTest;
 import org.opencb.oskar.analysis.variant.MendelianError;
-import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
+import org.opencb.oskar.spark.variant.analysis.params.HasPhenotype;
+import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.udf.StudyFunction;
 import scala.collection.mutable.ListBuffer;
 import scala.collection.mutable.WrappedArray;
@@ -34,10 +34,7 @@ import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.udf;
 import static org.apache.spark.sql.types.DataTypes.*;
 
-public class FisherTransformer extends AbstractTransformer {
-
-    private Param<String> studyIdParam;
-    private Param<String> phenotypeParam;
+public class FisherTransformer extends AbstractTransformer implements HasStudyId, HasPhenotype {
 
     public FisherTransformer() {
         this(null);
@@ -45,36 +42,18 @@ public class FisherTransformer extends AbstractTransformer {
 
     public FisherTransformer(String uid) {
         super(uid);
-        studyIdParam = new Param<>(this, "studyId", "");
-        phenotypeParam = new Param<>(this, "phenotype", "");
     }
 
-    // Study ID parameter
-    public Param<String> studyIdParam() {
-        return studyIdParam;
-    }
-
+    @Override
     public FisherTransformer setStudyId(String studyId) {
         set(studyIdParam(), studyId);
         return this;
     }
 
-    public String getStudyId() {
-        return getOrDefault(studyIdParam());
-    }
-
-    // Phenotype parameter
-    public Param<String> phenotypeParam() {
-        return phenotypeParam;
-    }
-
+    @Override
     public FisherTransformer setPhenotype(String phenotype) {
         set(phenotypeParam(), phenotype);
         return this;
-    }
-
-    public String getPhenotype() {
-        return getOrDefault(phenotypeParam());
     }
 
     // Main function
@@ -84,20 +63,20 @@ public class FisherTransformer extends AbstractTransformer {
 
         // Search affected samples (and take the index)
         Set<Integer> affectedIndexSet = new HashSet<>();
-        try {
-            List<String> samples = new Oskar().metadata().samples(df, getStudyId());
-            List<Pedigree> pedigrees = new Oskar().metadata().pedigrees(df, getStudyId());
-            int i = 0;
-            for (Pedigree pedigree: pedigrees) {
-                for (Member member: pedigree.getMembers()) {
-                    if (ListUtils.isNotEmpty(member.getPhenotypes())
-                            && member.getPhenotypes().contains(getPhenotype())) {
-                        affectedIndexSet.add(samples.indexOf(member.getId()));
+        List<String> samples = new Oskar().metadata().samples(df, getStudyId());
+        List<Pedigree> pedigrees = new Oskar().metadata().pedigrees(df, getStudyId());
+        int i = 0;
+        for (Pedigree pedigree: pedigrees) {
+            for (Member member: pedigree.getMembers()) {
+                if (ListUtils.isNotEmpty(member.getPhenotypes())) {
+                    for (Phenotype phenotype: member.getPhenotypes()) {
+                        if (getPhenotype().equals(phenotype.getId())) {
+                            affectedIndexSet.add(samples.indexOf(member.getId()));
+                            break;
+                        }
                     }
                 }
             }
-        } catch (OskarException e) {
-            throw Throwables.propagate(e);
         }
 
         UserDefinedFunction fisher = udf(new FisherTransformer.FisherFunction(getStudyId(), affectedIndexSet),

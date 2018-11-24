@@ -1,6 +1,8 @@
 package org.opencb.oskar.spark.variant.analysis;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.ml.param.Param;
+import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.catalyst.expressions.GenericRow;
@@ -11,19 +13,23 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.feature.AllelesCode;
 import org.opencb.biodata.models.feature.Genotype;
+import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
+import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
 import scala.collection.mutable.WrappedArray;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.explode;
 import static org.apache.spark.sql.types.DataTypes.*;
 import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.SAMPLES_DATA_IDX;
 import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.STATS_IDX;
+import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.study;
 
 
 /**
@@ -44,7 +50,7 @@ import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.ST
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class InbreedingCoefficientTransformer extends AbstractTransformer {
+public class InbreedingCoefficientTransformer extends AbstractTransformer implements HasStudyId {
 
     private static final StructType STRUCT_TYPE = createStructType(new StructField[]{
             createStructField("SampleId", StringType, false),
@@ -75,6 +81,7 @@ public class InbreedingCoefficientTransformer extends AbstractTransformer {
         setDefault(missingGenotypesAsHomRefParam, false);
         setDefault(includeMultiAllelicGenotypesParam, false);
         setDefault(mafThresholdParam, 0.0);
+        setDefault(studyIdParam(), "");
     }
 
     public Param<Boolean> missingGenotypesAsHomRefParam() {
@@ -106,7 +113,23 @@ public class InbreedingCoefficientTransformer extends AbstractTransformer {
 
     @Override
     public Dataset<Row> transform(Dataset<?> dataset) {
-        List<String> sampleNames = new VariantMetadataManager().samples((Dataset<Row>) dataset).values().iterator().next();
+        Map<String, List<String>> samplesMap = new VariantMetadataManager().samples((Dataset<Row>) dataset);
+        boolean multiStudy = samplesMap.size() != 1;
+        List<String> sampleNames;
+        String studyId = getStudyId();
+        if (StringUtils.isNotEmpty(studyId)) {
+            sampleNames = samplesMap.get(studyId);
+            if (sampleNames == null) {
+                throw OskarException.unknownStudy(studyId, samplesMap.keySet());
+            }
+        } else {
+            if (multiStudy) {
+                throw OskarException.missingStudy(samplesMap.keySet());
+            } else {
+                studyId = samplesMap.keySet().iterator().next();
+                sampleNames = samplesMap.values().iterator().next();
+            }
+        }
         InbreedingCoefficientUserDefinedAggregationFunction udaf = new InbreedingCoefficientUserDefinedAggregationFunction(
                 sampleNames.size(),
                 getOrDefault(missingGenotypesAsHomRefParam),
@@ -114,7 +137,13 @@ public class InbreedingCoefficientTransformer extends AbstractTransformer {
                 getOrDefault(mafThresholdParam), sampleNames
         );
 
-        return dataset.agg(udaf.apply(col("studies").apply(0)).as("r"))
+        Column study;
+        if (multiStudy) {
+            study = study("studies", studyId);
+        } else {
+            study = col("studies").apply(0);
+        }
+        return dataset.agg(udaf.apply(study).as("r"))
                 .select(explode(col("r").apply("values")).as("value"))
                 .selectExpr("value.*");
     }

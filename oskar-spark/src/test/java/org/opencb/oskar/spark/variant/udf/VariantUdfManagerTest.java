@@ -53,51 +53,20 @@ public class VariantUdfManagerTest {
     public void testUDFs() throws Exception {
         Dataset<Row> df = sparkTest.getVariantsDataset();
 
-        df.select(population_frequency("annotation", "1kG_phase3", "ALL").as("pf")).filter(col("pf").gt(0)).show();
-        df.select(population_frequency_as_map("annotation").apply("1kG_phase3:ALL").as("pf")).filter(col("pf").gt(0)).show();
-        df.select(genes("annotation")).show();
-        df.select(sample_data("studies", "NA12877").as("NA12877")).show();
+//        df.select(population_frequency("annotation", "1kG_phase3", "ALL").as("pf")).filter(col("pf").gt(0)).show();
+//        df.select(population_frequency_as_map("annotation").apply("1kG_phase3:ALL").as("pf")).filter(col("pf").gt(0)).show();
+//        df.select(genes("annotation")).show();
+//        df.select(sample_data("studies", "NA12877").as("NA12877")).show();
         df.select(sample_data_field("studies", "NA12877", "GT").as("NA12877")).show();
+        df.select(sample_data_field("studies", "NA12878", "GT").as("NA12878")).show();
+        df.selectExpr("sample_data_field(studies, 'NA12877', 'GT') AS NA12877").show();
+        df.selectExpr("sample_data_field(studies, 'NA12878', 'GT') AS NA12878").show();
     }
 
     @Test
     public void testPrintVcf() throws IOException, OskarException {
         Dataset<Row> df = sparkTest.getVariantsDataset();
-        sparkTest.getOskar().stats(df, null, "ALL", null).select(
-                col("chromosome").as("#CHROM"),
-                col("start").as("POS"),
-                coalesce(expr("annotation.id"), lit(".")).as("ID"),
-                when(col("reference").equalTo(""), lit("-")).otherwise(col("reference")).as("REF"),
-//                when(col("alternate").equalTo(""), lit("-")).otherwise(col("alternate")).as("ALT"),
-                when(
-                        size(col("studies").apply(0).apply("secondaryAlternates")).gt(0),
-                        concat_ws(",",
-                                array(
-                                        when(
-                                                col("alternate").equalTo(""),
-                                                lit("-"))
-                                                .otherwise(col("alternate")),
-                                        concat_ws(",", col("studies").apply(0).apply("secondaryAlternates").apply("alternate")))))
-                        .otherwise(when(
-                                col("alternate").equalTo(""),
-                                lit("-"))
-                                .otherwise(col("alternate"))).as("ALT"),
-                file_qual("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz").as("QUAL"),
-                file_filter("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz").as("FILTER"),
-//                concat_ws(";", fileFilter("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz")).as("FILTER"),
-//                concat(
-//                        lit("AF="), expr("studies[0].stats['ALL'].altAlleleFreq"),
-//                        lit(";AC="), expr("studies[0].stats['ALL'].altAlleleCount"),
-//                        lit(";AN="), expr("studies[0].stats['ALL'].alleleCount")).as("INFO"),
-                map(
-                        lit("AF"), expr("studies[0].stats['ALL'].altAlleleFreq"),
-                        lit("AC"), expr("studies[0].stats['ALL'].altAlleleCount"),
-                        lit("AN"), expr("studies[0].stats['ALL'].alleleCount")).as("INFO"),
-                lit("GT").as("FORMAT"),
-                sample_data_field("studies", "NA12877", "GT").as("NA12877"),
-                sample_data_field("studies", "NA12878", "GT").as("NA12878"),
-                sample_data_field("studies", "NA12879", "GT").as("NA12879")).show(false);
-
+        sparkTest.toVcf(df).show();
     }
 
     @Test

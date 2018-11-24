@@ -11,6 +11,7 @@ import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.oskar.analysis.variant.MendelianError;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
+import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import scala.collection.mutable.ListBuffer;
 import scala.runtime.AbstractFunction4;
 
@@ -32,9 +33,8 @@ import static org.apache.spark.sql.types.DataTypes.*;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-public class MendelianErrorTransformer extends AbstractTransformer {
+public class MendelianErrorTransformer extends AbstractTransformer implements HasStudyId {
 
-    private Param<String> studyIdParam;
     private Param<String> fatherParam;
     private Param<String> motherParam;
     private Param<String> childParam;
@@ -48,21 +48,13 @@ public class MendelianErrorTransformer extends AbstractTransformer {
         fatherParam = new Param<>(this, "father", "");
         motherParam = new Param<>(this, "mother", "");
         childParam = new Param<>(this, "child", "");
-        studyIdParam = new Param<>(this, "studyId", "");
         setDefault(studyIdParam(), "");
     }
 
-    public Param<String> studyIdParam() {
-        return studyIdParam;
-    }
-
+    @Override
     public MendelianErrorTransformer setStudyId(String studyId) {
         set(studyIdParam(), studyId);
         return this;
-    }
-
-    public String getStudyId() {
-        return getOrDefault(studyIdParam());
     }
 
     public Param<String> fatherParam() {

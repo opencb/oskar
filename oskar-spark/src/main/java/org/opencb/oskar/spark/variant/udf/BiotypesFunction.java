@@ -1,5 +1,6 @@
 package org.opencb.oskar.spark.variant.udf;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.sql.api.java.UDF1;
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema;
 import scala.runtime.AbstractFunction1;
@@ -27,7 +28,9 @@ public class BiotypesFunction extends AbstractFunction1<GenericRowWithSchema, Co
 
         for (GenericRowWithSchema consequenceType : consequenceTypes) {
             String biotype = consequenceType.getString(BIOTYPE_IDX);
-            biotypes.add(biotype);
+            if (StringUtils.isNotEmpty(biotype)) {
+                biotypes.add(biotype);
+            }
         }
         return biotypes;
     }
