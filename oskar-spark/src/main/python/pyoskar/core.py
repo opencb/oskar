@@ -79,6 +79,9 @@ class VariantMetadataManager(JavaWrapper):
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.VariantMetadataManager")
         self.python_utils = PythonUtils()
 
+    def getMetadataPath(self, path):
+        return path + ".meta.json.gz"
+
     def readMetadata(self, meta_path):
         """
 
@@ -90,12 +93,6 @@ class VariantMetadataManager(JavaWrapper):
         """
         java_vm = self._call_java("readMetadata", meta_path)
         return self.python_utils.toPythonDict(java_vm)
-
-    def samples(self, df, studyId = None):
-        if studyId is None:
-            return self._call_java("samples", df)
-        else:
-            return self._call_java("samples", df, studyId)
 
     def setVariantMetadata(self, df, variant_metadata):
         """
@@ -115,6 +112,12 @@ class VariantMetadataManager(JavaWrapper):
     def variantMetadata(self, df):
         java_vm = self._call_java("variantMetadata", df)
         return self.python_utils.toPythonDict(java_vm)
+
+    def samples(self, df, studyId = None):
+        if studyId is None:
+            return self._call_java("samples", df)
+        else:
+            return self._call_java("samples", df, studyId)
 
     def pedigrees(self, df, studyId = None):
         if studyId is None:
