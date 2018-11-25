@@ -15,16 +15,17 @@ from pyspark.ml.common import inherit_doc
 from pyspark.sql.functions import lit
 from pyspark.sql import DataFrame
 
+DEFAULT_COHORT = "ALL"
+
 
 class VariantStatsTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
-    cohort = Param(Params._dummy(), "cohort", "Name of the cohort to calculate stats from. By default, ALL",
+    cohort = Param(Params._dummy(), "cohort", "Name of the cohort to calculate stats from. By default, " + DEFAULT_COHORT,
                    typeConverter=TypeConverters.toString)
     samples = Param(Params._dummy(), "samples", "Samples belonging to the cohort. If empty, will try to read from metadata. "
                     + "If missing, will use all samples from the dataset.", typeConverter=TypeConverters.toListString)
     studyId = Param(Params._dummy(), "studyId", "Id of the study to calculate the stats from.", typeConverter=TypeConverters.toString)
     missingAsReference = Param(Params._dummy(), "missingAsReference", "Count missing alleles as reference alleles.",
                                typeConverter=TypeConverters.toBoolean)
-
 
     @keyword_only
     def __init__(self, studyId=None, cohort="ALL", samples=None, missingAsReference=False):
@@ -145,15 +146,18 @@ class MendelianErrorTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadabl
 
 
 class IBSTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
-    samples = Param(Params._dummy(), "samples", "", typeConverter=TypeConverters.toListInt)
-    skipReference = Param(Params._dummy(), "skipReference", "", typeConverter=TypeConverters.toBoolean)
+    samples = Param(Params._dummy(), "samples", "List of samples to use for calculating the IBS",
+                    typeConverter=TypeConverters.toListString)
+    skipMultiAllelicParam = Param(Params._dummy(), "skipMultiAllelicParam", "Skip variants where any of the samples has a secondary alternate",
+                                  typeConverter=TypeConverters.toBoolean)
+    skipReference = Param(Params._dummy(), "skipReference", "Skip variants where both samples of the pair are HOM_REF",
+                          typeConverter=TypeConverters.toBoolean)
     numPairs = Param(Params._dummy(), "numPairs", "", typeConverter=TypeConverters.toInt)
 
     @keyword_only
-    def __init__(self, skipReference=False, samples=None, numPairs=None):
+    def __init__(self):
         super(IBSTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.IBSTransformer", self.uid)
-        self._setDefault(skipReference=False)
         # self._java_obj = self._new_java_obj("org.apache.spark.ml.feature.Binarizer", self.uid)
         kwargs = self._input_kwargs
         # self.setParams(**kwargs)
@@ -161,6 +165,9 @@ class IBSTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWr
 
     def setSamples(self, value):
         return self._set(samples=value)
+
+    def setSkipMultiAllelicParam(self, value):
+        return self._set(skipMultiAllelicParam=value)
 
     def setSkipReference(self, value):
         return self._set(skipReference=value)
