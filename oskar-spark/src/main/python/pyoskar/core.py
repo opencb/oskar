@@ -21,33 +21,52 @@ class Oskar(JavaWrapper):
         df = self._call_java("load", file_path)
         return df
 
-    def stats(self, df, studyId=None, cohort="ALL", samples=None, missingAsReference=False):
+    def stats(self, df, studyId=None, cohort=None, samples=None, missingAsReference=None):
         """
 
         :type df: DataFrame
         """
-        return VariantStatsTransformer(studyId=studyId, cohort=cohort, samples=samples, missingAsReference=missingAsReference).transform(df)
-
-    # def sample_stats(self, df, samples, studyId=None):
+        transformer = VariantStatsTransformer()
+        if studyId is not None:
+            transformer.setStudyId(studyId)
+        if cohort is not None:
+            transformer.setCohort(cohort)
+        if samples is not None:
+            transformer.setSamples(samples)
+        if missingAsReference is not None:
+            transformer.setMissingAsReference(missingAsReference)
+        return transformer.transform(df)
 
     def globalStats(self, df, studyId=None, fileId=None):
         """
 
         :type df: DataFrame
         """
-        return VariantSetStatsTransformer(studyId=studyId, fileId=fileId).transform(df)
+        transformer = VariantSetStatsTransformer()
+        if studyId is not None:
+            transformer.setStudyId(studyId)
+        if fileId is not None:
+            transformer.setFileId(fileId)
+        return VariantSetStatsTransformer().transform(df)
 
-    def histogram(self, df, inputCol, step):
+    def histogram(self, df, inputCol, step=None):
         """
 
         :type df: DataFrame
         """
-        return HistogramTransformer(step=step, inputCol=inputCol).transform(df)
+        transformer = HistogramTransformer().setInputCol(inputCol)
+        if step is not None:
+            transformer.setStep(step)
+        return transformer.transform(df)
 
-    def hardyWeinberg(self, df, studyId=None):
-        return HardyWeinbergTransformer(studyId=studyId).transform(df)
+    def hardyWeinberg(self, df, studyId):
+        """
 
-    def ibs(self, df, samples=None, skipMultiAllelicParam=None, skipReference=None, numPairs=None):
+        :type df: DataFrame
+        """
+        return HardyWeinbergTransformer().setStudyId(studyId).transform(df)
+
+    def ibs(self, df, samples=None, skipMultiAllelic=None, skipReference=None, numPairs=None):
         """
 
         :type df: DataFrame
@@ -55,15 +74,15 @@ class Oskar(JavaWrapper):
         transformer = IBSTransformer()
         if samples is not None:
             transformer.setSamples(samples)
-        if skipMultiAllelicParam is not None:
-            transformer.setSkipMultiAllelicParam(skipMultiAllelicParam)
+        if skipMultiAllelic is not None:
+            transformer.setSkipMultiAllelic(skipMultiAllelic)
         if skipReference is not None:
             transformer.setSkipReference(skipReference)
         if numPairs is not None:
             transformer.setNumPairs(numPairs)
         return transformer.transform(df)
 
-    def mendel(self, df,  father, mother, child, studyId=None):
+    def mendel(self, df, father, mother, child, studyId=None):
         """
 
         :type df: DataFrame
@@ -79,6 +98,80 @@ class Oskar(JavaWrapper):
     # def hwe_normalized_pca(self, df):
     # def concordance(self, df):
     # def cancer_signature(self, df): #https://cancer.sanger.ac.uk/cosmic/signatures
+
+    def chiSquare(self, df, studyId, phenotype):
+        """
+
+        :type df: DataFrame
+        """
+        return ChiSquareTransformer().setStudyId(studyId).setPhenotype(phenotype).transform(df)
+
+    def compoundHeterozygote(self, df, father, mother, child, studyId=None, missingGenotypeAsReference=None):
+        """
+
+        :type df: DataFrame
+        """
+        transformer = CompoundHeterozigoteTransformer().setFather(father).setMother(mother).setChild(child)
+        if studyId is not None:
+            transformer.setStudyId(studyId)
+        if missingGenotypeAsReference is not None:
+            transformer.setMissingGenotypeAsReference(missingGenotypeAsReference)
+        return transformer.transform(df)
+
+    def facet(self, df):
+        """
+
+        :type df: DataFrame
+        """
+        return FacetTransformer().transform(df)
+
+    def fisher(self, df, studyId, phenotype):
+        """
+
+        :type df: DataFrame
+        """
+        return FisherTransformer().setStudyId(studyId).setPhenotype(phenotype).transform(df)
+
+    def imputeSex(self, df, lowerThreshold=None, upperThreshold=None, chromosomeX=None, includePseudoautosomalRegions=None, par1chrX=None, par2chrX=None):
+        """
+
+        :type df: DataFrame
+        """
+        transformer = ImputeSexTransformer()
+        if lowerThreshold is not None:
+            transformer.setLowerThreshold(lowerThreshold)
+        if upperThreshold is not None:
+            transformer.setUpperThreshold(upperThreshold)
+        if chromosomeX is not None:
+            transformer.setChromosomeX(chromosomeX)
+        if includePseudoautosomalRegions is not None:
+            transformer.setIncludePseudoautosomalRegions(includePseudoautosomalRegions)
+        if par1chrX is not None:
+            transformer.setPar1chrX(par1chrX)
+        if par2chrX is not None:
+            transformer.setPar2chrX(par2chrX)
+        return transformer.transform(df)
+
+    def inbreedingCoefficient(self, df, missingGenotypesAsHomRef=None, includeMultiAllelicGenotypes=None, mafThreshold=None):
+        """
+
+        :type df: DataFrame
+        """
+        transformer = InbreedingCoefficientTransformer()
+        if missingGenotypesAsHomRef is not None:
+            transformer.setMissingGenotypesAsHomRef(missingGenotypesAsHomRef)
+        if includeMultiAllelicGenotypes is not None:
+            transformer.setIncludeMultiAllelicGenotypes(includeMultiAllelicGenotypes)
+        if mafThreshold is not None:
+            transformer.setMafThreshold(mafThreshold)
+        return transformer.transform(df)
+
+    def tdt(self, df, studyId, phenotype):
+        """
+
+        :type df: DataFrame
+        """
+        return TdtTransformer().setStudyId(studyId).setPhenotype(phenotype).transform(df)
 
 
 class VariantMetadataManager(JavaWrapper):
@@ -115,20 +208,21 @@ class VariantMetadataManager(JavaWrapper):
         :rtype: DataFrame
         :return: Modified DataFrame
         """
-        java_object = self.python_utils.toJavaObject(variant_metadata, "org.opencb.biodata.models.variant.metadata.VariantMetadata")
+        java_object = self.python_utils.toJavaObject(variant_metadata,
+                                                     "org.opencb.biodata.models.variant.metadata.VariantMetadata")
         return self._call_java("setVariantMetadata", df, java_object)
 
     def variantMetadata(self, df):
         java_vm = self._call_java("variantMetadata", df)
         return self.python_utils.toPythonDict(java_vm)
 
-    def samples(self, df, studyId = None):
+    def samples(self, df, studyId=None):
         if studyId is None:
             return self._call_java("samples", df)
         else:
             return self._call_java("samples", df, studyId)
 
-    def pedigrees(self, df, studyId = None):
+    def pedigrees(self, df, studyId=None):
         if studyId is None:
             java_vm = self._call_java("pedigrees", df)
             return self.python_utils.toPythonDict(java_vm)
