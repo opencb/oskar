@@ -47,7 +47,7 @@ class Oskar(JavaWrapper):
             transformer.setStudyId(studyId)
         if fileId is not None:
             transformer.setFileId(fileId)
-        return VariantSetStatsTransformer().transform(df)
+        return transformer.transform(df)
 
     def histogram(self, df, inputCol, step=None):
         """
@@ -242,6 +242,7 @@ class PythonUtils(JavaWrapper):
     def __init__(self):
         super(PythonUtils, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.commons.PythonUtils")
+        self._paramMap = {}
 
     def toJavaObject(self, python_dict, class_name):
         js = json.dumps(python_dict, ensure_ascii=False)
@@ -250,3 +251,16 @@ class PythonUtils(JavaWrapper):
     def toPythonDict(self, java_object):
         js = self._call_java("toJsonString", java_object)
         return json.loads(js)
+
+    def setKwargs(self, **kwargs):
+        """
+        """
+        for param, value in kwargs.items():
+            p = getattr(self, param)
+            if value is not None:
+                try:
+                    value = p.typeConverter(value)
+                except TypeError as e:
+                    raise TypeError('Invalid param value given for param "%s". %s' % (p.name, e))
+            self._paramMap[p] = value
+        return self

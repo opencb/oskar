@@ -105,3 +105,8 @@ def population_frequency(annotationCol, study, population):
 def population_frequency_as_map(annotationCol):
     jc = VariantUdfManager._java_class().population_frequency_as_map(_to_java_column(annotationCol))
     return Column(jc)
+
+
+def biotypes(annotationCol):
+    jc = VariantUdfManager._java_class().biotypes(_to_java_column(annotationCol))
+    return Column(jc)
