@@ -11,6 +11,10 @@ import org.opencb.oskar.spark.variant.converters.DataframeToFacetFieldConverter;
 
 import java.io.IOException;
 
+import static org.apache.spark.sql.functions.*;
+import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.biotypes;
+import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.genes;
+
 public class FacetTransformerTest {
 
     @ClassRule
@@ -77,6 +81,18 @@ public class FacetTransformerTest {
     }
 
     @Test
+    public void uniqueAggFacet() throws IOException, OskarException {
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+
+        df.withColumn("gene", explode(genes("annotation")))
+                .withColumn("biotype", explode(biotypes("annotation")))
+//                .groupBy("gene").agg(expr("collect_list(start)"), expr("sum(power(start, 2))"))
+//              .groupBy("gene").agg(expr("percentile(start, array(0.25, 0.5, 0.75))"))
+//              .groupBy("gene").agg(collect_list("biotype"))
+                .show(false);
+    }
+
+    @Test
     public void nestedFacetCatAndCat() throws IOException, OskarException {
         Dataset<Row> df = sparkTest.getVariantsDataset();
 
@@ -133,6 +149,72 @@ public class FacetTransformerTest {
 
         Dataset<Row> res = facetTransformer.transform(df);
         res.show(100);
+
+        System.out.println(new DataframeToFacetFieldConverter().convert(res).toString());
+    }
+
+    @Test
+    public void aggSumSq() throws IOException, OskarException {
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+        String facet = "sumsq(gerp)";
+        FacetTransformer facetTransformer = new FacetTransformer();
+        facetTransformer.setFacet(facet);
+
+        Dataset<Row> res = facetTransformer.transform(df);
+        res.show(100);
+
+        System.out.println(new DataframeToFacetFieldConverter().convert(res).toString());
+    }
+
+    @Test
+    public void aggPercentile() throws IOException, OskarException {
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+        String facet = "percentile(gerp)";
+        FacetTransformer facetTransformer = new FacetTransformer();
+        facetTransformer.setFacet(facet);
+
+        Dataset<Row> res = facetTransformer.transform(df);
+        res.show(100);
+
+        System.out.println(new DataframeToFacetFieldConverter().convert(res).toString());
+    }
+
+    @Test
+    public void aggAvg() throws IOException, OskarException {
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+        String facet = "biotype>>gene>>avg(start)";
+//        String facet = "avg(start)";
+        FacetTransformer facetTransformer = new FacetTransformer();
+        facetTransformer.setFacet(facet);
+
+        Dataset<Row> res = facetTransformer.transform(df);
+        res.show(100);
+
+        System.out.println(new DataframeToFacetFieldConverter().convert(res).toString());
+    }
+
+    @Test
+    public void nestedFacetCatAndCatAndPercentileSq() throws IOException, OskarException {
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+        String facet = "biotype>>type>>percentile(gerp)";
+        FacetTransformer facetTransformer = new FacetTransformer();
+        facetTransformer.setFacet(facet);
+
+        Dataset<Row> res = facetTransformer.transform(df);
+        res.show(100);
+
+        System.out.println(new DataframeToFacetFieldConverter().convert(res).toString());
+    }
+
+    @Test
+    public void nestedFacetCatAndCatAndPercentile() throws IOException, OskarException {
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+        String facet = "biotype>>type>>percentile(gerp)";
+        FacetTransformer facetTransformer = new FacetTransformer();
+        facetTransformer.setFacet(facet);
+
+        Dataset<Row> res = facetTransformer.transform(df);
+        res.show(100, false);
 
         System.out.println(new DataframeToFacetFieldConverter().convert(res).toString());
     }
