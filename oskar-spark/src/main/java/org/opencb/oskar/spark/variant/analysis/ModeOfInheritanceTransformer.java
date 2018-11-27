@@ -35,10 +35,15 @@ import static org.apache.spark.sql.functions.lit;
  */
 public class ModeOfInheritanceTransformer extends AbstractTransformer implements HasStudyId, HasPhenotype {
 
-    protected static final String MONOALLELIC = "monoallelic";
-    protected static final String BIALLELIC = "biallelic";
-    protected static final String X_LINKED = "xLinked";
-    protected static final String Y_LINKED = "yLinked";
+    public static final String MONOALLELIC = "monoallelic"; // dominant
+    public static final String BIALLELIC = "biallelic";  // recessive
+    public static final String X_LINKED_MONOALLELIC = "xLinkedMonoallelic";
+    public static final String X_LINKED_BIALLELIC = "xLinkedBiallelic";
+    public static final String Y_LINKED = "yLinked";
+
+    private static final String X_LINKED_MONOALLELIC_INTERNAL = "xlinkedmonoallelic";
+    private static final String X_LINKED_BIALLELIC_INTERNAL = "xlinkedbiallelic";
+    private static final String Y_LINKED_INTERNAL = "ylinked";
 
     private final Param<String> familyParam;
     private final Param<String> modeOfInheritanceParam;
@@ -60,7 +65,7 @@ public class ModeOfInheritanceTransformer extends AbstractTransformer implements
         super(uid);
         familyParam = new Param<>(this, "family", "Select family to apply the filter");
         modeOfInheritanceParam = new Param<>(this, "modeOfInheritance", "Filter by mode of inheritance from a given family. "
-                + "Accepted values: monoallelic (dominant), biallelic (recessive), xLinked, yLinked");
+                + "Accepted values: monoallelic (dominant), biallelic (recessive), xLinkedMonoallelic, xLinkedBiallelic, yLinked");
         incompletePenetranceParam = new Param<>(this, "incompletePenetrance",
                 "Allow variants with an incomplete penetrance mode of inheritance");
         missingAsReferenceParam = new Param<>(this, "missingAsReference", "");
@@ -131,8 +136,8 @@ public class ModeOfInheritanceTransformer extends AbstractTransformer implements
 
         Map<String, List<String>> gtsMap;
 
-        String moiSimple = moi.toLowerCase().replace("_", "");
-        switch (moiSimple) {
+        String moiLowerCase = moi.toLowerCase().replace("_", "");
+        switch (moiLowerCase) {
             case MONOALLELIC:
             case "dominant":
                 gtsMap = ModeOfInheritance.dominant(pedigree, new Phenotype(phenotype, phenotype, null), incompletePenetrance);
@@ -141,11 +146,17 @@ public class ModeOfInheritanceTransformer extends AbstractTransformer implements
             case "recessive":
                 gtsMap = ModeOfInheritance.recessive(pedigree, new Phenotype(phenotype, phenotype, null), incompletePenetrance);
                 break;
-            case X_LINKED:
-                gtsMap = ModeOfInheritance.xLinked(pedigree, new Phenotype(phenotype, phenotype, null), incompletePenetrance);
+            case X_LINKED_MONOALLELIC_INTERNAL: // Internal values already in lower case
+                gtsMap = ModeOfInheritance.xLinked(pedigree, new Phenotype(phenotype, phenotype, null), true);
+                df = df.filter(df.col("chromosome").equalTo("X"));
                 break;
-            case Y_LINKED:
+            case X_LINKED_BIALLELIC_INTERNAL: // Internal values already in lower case
+                gtsMap = ModeOfInheritance.xLinked(pedigree, new Phenotype(phenotype, phenotype, null), false);
+                df = df.filter(df.col("chromosome").equalTo("X"));
+                break;
+            case Y_LINKED_INTERNAL: // Internal values already in lower case
                 gtsMap = ModeOfInheritance.yLinked(pedigree, new Phenotype(phenotype, phenotype, null));
+                df = df.filter(df.col("chromosome").equalTo("Y"));
                 break;
             default:
                 throw new IllegalArgumentException("Unknown mode of inheritance '" + moi + "'.");
