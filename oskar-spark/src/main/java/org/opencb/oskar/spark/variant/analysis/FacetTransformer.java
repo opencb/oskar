@@ -176,7 +176,7 @@ public class FacetTransformer extends AbstractTransformer {
         if (aggFunct.equals("sumsq")) {
             return expr("sum(power(" + fieldName + ", 2))").as(label);
         } else if (aggFunct.equals("percentile")) {
-            return expr("percentile(" + fieldName + ", array(0.1, 0.25, 0.5, 0.75, 0.0))").as(label);
+            return expr("percentile(" + fieldName + ", array(" + PERCENTILE_PARAMS + "))").as(label);
         } else if (aggFunct.equals("unique")) {
             return expr("collect_set(" + fieldName + ")").as(label);
         } else {
@@ -231,7 +231,8 @@ public class FacetTransformer extends AbstractTransformer {
             throw new InvalidParameterException("Aggregation function unknown: " + aggFunction);
         }
 
-        if (isExplode.contains(fieldName)) {
+
+        if (validRangeFields.containsKey(fieldName)) {
             UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
             ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
             return df.withColumn(fieldName, scoreFunction.apply(functScoreSeq));
@@ -304,6 +305,7 @@ public class FacetTransformer extends AbstractTransformer {
         isExplode.add("gene");
         isExplode.add("ensemblGeneId");
         isExplode.add("ensemblTranscriptId");
+
 
         // Range fields
         validRangeFields = new HashMap<>();
