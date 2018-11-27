@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.apache.spark.sql.functions.col;
 
@@ -95,13 +96,13 @@ public class VariantMetadataManager {
                 .withColumn("studies", col("studies").cast(new ArrayType(elementType, studiesArrayType.containsNull())));
     }
 
-    public VariantMetadata variantMetadata(Dataset<Row> df) throws OskarException {
+    public VariantMetadata variantMetadata(Dataset<Row> df) {
         Metadata variantMetadata = getMetadata(df).getMetadata("variantMetadata");
 
         try {
             return objectMapper.readValue(variantMetadata.toString(), VariantMetadata.class);
         } catch (IOException e) {
-            throw OskarException.errorLoadingVariantMetadataFile(e, "");
+            throw OskarException.errorReadingVariantMetadataFromDataframe(e);
         }
     }
 
@@ -190,7 +191,7 @@ public class VariantMetadataManager {
         return map;
     }
 
-    public List<String> samples(Dataset<Row> df, String studyId) throws OskarException {
+    public List<String> samples(Dataset<Row> df, String studyId) {
         Metadata samplesMetadata = getSamplesMetadata(df);
 
         String[] sampleNames = samplesMetadata.getStringArray(studyId);
@@ -238,21 +239,19 @@ public class VariantMetadataManager {
                     // Father
                     if (attrMetadata.contains("father")) {
                         fatherId = attrMetadata.getString("father");
-                        if (!membersMap.containsKey(fatherId)) {
-                            Member father = new Member().setId(fatherId);
-                            membersMap.put(fatherId, father);
+                        if (StringUtils.isNotEmpty(fatherId)) {
+                            Member father = membersMap.computeIfAbsent(fatherId, id -> new Member().setId(id));
+                            member.setFather(father);
                         }
-                        member.setFather(membersMap.get(fatherId));
                     }
 
                     // Mother
                     if (attrMetadata.contains("mother")) {
                         motherId = attrMetadata.getString("mother");
-                        if (!membersMap.containsKey(motherId)) {
-                            Member mother = new Member().setId(motherId);
-                            membersMap.put(motherId, mother);
+                        if (StringUtils.isNotEmpty(motherId)) {
+                            Member mother = membersMap.computeIfAbsent(motherId, id -> new Member().setId(id));
+                            member.setFather(mother);
                         }
-                        member.setMother(membersMap.get(motherId));
                     }
 
                     if (StringUtils.isNotEmpty(fatherId) && StringUtils.isNotEmpty(motherId)) {
@@ -296,8 +295,22 @@ public class VariantMetadataManager {
         return pedigreeMap;
     }
 
-    public List<Pedigree> pedigrees(Dataset<Row> df, String studyId) throws OskarException {
-        return pedigrees(df).get(studyId);
+    public List<Pedigree> pedigrees(Dataset<Row> df, String studyId) {
+        Map<String, List<Pedigree>> pedigreesMap = pedigrees(df);
+        if (!pedigreesMap.containsKey(studyId)) {
+            throw OskarException.unknownStudy(studyId, pedigreesMap.keySet());
+        }
+        return pedigreesMap.get(studyId);
+    }
+
+    public Pedigree pedigree(Dataset<Row> df, String studyId, String family) {
+        List<Pedigree> pedigrees = pedigrees(df, studyId);
+        for (Pedigree pedigree : pedigrees) {
+            if (pedigree.getName().equals(family)) {
+                return pedigree;
+            }
+        }
+        throw OskarException.unknownFamily(studyId, family, pedigrees.stream().map(Pedigree::getName).collect(Collectors.toList()));
     }
 
     private Metadata getMetadata(Dataset<Row> df) {

@@ -1,7 +1,5 @@
 package org.opencb.oskar.spark.variant.analysis;
 
-import com.google.common.base.Throwables;
-import org.apache.spark.ml.param.Param;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -17,8 +15,9 @@ import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.commons.utils.ListUtils;
 import org.opencb.oskar.analysis.variant.ChiSquareTest;
 import org.opencb.oskar.analysis.variant.MendelianError;
-import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
+import org.opencb.oskar.spark.variant.analysis.params.HasPhenotype;
+import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.udf.StudyFunction;
 import scala.collection.mutable.ListBuffer;
 import scala.collection.mutable.WrappedArray;
@@ -35,10 +34,7 @@ import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.udf;
 import static org.apache.spark.sql.types.DataTypes.*;
 
-public class ChiSquareTransformer extends AbstractTransformer {
-
-    private Param<String> studyIdParam;
-    private Param<String> phenotypeParam;
+public class ChiSquareTransformer extends AbstractTransformer implements HasStudyId, HasPhenotype {
 
     public ChiSquareTransformer() {
         this(null);
@@ -46,36 +42,18 @@ public class ChiSquareTransformer extends AbstractTransformer {
 
     public ChiSquareTransformer(String uid) {
         super(uid);
-        studyIdParam = new Param<>(this, "studyId", "");
-        phenotypeParam = new Param<>(this, "phenotype", "");
     }
 
-    // Study ID parameter
-    public Param<String> studyIdParam() {
-        return studyIdParam;
-    }
-
+    @Override
     public ChiSquareTransformer setStudyId(String studyId) {
         set(studyIdParam(), studyId);
         return this;
     }
 
-    public String getStudyId() {
-        return getOrDefault(studyIdParam());
-    }
-
-    // Phenotype parameter
-    public Param<String> phenotypeParam() {
-        return phenotypeParam;
-    }
-
+    @Override
     public ChiSquareTransformer setPhenotype(String phenotype) {
         set(phenotypeParam(), phenotype);
         return this;
-    }
-
-    public String getPhenotype() {
-        return getOrDefault(phenotypeParam());
     }
 
     // Main function
@@ -85,23 +63,19 @@ public class ChiSquareTransformer extends AbstractTransformer {
 
         // Search affected samples (and take the index)
         Set<Integer> affectedIndexSet = new HashSet<>();
-        try {
-            List<String> samples = new Oskar().metadata().samples(df, getStudyId());
-            List<Pedigree> pedigrees = new Oskar().metadata().pedigrees(df, getStudyId());
-            for (Pedigree pedigree: pedigrees) {
-                for (Member member: pedigree.getMembers()) {
-                    if (ListUtils.isNotEmpty(member.getPhenotypes())) {
-                        for (Phenotype phenotype: member.getPhenotypes()) {
-                            if (getPhenotype().equals(phenotype.getId())) {
-                                affectedIndexSet.add(samples.indexOf(member.getId()));
-                                break;
-                            }
+        List<String> samples = new Oskar().metadata().samples(df, getStudyId());
+        List<Pedigree> pedigrees = new Oskar().metadata().pedigrees(df, getStudyId());
+        for (Pedigree pedigree: pedigrees) {
+            for (Member member: pedigree.getMembers()) {
+                if (ListUtils.isNotEmpty(member.getPhenotypes())) {
+                    for (Phenotype phenotype: member.getPhenotypes()) {
+                        if (getPhenotype().equals(phenotype.getId())) {
+                            affectedIndexSet.add(samples.indexOf(member.getId()));
+                            break;
                         }
                     }
                 }
             }
-        } catch (OskarException e) {
-            throw Throwables.propagate(e);
         }
 
         UserDefinedFunction chiSquare = udf(new ChiSquareTransformer.ChiSquareFunction(getStudyId(), affectedIndexSet),

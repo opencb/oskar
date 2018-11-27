@@ -1,7 +1,5 @@
 package org.opencb.oskar.spark.variant.analysis;
 
-import com.google.common.base.Throwables;
-import org.apache.spark.ml.param.Param;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -16,8 +14,9 @@ import org.opencb.biodata.models.commons.Phenotype;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.utils.ListUtils;
 import org.opencb.oskar.analysis.variant.TdtTest;
-import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
+import org.opencb.oskar.spark.variant.analysis.params.HasPhenotype;
+import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.udf.StudyFunction;
 import scala.collection.mutable.ListBuffer;
 import scala.collection.mutable.WrappedArray;
@@ -31,9 +30,7 @@ import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.udf;
 import static org.apache.spark.sql.types.DataTypes.*;
 
-public class TdtTransformer extends AbstractTransformer {
-    private Param<String> studyIdParam;
-    private Param<String> phenotypeParam;
+public class TdtTransformer extends AbstractTransformer implements HasStudyId, HasPhenotype {
 
     public TdtTransformer() {
         this(null);
@@ -41,36 +38,18 @@ public class TdtTransformer extends AbstractTransformer {
 
     public TdtTransformer(String uid) {
         super(uid);
-        studyIdParam = new Param<>(this, "studyId", "");
-        phenotypeParam = new Param<>(this, "phenotype", "");
     }
 
-    // Study ID parameter
-    public Param<String> studyIdParam() {
-        return studyIdParam;
-    }
-
+    @Override
     public TdtTransformer setStudyId(String studyId) {
         set(studyIdParam(), studyId);
         return this;
     }
 
-    public String getStudyId() {
-        return getOrDefault(studyIdParam());
-    }
-
-    // Phenotype parameter
-    public Param<String> phenotypeParam() {
-        return phenotypeParam;
-    }
-
+    @Override
     public TdtTransformer setPhenotype(String phenotype) {
         set(phenotypeParam(), phenotype);
         return this;
-    }
-
-    public String getPhenotype() {
-        return getOrDefault(phenotypeParam());
     }
 
     // Main function
@@ -78,50 +57,46 @@ public class TdtTransformer extends AbstractTransformer {
     public Dataset<Row> transform(Dataset<?> dataset) {
         Dataset<Row> df = (Dataset<Row>) dataset;
 
-        try {
-            // Prepare families and affected samples from pedigree and phenotype name
-            ObjectMap families = new ObjectMap();
-            Set<String> affectedSamples = new HashSet<>();
-            List<Pedigree> pedigrees = new Oskar().metadata().pedigrees(df, getStudyId());
-            for (Pedigree pedigree: pedigrees) {
-                ObjectMap family = new ObjectMap();
-                for (Member member: pedigree.getMembers()) {
-                    ObjectMap sample = new ObjectMap();
-                    if (member.getFather() != null) {
-                        sample.put("father", member.getFather().getId());
-                    }
-                    if (member.getMother() != null) {
-                        sample.put("mother", member.getMother().getId());
-                    }
-                    if (member.getMultiples() != null && ListUtils.isNotEmpty(member.getMultiples().getSiblings())) {
-                        sample.put("siblings", member.getMultiples().getSiblings());
-                    }
-                    // Add the sample to the family
-                    family.put(member.getId(), sample);
+        // Prepare families and affected samples from pedigree and phenotype name
+        ObjectMap families = new ObjectMap();
+        Set<String> affectedSamples = new HashSet<>();
+        List<Pedigree> pedigrees = new Oskar().metadata().pedigrees(df, getStudyId());
+        for (Pedigree pedigree: pedigrees) {
+            ObjectMap family = new ObjectMap();
+            for (Member member: pedigree.getMembers()) {
+                ObjectMap sample = new ObjectMap();
+                if (member.getFather() != null) {
+                    sample.put("father", member.getFather().getId());
+                }
+                if (member.getMother() != null) {
+                    sample.put("mother", member.getMother().getId());
+                }
+                if (member.getMultiples() != null && ListUtils.isNotEmpty(member.getMultiples().getSiblings())) {
+                    sample.put("siblings", member.getMultiples().getSiblings());
+                }
+                // Add the sample to the family
+                family.put(member.getId(), sample);
 
-                    // Is an affected member ?
-                    for (Phenotype phenotype: member.getPhenotypes()) {
-                        if (getPhenotype().equals(phenotype.getId())) {
-                            affectedSamples.add(member.getId());
-                            break;
-                        }
+                // Is an affected member ?
+                for (Phenotype phenotype: member.getPhenotypes()) {
+                    if (getPhenotype().equals(phenotype.getId())) {
+                        affectedSamples.add(member.getId());
+                        break;
                     }
                 }
-                // Add the family
-                families.put(pedigree.getName(), family);
             }
-
-            List<String> sampleNames = new Oskar().metadata().samples(df, getStudyId());
-
-            UserDefinedFunction tdt = udf(new TdtTransformer.TdtFunction(getStudyId(), families, affectedSamples,
-                            sampleNames), DataTypes.DoubleType);
-
-
-            ListBuffer<Column> seq = new ListBuffer<Column>().$plus$eq(col("studies")).$plus$eq(col("chromosome"));
-            return dataset.withColumn("TDT", tdt.apply(seq));
-        } catch (OskarException e) {
-            throw Throwables.propagate(e);
+            // Add the family
+            families.put(pedigree.getName(), family);
         }
+
+        List<String> sampleNames = new Oskar().metadata().samples(df, getStudyId());
+
+        UserDefinedFunction tdt = udf(new TdtTransformer.TdtFunction(getStudyId(), families, affectedSamples,
+                        sampleNames), DataTypes.DoubleType);
+
+
+        ListBuffer<Column> seq = new ListBuffer<Column>().$plus$eq(col("studies")).$plus$eq(col("chromosome"));
+        return dataset.withColumn("TDT", tdt.apply(seq));
     }
 
     @Override
