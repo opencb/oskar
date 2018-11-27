@@ -64,12 +64,18 @@ public class VariantToRowConverter extends AvroToRowConverter implements Convert
     public static final int SUBSTITUTION_SCORES_IDX =
             getFieldIdx(ANNOTATION_DATA_TYPE, "consequenceTypes.proteinVariantAnnotation.substitutionScores");
 
+    public static final int FUNCTIONAL_SCORE_IDX =
+            getFieldIdx(ANNOTATION_DATA_TYPE, "functionalScore");
+    public static final int CONSERVATION_SCORE_IDX =
+            getFieldIdx(ANNOTATION_DATA_TYPE, "conservation");
+
     public static final int SCORE_SCORE_IDX =
-            getFieldIdx(ANNOTATION_DATA_TYPE, "consequenceTypes.proteinVariantAnnotation.substitutionScores.score");
+            getFieldIdx(ANNOTATION_DATA_TYPE, "functionalScore.score");
     public static final int SCORE_SOURCE_IDX =
-            getFieldIdx(ANNOTATION_DATA_TYPE, "consequenceTypes.proteinVariantAnnotation.substitutionScores.source");
-public static final int SCORE_DESCRIPTION_IDX =
-            getFieldIdx(ANNOTATION_DATA_TYPE, "consequenceTypes.proteinVariantAnnotation.substitutionScores.description");
+            getFieldIdx(ANNOTATION_DATA_TYPE, "functionalScore.source");
+    public static final int SCORE_DESCRIPTION_IDX =
+            getFieldIdx(ANNOTATION_DATA_TYPE, "functionalScore.description");
+
 
     public static final int POPULATION_FREQUENCIES_IDX =
             getFieldIdx(ANNOTATION_DATA_TYPE, "populationFrequencies");
