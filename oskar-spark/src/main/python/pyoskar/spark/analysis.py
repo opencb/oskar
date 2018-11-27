@@ -18,7 +18,14 @@ from pyspark.sql import DataFrame
 DEFAULT_COHORT = "ALL"
 
 
-class VariantStatsTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
+class AbstractTransformer(JavaTransformer, JavaMLReadable, JavaMLWritable):
+
+    def setParams(self, **kwargs):
+        filtered = {k: v for k, v in kwargs.items() if v is not None}
+        return self._set(**filtered)
+
+
+class VariantStatsTransformer(AbstractTransformer):
     cohort = Param(Params._dummy(), "cohort", "Name of the cohort to calculate stats from. By default, " + DEFAULT_COHORT,
                    typeConverter=TypeConverters.toString)
     samples = Param(Params._dummy(), "samples", "Samples belonging to the cohort. If empty, will try to read from metadata. "
@@ -28,11 +35,10 @@ class VariantStatsTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable,
                                typeConverter=TypeConverters.toBoolean)
 
     @keyword_only
-    def __init__(self):
+    def __init__(self, cohort=None, samples=None, studyId=None, missingAsReference=None):
         super(VariantStatsTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.VariantStatsTransformer", self.uid)
-        kwargs = self._input_kwargs
-        self._set(**kwargs)
+        self.setParams(**self._input_kwargs)
 
     def getCohort(self):
         return self.getOrDefault(self.cohort)
@@ -62,16 +68,15 @@ class VariantStatsTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable,
         return self._call_java(df)
 
 
-class VariantSetStatsTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
+class VariantSetStatsTransformer(AbstractTransformer):
     studyId = Param(Params._dummy(), "studyId", "", typeConverter=TypeConverters.toString)
     fileId = Param(Params._dummy(), "fileId", "", typeConverter=TypeConverters.toString)
 
     @keyword_only
-    def __init__(self):
+    def __init__(self, studyId=None, fileId=None):
         super(VariantSetStatsTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.VariantSetStatsTransformer", self.uid)
-        kwargs = self._input_kwargs
-        self._set(**kwargs)
+        self.setParams(**self._input_kwargs)
 
     def getStudyId(self):
         return self.getOrDefault(self.studyId)
@@ -86,12 +91,12 @@ class VariantSetStatsTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadab
         return self._set(fileId=value)
 
 
-class HistogramTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
+class HistogramTransformer(AbstractTransformer):
     step = Param(Params._dummy(), "step", "", typeConverter=TypeConverters.toFloat)
     inputCol = Param(Params._dummy(), "inputCol", "", typeConverter=TypeConverters.toString)
 
     @keyword_only
-    def __init__(self):
+    def __init__(self, step=None, inputCol=None):
         """
 
         :type inputCol: str
@@ -99,8 +104,7 @@ class HistogramTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, Ja
         """
         super(HistogramTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.HistogramTransformer", self.uid)
-        kwargs = self._input_kwargs
-        self._set(**kwargs)
+        self.setParams(**self._input_kwargs)
 
     def getStep(self):
         return self.getOrDefault(self.step)
@@ -115,15 +119,14 @@ class HistogramTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, Ja
         return self._set(inputCol=value)
 
 
-class HardyWeinbergTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
+class HardyWeinbergTransformer(AbstractTransformer):
     studyId = Param(Params._dummy(), "studyId", "", typeConverter=TypeConverters.toString)
 
     @keyword_only
-    def __init__(self):
+    def __init__(self, studyId=None):
         super(HardyWeinbergTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.HardyWeinbergTransformer", self.uid)
-        kwargs = self._input_kwargs
-        self._set(**kwargs)
+        self.setParams(**self._input_kwargs)
 
     def getStudyId(self):
         return self.getOrDefault(self.studyId)
@@ -132,7 +135,7 @@ class HardyWeinbergTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable
         return self._set(studyId=value)
 
 
-class IBSTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
+class IBSTransformer(AbstractTransformer):
     samples = Param(Params._dummy(), "samples", "List of samples to use for calculating the IBS",
                     typeConverter=TypeConverters.toListString)
     skipMultiAllelic = Param(Params._dummy(), "skipMultiAllelic", "Skip variants where any of the samples has a secondary alternate",
@@ -142,11 +145,10 @@ class IBSTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWr
     numPairs = Param(Params._dummy(), "numPairs", "", typeConverter=TypeConverters.toInt)
 
     @keyword_only
-    def __init__(self):
+    def __init__(self, samples=None, skipMultiAllelic=None, skipReference=None, numPairs=None):
         super(IBSTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.IBSTransformer", self.uid)
-        kwargs = self._input_kwargs
-        self._set(**kwargs)
+        self.setParams(**self._input_kwargs)
 
     def getSamples(self):
         return self.getOrDefault(self.samples)
@@ -173,18 +175,17 @@ class IBSTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWr
         return self._set(numPairs=value)
 
 
-class MendelianErrorTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
+class MendelianErrorTransformer(AbstractTransformer):
     studyId = Param(Params._dummy(), "studyId", "", typeConverter=TypeConverters.toString)
     father = Param(Params._dummy(), "father", "", typeConverter=TypeConverters.toString)
     mother = Param(Params._dummy(), "mother", "", typeConverter=TypeConverters.toString)
     child = Param(Params._dummy(), "child", "", typeConverter=TypeConverters.toString)
 
     @keyword_only
-    def __init__(self):
+    def __init__(self, studyId=None, father=None, mother=None, child=None):
         super(MendelianErrorTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.MendelianErrorTransformer", self.uid)
-        kwargs = self._input_kwargs
-        self._set(**kwargs)
+        self.setParams(**self._input_kwargs)
 
     def getStudyId(self):
         return self.getOrDefault(self.studyId)
@@ -211,16 +212,15 @@ class MendelianErrorTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadabl
         return self._set(child=value)
 
 
-class ChiSquareTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
+class ChiSquareTransformer(AbstractTransformer):
     studyId = Param(Params._dummy(), "studyId", "", typeConverter=TypeConverters.toString)
     phenotype = Param(Params._dummy(), "phenotype", "", typeConverter=TypeConverters.toString)
 
     @keyword_only
-    def __init__(self):
+    def __init__(self, studyId=None, phenotype=None):
         super(ChiSquareTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.ChiSquareTransformer", self.uid)
-        kwargs = self._input_kwargs
-        self._set(**kwargs)
+        self.setParams(**self._input_kwargs)
 
     def getStudyId(self):
         return self.getOrDefault(self.studyId)
@@ -235,7 +235,7 @@ class ChiSquareTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, Ja
         return self._set(phenotype=value)
 
 
-class CompoundHeterozigoteTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
+class CompoundHeterozigoteTransformer(AbstractTransformer):
     father = Param(Params._dummy(), "father", "", typeConverter=TypeConverters.toString)
     mother = Param(Params._dummy(), "mother", "", typeConverter=TypeConverters.toString)
     child = Param(Params._dummy(), "child", "", typeConverter=TypeConverters.toString)
@@ -243,11 +243,10 @@ class CompoundHeterozigoteTransformer(JavaTransformer, HasHandleInvalid, JavaMLR
     missingGenotypeAsReference = Param(Params._dummy(), "missingGenotypeAsReference", "", typeConverter=TypeConverters.toBoolean)
 
     @keyword_only
-    def __init__(self):
+    def __init__(self, father=None, mother=None, child=None, studyId=None, missingGenotypeAsReference=None):
         super(CompoundHeterozigoteTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.CompoundHeterozigoteTransformer", self.uid)
-        kwargs = self._input_kwargs
-        self._set(**kwargs)
+        self.setParams(**self._input_kwargs)
 
     def getFather(self):
         return self.getOrDefault(self.father)
@@ -280,26 +279,24 @@ class CompoundHeterozigoteTransformer(JavaTransformer, HasHandleInvalid, JavaMLR
         return self._set(missingGenotypeAsReference=value)
 
 
-class FacetTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
+class FacetTransformer(AbstractTransformer):
 
     @keyword_only
     def __init__(self):
         super(FacetTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.FacetTransformer", self.uid)
-        kwargs = self._input_kwargs
-        self._set(**kwargs)
+        self.setParams(**self._input_kwargs)
 
 
-class FisherTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
+class FisherTransformer(AbstractTransformer):
     studyId = Param(Params._dummy(), "studyId", "", typeConverter=TypeConverters.toString)
     phenotype = Param(Params._dummy(), "phenotype", "", typeConverter=TypeConverters.toString)
 
     @keyword_only
-    def __init__(self):
+    def __init__(self, studyId=None, phenotype=None):
         super(FisherTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.FisherTransformer", self.uid)
-        kwargs = self._input_kwargs
-        self._set(**kwargs)
+        self.setParams(**self._input_kwargs)
 
     def getStudyId(self):
         return self.getOrDefault(self.studyId)
@@ -314,7 +311,7 @@ class FisherTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaM
         return self._set(phenotype=value)
 
 
-class ImputeSexTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
+class ImputeSexTransformer(AbstractTransformer):
     lowerThreshold = Param(Params._dummy(), "lowerThreshold", "", typeConverter=TypeConverters.toFloat)
     upperThreshold = Param(Params._dummy(), "upperThreshold", "", typeConverter=TypeConverters.toFloat)
     chromosomeX = Param(Params._dummy(), "chromosomeX", "", typeConverter=TypeConverters.toString)
@@ -323,11 +320,10 @@ class ImputeSexTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, Ja
     par2chrX = Param(Params._dummy(), "par2chrX", "", typeConverter=TypeConverters.toString)
 
     @keyword_only
-    def __init__(self):
+    def __init__(self, lowerThreshold=None, upperThreshold=None, chromosomeX=None, includePseudoautosomalRegions=None, par1chrX=None, par2chrX=None):
         super(ImputeSexTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.ImputeSexTransformer", self.uid)
-        kwargs = self._input_kwargs
-        self._set(**kwargs)
+        self.setParams(**self._input_kwargs)
 
     def getLowerThreshold(self):
         return self.getOrDefault(self.lowerThreshold)
@@ -366,7 +362,7 @@ class ImputeSexTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, Ja
         return self._set(par2chrX=value)
 
 
-class InbreedingCoefficientTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
+class InbreedingCoefficientTransformer(AbstractTransformer):
     missingGenotypesAsHomRef = Param(Params._dummy(), "missingGenotypesAsHomRef", "Treat missing genotypes as HomRef genotypes",
                                      typeConverter=TypeConverters.toBoolean)
     includeMultiAllelicGenotypes = Param(Params._dummy(), "includeMultiAllelicGenotypes", "Include multi-allelic variants in the calculation",
@@ -375,11 +371,10 @@ class InbreedingCoefficientTransformer(JavaTransformer, HasHandleInvalid, JavaML
                          typeConverter=TypeConverters.toFloat)
 
     @keyword_only
-    def __init__(self):
+    def __init__(self, missingGenotypesAsHomRef=None, includeMultiAllelicGenotypes=None, mafThreshold=None):
         super(InbreedingCoefficientTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.InbreedingCoefficientTransformer", self.uid)
-        kwargs = self._input_kwargs
-        self._set(**kwargs)
+        self.setParams(**self._input_kwargs)
 
     def getMissingGenotypesAsHomRef(self):
         return self.getOrDefault(self.missingGenotypesAsHomRef)
@@ -400,16 +395,15 @@ class InbreedingCoefficientTransformer(JavaTransformer, HasHandleInvalid, JavaML
         return self._set(mafThreshold=value)
 
 
-class TdtTransformer(JavaTransformer, HasHandleInvalid, JavaMLReadable, JavaMLWritable):
+class TdtTransformer(AbstractTransformer):
     studyId = Param(Params._dummy(), "studyId", "", typeConverter=TypeConverters.toString)
     phenotype = Param(Params._dummy(), "phenotype", "", typeConverter=TypeConverters.toString)
 
     @keyword_only
-    def __init__(self):
+    def __init__(self, studyId=None, phenotype=None):
         super(TdtTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.TdtTransformer", self.uid)
-        kwargs = self._input_kwargs
-        self._set(**kwargs)
+        self.setParams(**self._input_kwargs)
 
     def getStudyId(self):
         return self.getOrDefault(self.studyId)
