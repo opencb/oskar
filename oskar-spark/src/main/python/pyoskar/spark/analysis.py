@@ -175,43 +175,6 @@ class IBSTransformer(AbstractTransformer):
         return self._set(numPairs=value)
 
 
-class MendelianErrorTransformer(AbstractTransformer):
-    studyId = Param(Params._dummy(), "studyId", "", typeConverter=TypeConverters.toString)
-    father = Param(Params._dummy(), "father", "", typeConverter=TypeConverters.toString)
-    mother = Param(Params._dummy(), "mother", "", typeConverter=TypeConverters.toString)
-    child = Param(Params._dummy(), "child", "", typeConverter=TypeConverters.toString)
-
-    @keyword_only
-    def __init__(self, studyId=None, father=None, mother=None, child=None):
-        super(MendelianErrorTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.MendelianErrorTransformer", self.uid)
-        self.setParams(**self._input_kwargs)
-
-    def getStudyId(self):
-        return self.getOrDefault(self.studyId)
-
-    def setStudyId(self, value):
-        return self._set(studyId=value)
-
-    def getFather(self):
-        return self.getOrDefault(self.father)
-
-    def setFather(self, value):
-        return self._set(father=value)
-
-    def getMother(self):
-        return self.getOrDefault(self.mother)
-
-    def setMother(self, value):
-        return self._set(mother=value)
-
-    def getChild(self):
-        return self.getOrDefault(self.child)
-
-    def setChild(self, value):
-        return self._set(child=value)
-
-
 class ChiSquareTransformer(AbstractTransformer):
     studyId = Param(Params._dummy(), "studyId", "", typeConverter=TypeConverters.toString)
     phenotype = Param(Params._dummy(), "phenotype", "", typeConverter=TypeConverters.toString)
@@ -280,12 +243,19 @@ class CompoundHeterozigoteTransformer(AbstractTransformer):
 
 
 class FacetTransformer(AbstractTransformer):
+    facet = Param(Params._dummy(), "facet", "", typeConverter=TypeConverters.toString)
 
     @keyword_only
-    def __init__(self):
+    def __init__(self, facet=None):
         super(FacetTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.FacetTransformer", self.uid)
         self.setParams(**self._input_kwargs)
+
+    def getFacet(self):
+        return self.getOrDefault(self.facet)
+
+    def setFacet(self, value):
+        return self._set(facet=value)
 
 
 class FisherTransformer(AbstractTransformer):
@@ -320,7 +290,8 @@ class ImputeSexTransformer(AbstractTransformer):
     par2chrX = Param(Params._dummy(), "par2chrX", "", typeConverter=TypeConverters.toString)
 
     @keyword_only
-    def __init__(self, lowerThreshold=None, upperThreshold=None, chromosomeX=None, includePseudoautosomalRegions=None, par1chrX=None, par2chrX=None):
+    def __init__(self, lowerThreshold=None, upperThreshold=None, chromosomeX=None, includePseudoautosomalRegions=None, par1chrX=None,
+                 par2chrX=None):
         super(ImputeSexTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.ImputeSexTransformer", self.uid)
         self.setParams(**self._input_kwargs)
@@ -393,6 +364,102 @@ class InbreedingCoefficientTransformer(AbstractTransformer):
 
     def setMafThreshold(self, value):
         return self._set(mafThreshold=value)
+
+
+class MendelianErrorTransformer(AbstractTransformer):
+    studyId = Param(Params._dummy(), "studyId", "", typeConverter=TypeConverters.toString)
+    father = Param(Params._dummy(), "father", "", typeConverter=TypeConverters.toString)
+    mother = Param(Params._dummy(), "mother", "", typeConverter=TypeConverters.toString)
+    child = Param(Params._dummy(), "child", "", typeConverter=TypeConverters.toString)
+
+    @keyword_only
+    def __init__(self, studyId=None, father=None, mother=None, child=None):
+        super(MendelianErrorTransformer, self).__init__()
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.MendelianErrorTransformer", self.uid)
+        self.setParams(**self._input_kwargs)
+
+    def getStudyId(self):
+        return self.getOrDefault(self.studyId)
+
+    def setStudyId(self, value):
+        return self._set(studyId=value)
+
+    def getFather(self):
+        return self.getOrDefault(self.father)
+
+    def setFather(self, value):
+        return self._set(father=value)
+
+    def getMother(self):
+        return self.getOrDefault(self.mother)
+
+    def setMother(self, value):
+        return self._set(mother=value)
+
+    def getChild(self):
+        return self.getOrDefault(self.child)
+
+    def setChild(self, value):
+        return self._set(child=value)
+
+
+class ModeOfInheritanceTransformer(AbstractTransformer):
+    family = Param(Params._dummy(), "family", "Select family to apply the filter", typeConverter=TypeConverters.toString)
+    modeOfInheritance = Param(Params._dummy(), "modeOfInheritance", "Filter by mode of inheritance from a given family. Accepted values: "
+                              + "monoallelic (dominant), biallelic (recessive), xLinkedMonoallelic, xLinkedBiallelic, yLinked",
+                              typeConverter=TypeConverters.toString)
+    studyId = Param(Params._dummy(), "studyId", "", typeConverter=TypeConverters.toString)
+    phenotype = Param(Params._dummy(), "phenotype", "", typeConverter=TypeConverters.toString)
+    incompletePenetrance = Param(Params._dummy(), "incompletePenetrance", "Allow variants with an incomplete penetrance mode of inheritance",
+                                 typeConverter=TypeConverters.toBoolean)
+    missingAsReference = Param(Params._dummy(), "missingAsReference", "Select family to apply the filter",
+                               typeConverter=TypeConverters.toBoolean)
+
+    @keyword_only
+    def __init__(self, family=None, modeOfInheritance=None, studyId=None, phenotype=None, incompletePenetrance=None, missingAsReference=None):
+        super(ModeOfInheritanceTransformer, self).__init__()
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.ModeOfInheritanceTransformer", self.uid)
+        self.setParams(**self._input_kwargs)
+
+    def getFamily(self):
+        return self.getOrDefault(self.family)
+
+    def setFamily(self, value):
+        return self._set(family=value)
+
+    def getModeOfInheritance(self):
+        return self.getOrDefault(self.modeOfInheritance)
+
+    def setModeOfInheritance(self, value):
+        return self._set(modeOfInheritance=value)
+
+    def getStudyId(self):
+        return self.getOrDefault(self.studyId)
+
+    def setStudyId(self, value):
+        return self._set(studyId=value)
+
+    def getPhenotype(self):
+        return self.getOrDefault(self.phenotype)
+
+    def setPhenotype(self, value):
+        return self._set(phenotype=value)
+
+    def getIncompletePenetrance(self):
+            return self.getOrDefault(self.incompletePenetrance)
+
+    def setIncompletePenetrance(self, value):
+        return self._set(incompletePenetrance=value)
+
+    def getMissingAsReference(self):
+        return self.getOrDefault(self.missingAsReference)
+
+    def setMissingAsReference(self, value):
+        return self._set(missingAsReference=value)
+
+
+
+
 
 
 class TdtTransformer(AbstractTransformer):

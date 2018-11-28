@@ -36,12 +36,12 @@ class Oskar(JavaWrapper):
         return CompoundHeterozigoteTransformer(father=father, mother=mother, child=child, studyId=studyId,
                                                missingGenotypeAsReference=missingGenotypeAsReference).transform(df)
 
-    def facet(self, df):
+    def facet(self, df, facet):
         """
 
         :type df: DataFrame
         """
-        return FacetTransformer().transform(df)
+        return FacetTransformer(facet=facet).transform(df)
 
     def fisher(self, df, studyId, phenotype):
         """
@@ -101,6 +101,14 @@ class Oskar(JavaWrapper):
     # def hwe_normalized_pca(self, df):
     # def concordance(self, df):
     # def cancer_signature(self, df): #https://cancer.sanger.ac.uk/cosmic/signatures
+
+    def modeOfInheritance(self, df, family, modeOfInheritance, phenotype, studyId=None, incompletePenetrance=None, missingAsReference=None):
+        """
+
+        :type df: DataFrame
+        """
+        return ModeOfInheritanceTransformer(family=family, modeOfInheritance=modeOfInheritance, phenotype=phenotype, studyId=studyId,
+                                            incompletePenetrance=incompletePenetrance, missingAsReference=missingAsReference).transform(df)
 
     def tdt(self, df, studyId, phenotype):
         """
