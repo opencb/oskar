@@ -42,71 +42,99 @@ def include_studies(column, include):
     return Column(jc)
 
 
-def study(column, studyId):
-    jc = VariantUdfManager._java_class().study(_to_java_column(column), studyId)
+def study(studies, studyId):
+    jc = VariantUdfManager._java_class().study(_to_java_column(studies), studyId)
     return Column(jc)
 
 
-def file(column, fileId):
-    jc = VariantUdfManager._java_class().file(_to_java_column(column), fileId)
+def file(studies, fileId):
+    jc = VariantUdfManager._java_class().file(_to_java_column(studies), fileId)
     return Column(jc)
 
 
-def file_attribute(column, fileId, info):
-    jc = VariantUdfManager._java_class().file_attribute(_to_java_column(column), fileId, info)
+def file_attribute(studies, fileId, info):
+    jc = VariantUdfManager._java_class().file_attribute(_to_java_column(studies), fileId, info)
     return Column(jc)
 
 
-def file_filter(column, fileId):
-    jc = VariantUdfManager._java_class().file_filter(_to_java_column(column), fileId)
+def file_filter(studies, fileId):
+    jc = VariantUdfManager._java_class().file_filter(_to_java_column(studies), fileId)
     return Column(jc)
 
 
-def file_qual(column, fileId):
-    jc = VariantUdfManager._java_class().file_qual(_to_java_column(column), fileId)
+def file_qual(studies, fileId):
+    jc = VariantUdfManager._java_class().file_qual(_to_java_column(studies), fileId)
     return Column(jc)
 
 
-def sample_data(column, sample):
-    jc = VariantUdfManager._java_class().sample_data(_to_java_column(column), sample)
+def genotype(studies, sample):
+    jc = VariantUdfManager._java_class().genotype(_to_java_column(studies), sample)
     return Column(jc)
 
 
-def sample_data_field(column, sample, formatField):
-    jc = VariantUdfManager._java_class().sample_data_field(_to_java_column(column), sample, formatField)
+def sample_data(studies, sample):
+    jc = VariantUdfManager._java_class().sample_data(_to_java_column(studies), sample)
     return Column(jc)
 
 
-def genes(annotationCol):
-    jc = VariantUdfManager._java_class().genes(_to_java_column(annotationCol))
+def sample_data_field(studies, sample, formatField):
+    jc = VariantUdfManager._java_class().sample_data_field(_to_java_column(studies), sample, formatField)
     return Column(jc)
 
 
-def consequence_types(annotationCol):
-    jc = VariantUdfManager._java_class().consequence_types(_to_java_column(annotationCol))
+def genes(annotation):
+    jc = VariantUdfManager._java_class().genes(_to_java_column(annotation))
     return Column(jc)
 
 
-def consequence_types_by_gene(annotationCol, gene):
-    jc = VariantUdfManager._java_class().consequence_types_by_gene(_to_java_column(annotationCol), gene)
+def consequence_types(annotation):
+    jc = VariantUdfManager._java_class().consequence_types(_to_java_column(annotation))
     return Column(jc)
 
 
-def protein_substitution(annotationCol, score):
-    jc = VariantUdfManager._java_class().protein_substitution(_to_java_column(annotationCol), score)
+def consequence_types_by_gene(annotation, gene):
+    jc = VariantUdfManager._java_class().consequence_types_by_gene(_to_java_column(annotation), gene)
     return Column(jc)
 
 
-def population_frequency(annotationCol, study, population):
-    jc = VariantUdfManager._java_class().population_frequency(_to_java_column(annotationCol), study, population)
+def protein_substitution(annotation, score):
+    jc = VariantUdfManager._java_class().protein_substitution(_to_java_column(annotation), score)
     return Column(jc)
 
 
-def population_frequency_as_map(annotationCol):
-    jc = VariantUdfManager._java_class().population_frequency_as_map(_to_java_column(annotationCol))
+def population_frequency(annotation, study, population):
+    jc = VariantUdfManager._java_class().population_frequency(_to_java_column(annotation), study, population)
     return Column(jc)
 
 
-def biotypes(annotationCol):
-    jc = VariantUdfManager._java_class().biotypes(_to_java_column(annotationCol))
+def population_frequency_as_map(annotation):
+    jc = VariantUdfManager._java_class().population_frequency_as_map(_to_java_column(annotation))
+    return Column(jc)
+
+
+def biotypes(annotation):
+    jc = VariantUdfManager._java_class().biotypes(_to_java_column(annotation))
+    return Column(jc)
+
+
+def functional(annotation, source):
+    jc = VariantUdfManager._java_class().functional(_to_java_column(annotation), source)
+    return Column(jc)
+
+
+def ensembl_genes(annotation):
+    jc = VariantUdfManager._java_class().ensembl_genes(_to_java_column(annotation))
+    return Column(jc)
+
+
+def conservation(annotation, source):
+    """
+    Read the value for the Conservation Score. Null if none. Main conservation scores are: gerp, phastCons and phylop
+    :type annotation: str
+    :param annotation: annotation field
+    :type source: str
+    :param source: study source
+    :return: conservation score
+    """
+    jc = VariantUdfManager._java_class().conservation(_to_java_column(annotation), source)
     return Column(jc)
