@@ -30,6 +30,7 @@ public class DataframeToFacetFieldConverter implements Converter<Dataset<Row>, F
     private static final String AGGREGATION_IDENTIFIER = "(";
     public static final String[] AGGREGATION_FUNCTIONS = {"sum", "avg", "max", "min", "unique", "variance", "stddev",
             "unique", "percentile", "sumsq", };
+    public static final String PERCENTILE_PARAMS = "0.1, 0.25, 0.50, 0.75, 0.9";
     public static final Pattern CATEGORICAL_PATTERN = Pattern.compile("^([a-zA-Z][a-zA-Z0-9_.]+)(\\[[a-zA-Z0-9_.\\-,*]+])?(:\\*|:\\d+)?$");
 
     @Override
@@ -76,8 +77,10 @@ public class DataframeToFacetFieldConverter implements Converter<Dataset<Row>, F
                 } else {
                     // Aggregation
                     // FIXME: support integer values, maybe AggregationValues should be of type Number
-                    if (field.getAggregationName().equals("percentile")
-                            || field.getAggregationName().equals("unique")) {
+                    if (field.getAggregationName().equals("percentile")) {
+                        field.setAggregationName("percentile(" + PERCENTILE_PARAMS + ")");
+                        field.setAggregationValues(row.getList(i));
+                    } else if (field.getAggregationName().equals("unique")) {
                         field.setAggregationValues(row.getList(i));
                     } else {
                         field.setAggregationValues(Collections.singletonList(Double.parseDouble("" + row.get(i))));

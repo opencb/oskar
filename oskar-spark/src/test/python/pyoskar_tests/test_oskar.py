@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase,main
 
 from pyspark.sql import DataFrame
 
@@ -8,25 +8,7 @@ from pyoskar.core import Oskar, VariantMetadataManager
 from pyoskar_tests.test_utils import *
 
 
-class TestOskar(TestCase):
-    spark = None  # type: SparkSession
-    oskar = None  # type: Oskar
-    df = None  # type: DataFrame
-
-    @classmethod
-    def setUpClass(cls):
-        cls.spark = create_testing_pyspark_session()
-        cls.oskar = Oskar(cls.spark)
-        cls.df = cls.oskar.load(PLATINUM_SMALL)
-
-    def setUp(self):
-        self.spark = self.__class__.spark
-        self.oskar = self.__class__.oskar
-        self.df = self.__class__.df
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.spark.stop()
+class TestOskar(TestOskarBase):
 
     def test_load(self):
         self.df.show()
@@ -50,3 +32,7 @@ class TestOskar(TestCase):
         self.df.withColumn("freqs", population_frequency_as_map("annotation")).show(100)
         self.df.withColumn("freqs", population_frequency_as_map("annotation")).where("freqs['1kG_phase3:ALL'] > 0").show(
             100)
+
+
+if __name__ == '__main__':
+    main()

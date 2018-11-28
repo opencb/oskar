@@ -12,7 +12,7 @@ class Oskar(JavaWrapper):
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.Oskar", spark._jsparkSession)
         self.spark = spark
         self.metadata = VariantMetadataManager()
-        self.pythonUtils = PythonUtils()
+        self.python_utils = PythonUtils()
 
     def load(self, file_path):
         """
@@ -21,48 +21,79 @@ class Oskar(JavaWrapper):
         df = self._call_java("load", file_path)
         return df
 
-    def stats(self, df, studyId=None, cohort="ALL", samples=None, missingAsReference=False):
+    def chiSquare(self, df, studyId, phenotype):
         """
 
         :type df: DataFrame
         """
-        return VariantStatsTransformer(studyId=studyId, cohort=cohort, samples=samples, missingAsReference=missingAsReference).transform(df)
+        return ChiSquareTransformer(studyId=studyId, phenotype=phenotype).transform(df)
 
-    # def sample_stats(self, df, samples, studyId=None):
-
-    def globalStats(self, df, studyId=None, fileId=None):
+    def compoundHeterozygote(self, df, father, mother, child, studyId=None, missingGenotypeAsReference=None):
         """
 
         :type df: DataFrame
         """
-        return VariantSetStatsTransformer(studyId=studyId, fileId=fileId).transform(df)
+        return CompoundHeterozigoteTransformer(father=father, mother=mother, child=child, studyId=studyId,
+                                               missingGenotypeAsReference=missingGenotypeAsReference).transform(df)
 
-    def histogram(self, df, inputCol, step):
+    def facet(self, df, facet):
         """
 
         :type df: DataFrame
         """
-        return HistogramTransformer(step=step, inputCol=inputCol).transform(df)
+        return FacetTransformer(facet=facet).transform(df)
+
+    def fisher(self, df, studyId, phenotype):
+        """
+
+        :type df: DataFrame
+        """
+        return FisherTransformer(studyId=studyId, phenotype=phenotype).transform(df)
 
     def hardyWeinberg(self, df, studyId=None):
+        """
+
+        :type df: DataFrame
+        """
         return HardyWeinbergTransformer(studyId=studyId).transform(df)
 
-    def ibs(self, df, skipReference=None, samples=None, numPairs=None):
+    def histogram(self, df, inputCol, step=None):
         """
 
         :type df: DataFrame
         """
-        return IBSTransformer(skipReference=skipReference, samples=samples, numPairs=numPairs).transform(df)
+        return HistogramTransformer(inputCol=inputCol, step=step).transform(df)
 
-    def mendel(self, df,  father, mother, child, studyId=None):
+    def ibs(self, df, samples=None, skipMultiAllelic=None, skipReference=None, numPairs=None):
         """
 
         :type df: DataFrame
         """
-        transformer = MendelianErrorTransformer().setFather(father).setMother(mother).setChild(child)
-        if studyId is not None:
-            transformer.setStudyId(studyId)
-        return transformer.transform(df)
+        return IBSTransformer(samples=samples, skipReference=skipReference, skipMultiAllelic=skipMultiAllelic,
+                              numPairs=numPairs).transform(df)
+
+    def imputeSex(self, df, lowerThreshold=None, upperThreshold=None, chromosomeX=None, includePseudoautosomalRegions=None, par1chrX=None, par2chrX=None):
+        """
+
+        :type df: DataFrame
+        """
+        return ImputeSexTransformer(lowerThreshold=lowerThreshold, upperThreshold=upperThreshold, chromosomeX=chromosomeX,
+                                    includePseudoautosomalRegions=includePseudoautosomalRegions, par1chrX=par1chrX, par2chrX=par2chrX).transform(df)
+
+    def inbreedingCoefficient(self, df, missingGenotypesAsHomRef=None, includeMultiAllelicGenotypes=None, mafThreshold=None):
+        """
+
+        :type df: DataFrame
+        """
+        return InbreedingCoefficientTransformer(missingGenotypesAsHomRef=missingGenotypesAsHomRef,
+                                                includeMultiAllelicGenotypes=includeMultiAllelicGenotypes, mafThreshold=mafThreshold).transform(df)
+
+    def mendel(self, df, father, mother, child, studyId=None):
+        """
+
+        :type df: DataFrame
+        """
+        return MendelianErrorTransformer(father=father, mother=mother, child=child, studyId=studyId).transform(df)
 
     # def de_novo(self, df):
     # def ld_matrix(self, df):
@@ -70,6 +101,35 @@ class Oskar(JavaWrapper):
     # def hwe_normalized_pca(self, df):
     # def concordance(self, df):
     # def cancer_signature(self, df): #https://cancer.sanger.ac.uk/cosmic/signatures
+
+    def modeOfInheritance(self, df, family, modeOfInheritance, phenotype, studyId=None, incompletePenetrance=None, missingAsReference=None):
+        """
+
+        :type df: DataFrame
+        """
+        return ModeOfInheritanceTransformer(family=family, modeOfInheritance=modeOfInheritance, phenotype=phenotype, studyId=studyId,
+                                            incompletePenetrance=incompletePenetrance, missingAsReference=missingAsReference).transform(df)
+
+    def tdt(self, df, studyId, phenotype):
+        """
+
+        :type df: DataFrame
+        """
+        return TdtTransformer(studyId=studyId, phenotype=phenotype).transform(df)
+
+    def stats(self, df, studyId=None, cohort=None, samples=None, missingAsReference=None):
+        """
+
+        :type df: DataFrame
+        """
+        return VariantStatsTransformer(studyId=studyId, cohort=cohort, samples=samples, missingAsReference=missingAsReference).transform(df)
+
+    def globalStats(self, df, studyId=None, fileId=None):
+        """
+
+        :type df: DataFrame
+        """
+        return VariantSetStatsTransformer(studyId=studyId, fileId=fileId).transform(df)
 
 
 class VariantMetadataManager(JavaWrapper):
@@ -106,20 +166,21 @@ class VariantMetadataManager(JavaWrapper):
         :rtype: DataFrame
         :return: Modified DataFrame
         """
-        java_object = self.python_utils.toJavaObject(variant_metadata, "org.opencb.biodata.models.variant.metadata.VariantMetadata")
+        java_object = self.python_utils.toJavaObject(variant_metadata,
+                                                     "org.opencb.biodata.models.variant.metadata.VariantMetadata")
         return self._call_java("setVariantMetadata", df, java_object)
 
     def variantMetadata(self, df):
         java_vm = self._call_java("variantMetadata", df)
         return self.python_utils.toPythonDict(java_vm)
 
-    def samples(self, df, studyId = None):
+    def samples(self, df, studyId=None):
         if studyId is None:
             return self._call_java("samples", df)
         else:
             return self._call_java("samples", df, studyId)
 
-    def pedigrees(self, df, studyId = None):
+    def pedigrees(self, df, studyId=None):
         if studyId is None:
             java_vm = self._call_java("pedigrees", df)
             return self.python_utils.toPythonDict(java_vm)
