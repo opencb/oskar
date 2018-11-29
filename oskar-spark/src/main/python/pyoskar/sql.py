@@ -28,6 +28,12 @@ class VariantUdfManager(JavaWrapper):
 
 
 def revcomp(allele):
+    """
+    Reverse and complementary.
+
+    :param allele:
+    :return: 
+    """
     jc = VariantUdfManager._java_class().revcomp(_to_java_column(allele))
     return Column(jc)
 
@@ -98,6 +104,13 @@ def consequence_types_by_gene(annotation, gene):
 
 
 def protein_substitution(annotation, score):
+    """
+    Returns an array with the MIN and the MAX value of the given ProteinSubstitutionScore. Empty array if not found.
+
+    :param annotation:
+    :param score:
+    :return: max an min array for protein substitution score
+    """
     jc = VariantUdfManager._java_class().protein_substitution(_to_java_column(annotation), score)
     return Column(jc)
 
@@ -118,6 +131,16 @@ def biotypes(annotation):
 
 
 def functional(annotation, source):
+    """
+    Read the value for the Functional Score. Null if none. Main functional scores are: cadd_scaled and cadd_raw.
+
+    :type annotation: str
+    :param annotation: annotation field
+    :type source: str
+    :param source: study source
+    :return: functional score
+    """
+
     jc = VariantUdfManager._java_class().functional(_to_java_column(annotation), source)
     return Column(jc)
 
@@ -130,6 +153,7 @@ def ensembl_genes(annotation):
 def conservation(annotation, source):
     """
     Read the value for the Conservation Score. Null if none. Main conservation scores are: gerp, phastCons and phylop
+
     :type annotation: str
     :param annotation: annotation field
     :type source: str

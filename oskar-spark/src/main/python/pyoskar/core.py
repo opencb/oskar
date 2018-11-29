@@ -66,32 +66,71 @@ class Oskar(JavaWrapper):
 
     def ibs(self, df, samples=None, skipMultiAllelic=None, skipReference=None, numPairs=None):
         """
+        Calculates the Identity By State.
 
         :type df: DataFrame
+        :param: df: Original dataframe
+        :type samples: list<str>
+        :param: samples: List of samples to use for calculating the IBS
+        :type skipMultiAllelic: boolean
+        :param: skipMultiAllelic: Skip variants where any of the samples has a secondary alternate
+        :type skipReference: boolean
+        :param: skipReference: Skip variants where both samples of the pair are HOM_REF
+        :type numPairs: int
+        :param: numPairs:
+        :return: Transformed dataframe
         """
         return IBSTransformer(samples=samples, skipReference=skipReference, skipMultiAllelic=skipMultiAllelic,
                               numPairs=numPairs).transform(df)
 
     def imputeSex(self, df, lowerThreshold=None, upperThreshold=None, chromosomeX=None, includePseudoautosomalRegions=None, par1chrX=None, par2chrX=None):
         """
+        Estimate sex of the individuals calculating the inbreeding coefficients F on the chromosome X.
 
-        :type df: DataFrame
+        :param: df: Original dataframe
+        :param lowerThreshold:
+        :param upperThreshold:
+        :param chromosomeX:
+        :param includePseudoautosomalRegions:
+        :param par1chrX:
+        :param par2chrX:
+        :return: Transformed dataframe
         """
         return ImputeSexTransformer(lowerThreshold=lowerThreshold, upperThreshold=upperThreshold, chromosomeX=chromosomeX,
                                     includePseudoautosomalRegions=includePseudoautosomalRegions, par1chrX=par1chrX, par2chrX=par2chrX).transform(df)
 
     def inbreedingCoefficient(self, df, missingGenotypesAsHomRef=None, includeMultiAllelicGenotypes=None, mafThreshold=None):
         """
+        Count observed and expected autosomal homozygous genotype for each sample, and report method-of-moments F coefficient estimates. (Ritland, Kermit. 1996)
+        Values:
+         - Total genotypes Count : Total count of genotypes for sample
+         - Observed homozygotes  : Count of observed homozygote genotypes for each sample, in each variant
+         - Expected homozygotes  : Count of expected homozygote genotypes for each sample, in each variant.
+                 Calculated with the MAF of the cohort ALL. 1.0−(2.0∗maf∗(1.0−maf))
+         - F                     : Inbreeding coefficient. Calculated as:
+                 ([observed hom. count] - [expected count]) / ([total genotypes count] - [expected count])
+        Unless otherwise specified, the genotype counts will exclude the missing and multi-allelic genotypes.
 
-        :type df: DataFrame
+        :param df: Original dataframe
+        :param missingGenotypesAsHomRef: Treat missing genotypes as HomRef genotypes
+        :param includeMultiAllelicGenotypes: Include multi-allelic variants in the calculation
+        :param mafThreshold: Include multi-allelic variants in the calculation
+        :return: Transformed dataframe
         """
         return InbreedingCoefficientTransformer(missingGenotypesAsHomRef=missingGenotypesAsHomRef,
                                                 includeMultiAllelicGenotypes=includeMultiAllelicGenotypes, mafThreshold=mafThreshold).transform(df)
 
     def mendel(self, df, father, mother, child, studyId=None):
         """
+        Using Plink Mendel error codes
+        https://www.cog-genomics.org/plink2/basic_stats#mendel
 
-        :type df: DataFrame
+        :param df: Original dataframe
+        :param father:
+        :param mother:
+        :param child:
+        :param studyId:
+        :return: Transformed dataframe
         """
         return MendelianErrorTransformer(father=father, mother=mother, child=child, studyId=studyId).transform(df)
 
@@ -104,8 +143,23 @@ class Oskar(JavaWrapper):
 
     def modeOfInheritance(self, df, family, modeOfInheritance, phenotype, studyId=None, incompletePenetrance=None, missingAsReference=None):
         """
+        Filter variants that match a given Mode Of Inheritance pattern.
 
-        :type df: DataFrame
+        Accepted patterns:
+         - monoallelic, also known as dominant
+         - biallelic, also known as recessive
+         - xLinked
+         - yLinked
+
+        :param df: Original dataframe
+        :param family: Select family to apply the filter
+        :param modeOfInheritance: Filter by mode of inheritance from a given family. Accepted values: monoallelic (dominant),
+                                  biallelic (recessive), xLinkedMonoallelic, xLinkedBiallelic, yLinked"
+        :param phenotype:
+        :param studyId:
+        :param incompletePenetrance: Allow variants with an incomplete penetrance mode of inheritance
+        :param missingAsReference:
+        :return: Transformed dataframe
         """
         return ModeOfInheritanceTransformer(family=family, modeOfInheritance=modeOfInheritance, phenotype=phenotype, studyId=studyId,
                                             incompletePenetrance=incompletePenetrance, missingAsReference=missingAsReference).transform(df)
@@ -120,7 +174,13 @@ class Oskar(JavaWrapper):
     def stats(self, df, studyId=None, cohort=None, samples=None, missingAsReference=None):
         """
 
-        :type df: DataFrame
+        :param df: Original dataframe
+        :param studyId:
+        :param cohort: Name of the cohort to calculate stats from. By default, 'ALL'
+        :param samples: Samples belonging to the cohort. If empty, will try to read from metadata. If missing, will use all samples
+                        from the dataset
+        :param missingAsReference: Count missing alleles as reference alleles
+        :return: Transformed dataframe
         """
         return VariantStatsTransformer(studyId=studyId, cohort=cohort, samples=samples, missingAsReference=missingAsReference).transform(df)
 
@@ -144,10 +204,10 @@ class VariantMetadataManager(JavaWrapper):
 
     def readMetadata(self, meta_path):
         """
+        Writes the VariantMetadata into the schema metadata from the given dataset.
 
         :type meta_path: str
         :param meta_path: Path to the metadata file
-
         :rtype: dict
         :return: An instance of VariantMetadata
         """
@@ -156,13 +216,12 @@ class VariantMetadataManager(JavaWrapper):
 
     def setVariantMetadata(self, df, variant_metadata):
         """
+        Writes the VariantMetadata into the schema metadata from the given dataset.
 
         :type df: DataFrame
         :param df: DataFrame to modify
-
         :type variant_metadata: VariantMetadata
         :param variant_metadata: VariantMetadata to set
-
         :rtype: DataFrame
         :return: Modified DataFrame
         """

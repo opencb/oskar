@@ -97,11 +97,6 @@ class HistogramTransformer(AbstractTransformer):
 
     @keyword_only
     def __init__(self, step=None, inputCol=None):
-        """
-
-        :type inputCol: str
-        :type step: float
-        """
         super(HistogramTransformer, self).__init__()
         self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.HistogramTransformer", self.uid)
         self.setParams(**self._input_kwargs)
