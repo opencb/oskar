@@ -4,9 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.ml.param.Param;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.types.*;
-import org.opencb.commons.utils.ListUtils;
-import org.opencb.oskar.spark.commons.converters.DataTypeUtils;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructType;
 
 import static org.apache.spark.sql.functions.expr;
 

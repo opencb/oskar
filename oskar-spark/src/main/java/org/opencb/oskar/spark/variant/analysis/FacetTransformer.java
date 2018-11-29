@@ -70,7 +70,7 @@ public class FacetTransformer extends AbstractTransformer {
             return df.sparkSession().emptyDataFrame();
         }
 
-        String facet = get(facetParam()).get();
+        String facet = getOrDefault(facetParam());
         if (facet.contains(converter.NESTED_FACET_SEPARATOR)) {
             // Nested facet
             String[] facets = facet.split(converter.NESTED_FACET_SEPARATOR);
