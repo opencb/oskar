@@ -188,7 +188,12 @@ public class FacetTransformer extends AbstractTransformer {
     private Dataset<Row> processCategoricalFacet(String facet, String fieldName, String facetName, Dataset<Row> df) {
         Dataset<Row> res = df;
         if (validCategoricalFields.containsKey(fieldName)) {
-            if (isExplode.contains(fieldName)) {
+            if (validRangeFields.containsKey(fieldName)) {
+                UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
+                ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
+                res = res.withColumn(facetName, scoreFunction.apply(functScoreSeq));
+                res.show(false);
+            } else if (isExplode.contains(fieldName)) {
                 res = res.withColumn(facetName, getColumn(fieldName));
             }
             List<String> values = getIncludeValues(facet);
@@ -297,6 +302,15 @@ public class FacetTransformer extends AbstractTransformer {
         validCategoricalFields.put("gene", "annotation.consequenceTypes.geneName");
         validCategoricalFields.put("ensemblGeneId", "annotation.consequenceTypes.ensemblGeneId");
         validCategoricalFields.put("ensemblTranscriptId", "annotation.consequenceTypes.ensemblTranscriptId");
+        validCategoricalFields.put("format", "studies.format");
+        validCategoricalFields.put("xref", "annotation.xrefs");
+        validCategoricalFields.put("gerp", "annotation.conservation");
+        validCategoricalFields.put("phylop", "annotation.conservation");
+        validCategoricalFields.put("phastCons", "annotation.conservation");
+        validCategoricalFields.put("cadd_scaled", "annotation.functionalScore");
+        validCategoricalFields.put("cadd_raw", "annotation.functionalScore");
+        validCategoricalFields.put("sift", "annotation.consequenceTypes.proteinVariantAnnotation.substitutionScores");
+        validCategoricalFields.put("polyphen", "annotation.consequenceTypes.proteinVariantAnnotation.substitutionScores");
 
         // Is explode?
         isExplode = new HashSet<>();
@@ -305,6 +319,9 @@ public class FacetTransformer extends AbstractTransformer {
         isExplode.add("gene");
         isExplode.add("ensemblGeneId");
         isExplode.add("ensemblTranscriptId");
+        isExplode.add("format");
+        isExplode.add("xref");
+        isExplode.add("gerp");
 
 
         // Range fields
@@ -314,6 +331,8 @@ public class FacetTransformer extends AbstractTransformer {
         validRangeFields.put("phastCons", "annotation.conservation");
         validRangeFields.put("cadd_scaled", "annotation.functionalScore");
         validRangeFields.put("cadd_raw", "annotation.functionalScore");
+        validRangeFields.put("sift", "annotation.consequenceTypes.proteinVariantAnnotation.substitutionScores");
+        validRangeFields.put("polyphen", "annotation.consequenceTypes.proteinVariantAnnotation.substitutionScores");
     }
 
     private Column getColumn(String facetName) {
