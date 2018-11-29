@@ -107,9 +107,14 @@ def protein_substitution(annotation, score):
     """
     Returns an array with the MIN and the MAX value of the given ProteinSubstitutionScore. Empty array if not found.
 
-    :param annotation:
+    :type annotation: str
+    :param annotation: Annotation field
+
+    :type score: str
     :param score:
-    :return: max an min array for protein substitution score
+
+    :rtype:
+    :return:
     """
     jc = VariantUdfManager._java_class().protein_substitution(_to_java_column(annotation), score)
     return Column(jc)
@@ -135,10 +140,13 @@ def functional(annotation, source):
     Read the value for the Functional Score. Null if none. Main functional scores are: cadd_scaled and cadd_raw.
 
     :type annotation: str
-    :param annotation: annotation field
+    :param annotation: Annotation field
+
     :type source: str
-    :param source: study source
-    :return: functional score
+    :param source: Study source
+
+    :rtype:
+    :return: Functional score
     """
 
     jc = VariantUdfManager._java_class().functional(_to_java_column(annotation), source)
@@ -155,10 +163,13 @@ def conservation(annotation, source):
     Read the value for the Conservation Score. Null if none. Main conservation scores are: gerp, phastCons and phylop
 
     :type annotation: str
-    :param annotation: annotation field
+    :param annotation: Annotation field
+
     :type source: str
-    :param source: study source
-    :return: conservation score
+    :param source: Study source
+
+    :rtype:
+    :return: Conservation score
     """
     jc = VariantUdfManager._java_class().conservation(_to_java_column(annotation), source)
     return Column(jc)

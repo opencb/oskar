@@ -1,19 +1,12 @@
 
 import sys
+from pyspark import keyword_only
+from pyspark.ml.param.shared import *
+from pyspark.ml.util import JavaMLReadable, JavaMLWritable
+from pyspark.ml.wrapper import JavaTransformer
 
 if sys.version > '3':
     basestring = str
-
-from pyspark import since, keyword_only, SparkContext
-from pyspark.rdd import ignore_unicode_prefix
-from pyspark.ml.linalg import _convert_to_vector
-from pyspark.ml.wrapper import JavaWrapper
-from pyspark.ml.param.shared import *
-from pyspark.ml.util import JavaMLReadable, JavaMLWritable
-from pyspark.ml.wrapper import JavaEstimator, JavaModel, JavaParams, JavaTransformer, _jvm
-from pyspark.ml.common import inherit_doc
-from pyspark.sql.functions import lit
-from pyspark.sql import DataFrame
 
 DEFAULT_COHORT = "ALL"
 
@@ -451,10 +444,6 @@ class ModeOfInheritanceTransformer(AbstractTransformer):
 
     def setMissingAsReference(self, value):
         return self._set(missingAsReference=value)
-
-
-
-
 
 
 class TdtTransformer(AbstractTransformer):
