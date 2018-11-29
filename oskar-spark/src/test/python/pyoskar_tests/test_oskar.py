@@ -1,10 +1,6 @@
-from unittest import TestCase,main
+from unittest import main
 
-from pyspark.sql import DataFrame
-
-from pyoskar.spark.analysis import MendelianErrorTransformer
-from pyoskar.spark.sql import *
-from pyoskar.core import Oskar, VariantMetadataManager
+from pyoskar.sql import *
 from pyoskar_tests.test_utils import *
 
 

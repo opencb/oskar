@@ -1,6 +1,6 @@
 import json
 from pyspark.sql.dataframe import DataFrame
-from pyoskar.spark.analysis import *
+from pyoskar.analysis import *
 
 __all__ = ['Oskar']
 
