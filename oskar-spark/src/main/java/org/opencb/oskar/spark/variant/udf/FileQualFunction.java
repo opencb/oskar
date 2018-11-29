@@ -12,9 +12,11 @@ import scala.runtime.AbstractFunction2;
  */
 public class FileQualFunction extends AbstractFunction2<Object, String, Double> implements UDF2<Object, String, Double> {
 
+    private final FileAttributeFunction fileAttributeFunction = new FileAttributeFunction();
+
     @Override
     public Double call(Object o, String fileId) {
-        String qual = new FileAttributeFunction().call(o, fileId, StudyEntry.QUAL);
+        String qual = fileAttributeFunction.call(o, fileId, StudyEntry.QUAL);
         if (StringUtils.isNotEmpty(qual) && !qual.equals(".")) {
             return Double.parseDouble(qual);
         } else {

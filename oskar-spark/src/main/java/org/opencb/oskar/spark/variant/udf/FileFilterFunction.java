@@ -15,9 +15,11 @@ import java.util.List;
  */
 public class FileFilterFunction extends AbstractFunction2<Object, String, List<String>> implements UDF2<Object, String, List<String>> {
 
+    private final FileAttributeFunction fileAttributeFunction = new FileAttributeFunction();
+
     @Override
     public List<String> call(Object o, String fileId) {
-        String filter = new FileAttributeFunction().call(o, fileId, StudyEntry.FILTER);
+        String filter = fileAttributeFunction.call(o, fileId, StudyEntry.FILTER);
         if (StringUtils.isNotEmpty(filter)) {
             return Arrays.asList(filter.split(";"));
         } else {
