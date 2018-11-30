@@ -26,8 +26,12 @@ import static org.apache.spark.sql.functions.*;
 import static org.opencb.oskar.spark.variant.converters.DataframeToFacetFieldConverter.*;
 import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.biotypes;
 import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.genes;
+import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.population_frequency;
 
 public class FacetTransformer extends AbstractTransformer {
+
+    public static final String POPFREQ_SEPARATOR = "__";
+    public static final String POPFREQ_PREFIX = "popFreq" + POPFREQ_SEPARATOR;
 
     private Param<String> facetParam;
 
@@ -187,12 +191,16 @@ public class FacetTransformer extends AbstractTransformer {
 
     private Dataset<Row> processCategoricalFacet(String facet, String fieldName, String facetName, Dataset<Row> df) {
         Dataset<Row> res = df;
-        if (validCategoricalFields.containsKey(fieldName)) {
-            if (validRangeFields.containsKey(fieldName)) {
-                UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
-                ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
-                res = res.withColumn(facetName, scoreFunction.apply(functScoreSeq));
-                res.show(false);
+        if (isValidField(fieldName)) {
+            if (isNumeric(fieldName)) {
+                if (fieldName.startsWith(POPFREQ_PREFIX)) {
+                    String[] splits = fieldName.split(POPFREQ_SEPARATOR);
+                    res = res.withColumn(facetName, population_frequency("annotation", splits[1], splits[2]));
+                } else {
+                    UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
+                    ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
+                    res = res.withColumn(facetName, scoreFunction.apply(functScoreSeq));
+                }
             } else if (isExplode.contains(fieldName)) {
                 res = res.withColumn(facetName, getColumn(fieldName));
             }
@@ -215,10 +223,18 @@ public class FacetTransformer extends AbstractTransformer {
         double end = Double.parseDouble(split[2]);
         double step = Double.parseDouble(split[3]);
 
-        UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
-        ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
+        Column col;
+        Dataset<Row> res = df;
+        if (facet.startsWith(POPFREQ_PREFIX)) {
+            String[] splits = fieldName.split(POPFREQ_SEPARATOR);
+            col = population_frequency("annotation", splits[1], splits[2]);
+        } else {
+            UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
+            ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
 
-        return df.withColumn(facetName, scoreFunction.apply(functScoreSeq).divide(step).cast(DataTypes.IntegerType)
+            col = scoreFunction.apply(functScoreSeq);
+        }
+        return df.withColumn(facetName, col.divide(step).cast(DataTypes.IntegerType)
                 .multiply(step)).filter(facetName + ">= " + start + " AND " + facetName + " <= " + end);
     }
 
@@ -237,13 +253,17 @@ public class FacetTransformer extends AbstractTransformer {
         }
 
 
-        if (validRangeFields.containsKey(fieldName)) {
-            UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
-            ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
-            return df.withColumn(fieldName, scoreFunction.apply(functScoreSeq));
-        } else {
-            return df;
+        if (isNumeric(fieldName)) {
+            if (validRangeFields.containsKey(fieldName)) {
+                UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
+                ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
+                return df.withColumn(fieldName, scoreFunction.apply(functScoreSeq));
+            } else if (fieldName.startsWith(POPFREQ_PREFIX)) {
+                String[] splits = fieldName.split(POPFREQ_SEPARATOR);
+                return df.withColumn(fieldName, population_frequency("annotation", splits[1], splits[2]));
+            }
         }
+        return df;
     }
 
     private ListBuffer<Column> createFunctScoreSeq(String fieldName) {
@@ -293,17 +313,12 @@ public class FacetTransformer extends AbstractTransformer {
         // Categorical fields
         validCategoricalFields = new HashMap<>();
         validCategoricalFields.put("chromosome", "chromosome");
-        validCategoricalFields.put("names", "names");
-        validCategoricalFields.put("reference", "reference");
-        validCategoricalFields.put("alternate", "alternate");
-        validCategoricalFields.put("strand", "strand");
         validCategoricalFields.put("type", "type");
+        validCategoricalFields.put("studies", "studies.studyId");
         validCategoricalFields.put("biotype", "annotation.consequenceTypes.biotype");
         validCategoricalFields.put("gene", "annotation.consequenceTypes.geneName");
         validCategoricalFields.put("ensemblGeneId", "annotation.consequenceTypes.ensemblGeneId");
         validCategoricalFields.put("ensemblTranscriptId", "annotation.consequenceTypes.ensemblTranscriptId");
-        validCategoricalFields.put("format", "studies.format");
-        validCategoricalFields.put("xref", "annotation.xrefs");
         validCategoricalFields.put("gerp", "annotation.conservation");
         validCategoricalFields.put("phylop", "annotation.conservation");
         validCategoricalFields.put("phastCons", "annotation.conservation");
@@ -314,14 +329,18 @@ public class FacetTransformer extends AbstractTransformer {
 
         // Is explode?
         isExplode = new HashSet<>();
-        isExplode.add("names");
+        isExplode.add("studies");
         isExplode.add("biotype");
         isExplode.add("gene");
         isExplode.add("ensemblGeneId");
         isExplode.add("ensemblTranscriptId");
-        isExplode.add("format");
-        isExplode.add("xref");
         isExplode.add("gerp");
+        isExplode.add("phylop");
+        isExplode.add("phastCons");
+        isExplode.add("cadd_scaled");
+        isExplode.add("cadd_raw");
+        isExplode.add("sift");
+        isExplode.add("polyphen");
 
 
         // Range fields
@@ -335,6 +354,20 @@ public class FacetTransformer extends AbstractTransformer {
         validRangeFields.put("polyphen", "annotation.consequenceTypes.proteinVariantAnnotation.substitutionScores");
     }
 
+    private boolean isValidField(String field) {
+        if (validCategoricalFields.containsKey(field) || isNumeric(field)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isNumeric(String field) {
+        if (validRangeFields.containsKey(field) || field.startsWith(POPFREQ_PREFIX)) {
+            return true;
+        }
+        return false;
+    }
+
     private Column getColumn(String facetName) {
         if (isExplode.contains(facetName)) {
             switch(facetName) {
@@ -345,7 +378,6 @@ public class FacetTransformer extends AbstractTransformer {
                 default:
                     return explode(col(validCategoricalFields.get(facetName)));
             }
-
         } else {
             return col(validCategoricalFields.get(facetName));
         }
