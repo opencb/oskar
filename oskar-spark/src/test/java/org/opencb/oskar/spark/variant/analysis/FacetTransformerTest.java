@@ -3,13 +3,16 @@ package org.opencb.oskar.spark.variant.analysis;
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.MapType;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.opencb.commons.datastore.core.result.FacetQueryResult;
 import org.opencb.commons.utils.ListUtils;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.converters.DataframeToFacetFieldConverter;
 
 import java.io.IOException;
@@ -17,9 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.spark.sql.functions.*;
-import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.biotypes;
-import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.genes;
-import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.population_frequency;
+import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.*;
 
 public class FacetTransformerTest {
 
@@ -268,6 +269,26 @@ public class FacetTransformerTest {
         Dataset<Row> df = sparkTest.getVariantsDataset();
 
         String facet = "percentile(popFreq__GNOMAD_GENOMES__ALL)";
+        FacetTransformer facetTransformer = new FacetTransformer();
+        facetTransformer.setFacet(facet);
+        facetTransformer.transform(df).show(false);
+    }
+
+    @Test
+    public void ct() throws IOException, OskarException {
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+
+        String facet = "ct";
+        FacetTransformer facetTransformer = new FacetTransformer();
+        facetTransformer.setFacet(facet);
+        facetTransformer.transform(df).show(false);
+    }
+
+    @Test
+    public void typeAndCtAndAvgGerp() throws IOException, OskarException {
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+
+        String facet = "type>>ct>>avg(gerp)";
         FacetTransformer facetTransformer = new FacetTransformer();
         facetTransformer.setFacet(facet);
         facetTransformer.transform(df).show(false);

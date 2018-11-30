@@ -327,6 +327,7 @@ public class FacetTransformer extends AbstractTransformer {
         validCategoricalFields.put("type", "type");
         validCategoricalFields.put("studies", "studies.studyId");
         validCategoricalFields.put("biotype", "annotation.consequenceTypes.biotype");
+        validCategoricalFields.put("ct", "annotation.consequenceTypes.sequenceOntologyTerms.name");
         validCategoricalFields.put("gene", "annotation.consequenceTypes.geneName");
         validCategoricalFields.put("ensemblGeneId", "annotation.consequenceTypes.ensemblGeneId");
         validCategoricalFields.put("ensemblTranscriptId", "annotation.consequenceTypes.ensemblTranscriptId");
@@ -345,6 +346,7 @@ public class FacetTransformer extends AbstractTransformer {
         isExplode.add("gene");
         isExplode.add("ensemblGeneId");
         isExplode.add("ensemblTranscriptId");
+        isExplode.add("ct");
         isExplode.add("gerp");
         isExplode.add("phylop");
         isExplode.add("phastCons");
@@ -387,6 +389,8 @@ public class FacetTransformer extends AbstractTransformer {
                     return explode(genes("annotation"));
                 case "biotype":
                     return explode(biotypes("annotation"));
+                case "ct":
+                    return explode(consequence_types("annotation"));
                 default:
                     return explode(col(validCategoricalFields.get(facetName)));
             }
