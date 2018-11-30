@@ -24,14 +24,13 @@ import java.util.regex.Matcher;
 
 import static org.apache.spark.sql.functions.*;
 import static org.opencb.oskar.spark.variant.converters.DataframeToFacetFieldConverter.*;
-import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.biotypes;
-import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.genes;
-import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.population_frequency;
+import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.*;
 
 public class FacetTransformer extends AbstractTransformer {
 
-    public static final String POPFREQ_SEPARATOR = "__";
-    public static final String POPFREQ_PREFIX = "popFreq" + POPFREQ_SEPARATOR;
+    public static final String SEPARATOR = "__";
+    public static final String POPFREQ_PREFIX = "popFreq" + SEPARATOR;
+    public static final String STATS_PREFIX = "stats" + SEPARATOR;
 
     private Param<String> facetParam;
 
@@ -194,8 +193,12 @@ public class FacetTransformer extends AbstractTransformer {
         if (isValidField(fieldName)) {
             if (isNumeric(fieldName)) {
                 if (fieldName.startsWith(POPFREQ_PREFIX)) {
-                    String[] splits = fieldName.split(POPFREQ_SEPARATOR);
+                    String[] splits = fieldName.split(SEPARATOR);
                     res = res.withColumn(facetName, population_frequency("annotation", splits[1], splits[2]));
+                } else if (fieldName.startsWith(STATS_PREFIX)) {
+                    String[] splits = fieldName.split(SEPARATOR);
+                    res = res.withColumn("tmp", study("studies", splits[1]))
+                            .withColumn(facetName, col("tmp.stats." + splits[2] + ".altAlleleFreq"));
                 } else {
                     UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
                     ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
@@ -226,8 +229,12 @@ public class FacetTransformer extends AbstractTransformer {
         Column col;
         Dataset<Row> res = df;
         if (facet.startsWith(POPFREQ_PREFIX)) {
-            String[] splits = fieldName.split(POPFREQ_SEPARATOR);
+            String[] splits = fieldName.split(SEPARATOR);
             col = population_frequency("annotation", splits[1], splits[2]);
+        } else if (facet.startsWith(STATS_PREFIX)) {
+            String[] splits = fieldName.split(SEPARATOR);
+            df = df.withColumn("tmp", study("studies", splits[1]));
+            col = col("tmp.stats." + splits[2] + ".altAlleleFreq");
         } else {
             UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
             ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
@@ -259,8 +266,12 @@ public class FacetTransformer extends AbstractTransformer {
                 ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
                 return df.withColumn(fieldName, scoreFunction.apply(functScoreSeq));
             } else if (fieldName.startsWith(POPFREQ_PREFIX)) {
-                String[] splits = fieldName.split(POPFREQ_SEPARATOR);
+                String[] splits = fieldName.split(SEPARATOR);
                 return df.withColumn(fieldName, population_frequency("annotation", splits[1], splits[2]));
+            } else if (facet.startsWith(STATS_PREFIX)) {
+                String[] splits = fieldName.split(SEPARATOR);
+                return df.withColumn("tmp", study("studies", splits[1]))
+                        .withColumn(fieldName, col("tmp.stats." + splits[2] + ".altAlleleFreq"));
             }
         }
         return df;
@@ -362,7 +373,8 @@ public class FacetTransformer extends AbstractTransformer {
     }
 
     private boolean isNumeric(String field) {
-        if (validRangeFields.containsKey(field) || field.startsWith(POPFREQ_PREFIX)) {
+        if (validRangeFields.containsKey(field)
+                || field.startsWith(POPFREQ_PREFIX) || field.startsWith(STATS_PREFIX)) {
             return true;
         }
         return false;
