@@ -156,7 +156,7 @@ class Oskar(JavaWrapper):
          - Total genotypes Count : Total count of genotypes for sample
          - Observed homozygotes  : Count of observed homozygote genotypes for each sample, in each variant
          - Expected homozygotes  : Count of expected homozygote genotypes for each sample, in each variant.
-                 Calculated with the MAF of the cohort ALL. 1.0−(2.0∗maf∗(1.0−maf))
+                 Calculated with the MAF of the cohort ALL. 1.0-(2.0*maf*(1.0-maf))
          - F                     : Inbreeding coefficient. Calculated as:
                  ([observed hom. count] - [expected count]) / ([total genotypes count] - [expected count])
         Unless otherwise specified, the genotype counts will exclude the missing and multi-allelic genotypes.
