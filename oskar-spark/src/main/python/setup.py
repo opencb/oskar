@@ -22,7 +22,7 @@ setup(
     ],
     install_requires=[
         'pip >= 7.1.2',
-        'pyspark >= 2.2.2',
+        'pyspark >= 2.3.2',
         'requests >= 2.7',
         # 'avro == 1.7.7',
         'numpy',
