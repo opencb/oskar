@@ -335,9 +335,9 @@ class VariantMetadataManager(JavaWrapper):
 
     def samples(self, df, studyId=None):
         if studyId is None:
-            return self._call_java("samples", df)
+            return self.python_utils.toPythonDict(self._call_java("samples", df))
         else:
-            return self._call_java("samples", df, studyId)
+            return self.python_utils.toPythonDict(self._call_java("samples", df, studyId))
 
     def pedigrees(self, df, studyId=None):
         if studyId is None:
