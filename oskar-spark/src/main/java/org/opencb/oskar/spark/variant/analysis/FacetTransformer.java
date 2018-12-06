@@ -201,7 +201,10 @@ public class FacetTransformer extends AbstractTransformer {
                             .withColumn(facetName, col("tmp.stats." + splits[2] + ".altAlleleFreq"));
                 } else {
                     UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
-                    ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
+                    if (isSubstitutionScore(fieldName)) {
+                        res = res.withColumn("tmp1", getColumn(fieldName));
+                    }
+                    ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName, "tmp1");
                     res = res.withColumn(facetName, scoreFunction.apply(functScoreSeq));
                 }
             } else if (isExplode.contains(fieldName)) {
@@ -237,8 +240,10 @@ public class FacetTransformer extends AbstractTransformer {
             col = col("tmp.stats." + splits[2] + ".altAlleleFreq");
         } else {
             UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
-            ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
-
+            if (isSubstitutionScore(fieldName)) {
+                df = df.withColumn("tmp1", getColumn(fieldName));
+            }
+            ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName, "tmp1");
             col = scoreFunction.apply(functScoreSeq);
         }
         return df.withColumn(facetName, col.divide(step).cast(DataTypes.IntegerType)
@@ -259,11 +264,13 @@ public class FacetTransformer extends AbstractTransformer {
             throw new InvalidParameterException("Aggregation function unknown: " + aggFunction);
         }
 
-
         if (isNumeric(fieldName)) {
             if (validRangeFields.containsKey(fieldName)) {
                 UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
-                ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
+                if (isSubstitutionScore(fieldName)) {
+                    df = df.withColumn("tmp1", getColumn(fieldName));
+                }
+                ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName, "tmp1");
                 return df.withColumn(fieldName, scoreFunction.apply(functScoreSeq));
             } else if (fieldName.startsWith(POPFREQ_PREFIX)) {
                 String[] splits = fieldName.split(SEPARATOR);
@@ -278,10 +285,19 @@ public class FacetTransformer extends AbstractTransformer {
     }
 
     private ListBuffer<Column> createFunctScoreSeq(String fieldName) {
-        if (fieldName.equals("cadd_scaled") || fieldName.equals("cadd_raw")) {
+        return createFunctScoreSeq(fieldName, null);
+    }
+
+    private ListBuffer<Column> createFunctScoreSeq(String fieldName, String aux) {
+        if (isFunctionalScore(fieldName)) {
             return new ListBuffer<Column>().$plus$eq(col("annotation.functionalScore"));
-        } else {
+        } else if (isSubstitutionScore(fieldName)) {
+            //return new ListBuffer<Column>().$plus$eq(col("annotation.consequenceTypes.proteinVariantAnnotation.substitutionScores"));
+            return new ListBuffer<Column>().$plus$eq(col(aux));
+        } else if (isConservationScore(fieldName)) {
             return new ListBuffer<Column>().$plus$eq(col("annotation.conservation"));
+        } else {
+            return null;
         }
     }
 
@@ -309,6 +325,9 @@ public class FacetTransformer extends AbstractTransformer {
 
         @Override
         public Double apply(WrappedArray<GenericRowWithSchema> functionalScores) {
+            if (functionalScores == null) {
+                return Double.NEGATIVE_INFINITY;
+            }
             for (int i = 0; i < functionalScores.length(); i++) {
                 Row functScore = functionalScores.apply(i);
                 if (functScore.apply(1).equals(source)) {
@@ -380,6 +399,18 @@ public class FacetTransformer extends AbstractTransformer {
             return true;
         }
         return false;
+    }
+
+    private boolean isFunctionalScore(String field) {
+        return (field.equals("cadd_scaled") || field.equals("cadd_raw"));
+    }
+
+    private boolean isConservationScore(String field) {
+        return (field.equals("gerp") || field.equals("phylop") || field.equals("phastCons"));
+    }
+
+    private boolean isSubstitutionScore(String field) {
+        return (field.equals("sift") || field.equals("polyphen"));
     }
 
     private Column getColumn(String facetName) {
