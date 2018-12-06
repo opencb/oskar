@@ -108,7 +108,7 @@ public class FacetTransformer extends AbstractTransformer {
                     }
                     case RANGE: {
                         // Range facet
-                        String facetName = fieldNames.get(i) + "Range";
+                        String facetName = (fieldNames.get(i) + "Range");
                         res = processRangeFacet(facets[i], fieldNames.get(i), facetName, res);
                         facetNames.add(facetName);
                         break;
@@ -133,8 +133,19 @@ public class FacetTransformer extends AbstractTransformer {
                 // Special case, we have aggregations
                 int index = facets.length - 1;
                 String aggFunct = facets[index].substring(0, facets[index].indexOf("("));
-                res = res.groupBy(cols).agg(getAggregationExpr(aggFunct, fieldNames.get(index)),
-                        count(lit(1)).as("count")).orderBy(cols);
+                if (fieldNames.get(index).startsWith(STATS_PREFIX)) {
+                    String tmpName = fieldNames.get(index).replace(":", "___").replace("@", "____");
+                    res = res.withColumnRenamed(fieldNames.get(index), tmpName).groupBy(cols)
+                            .agg(getAggregationExpr(aggFunct, tmpName).as(fieldNames.get(index)),
+                                    count(lit(1)).as("count"))
+                            .orderBy(cols);
+                } else {
+                    res = res.groupBy(cols).agg(getAggregationExpr(aggFunct, fieldNames.get(index)),
+                            count(lit(1)).as("count")).orderBy(cols);
+                }
+
+
+
             } else {
                 res = res.groupBy(cols).count().orderBy(cols);
             }
@@ -151,7 +162,7 @@ public class FacetTransformer extends AbstractTransformer {
                 }
                 case RANGE: {
                     // Range facet
-                    String facetName = fieldName + "Range";
+                    String facetName = (fieldName + "Range");
                     Dataset<Row> rangeDf = processRangeFacet(facet, fieldName, facetName, (Dataset<Row>) df);
                     res = rangeDf.groupBy(facetName).count().orderBy(facetName);
                     break;
@@ -161,7 +172,14 @@ public class FacetTransformer extends AbstractTransformer {
                     Dataset<Row> cached = processAggregationFacet(facet, fieldName, (Dataset<Row>) df);
                     long count = cached.count();
                     String aggFunct = facet.substring(0, facet.indexOf("("));
-                    res = cached.agg(getAggregationExpr(aggFunct, fieldName)).withColumn("count", lit(count));
+                    if (fieldName.startsWith(STATS_PREFIX)) {
+                        String tmpName = fieldName.replace(":", "___").replace("@", "____");
+                        res = cached.withColumnRenamed(fieldName, tmpName).agg(getAggregationExpr(aggFunct, tmpName))
+                                .withColumn("count", lit(count))
+                                .withColumnRenamed(aggFunct + "(" + tmpName + ")", aggFunct + "(" + fieldName + ")");
+                    } else {
+                        res = cached.agg(getAggregationExpr(aggFunct, fieldName)).withColumn("count", lit(count));
+                    }
                     break;
                 }
                 default:
@@ -224,17 +242,21 @@ public class FacetTransformer extends AbstractTransformer {
 
     private Dataset<Row> processRangeFacet(String facet, String fieldName, String facetName, Dataset<Row> df) {
         // Parse range
-        String[] split = facet.replace("[", ":").replace("..", ":").replace("]", "").split(":");
-        double start = Double.parseDouble(split[1]);
-        double end = Double.parseDouble(split[2]);
-        double step = Double.parseDouble(split[3]);
+        String[] split = facet.substring(facet.indexOf("[") + 1).replace("[", ":").replace("..", ":").replace("]", "").split(":");
+        double start = Double.parseDouble(split[0]);
+        double end = Double.parseDouble(split[1]);
+        double step = Double.parseDouble(split[2]);
 
         Column col;
-        Dataset<Row> res = df;
+        String alias = null;
+        String tmpName = facetName;
         if (facet.startsWith(POPFREQ_PREFIX)) {
             String[] splits = fieldName.split(SEPARATOR);
             col = population_frequency("annotation", splits[1], splits[2]);
         } else if (facet.startsWith(STATS_PREFIX)) {
+            alias = facetName;
+            tmpName = facetName.replace(":", "___").replace("@", "____");
+
             String[] splits = fieldName.split(SEPARATOR);
             df = df.withColumn("tmp", study("studies", splits[1]));
             col = col("tmp.stats." + splits[2] + ".altAlleleFreq");
@@ -246,8 +268,14 @@ public class FacetTransformer extends AbstractTransformer {
             ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName, "tmp1");
             col = scoreFunction.apply(functScoreSeq);
         }
-        return df.withColumn(facetName, col.divide(step).cast(DataTypes.IntegerType)
-                .multiply(step)).filter(facetName + ">= " + start + " AND " + facetName + " <= " + end);
+
+        df = df.withColumn(tmpName, col.divide(step).cast(DataTypes.IntegerType).multiply(step))
+                .filter(tmpName + ">= " + start + " AND " + tmpName + " <= " + end);
+
+        if (alias != null) {
+            df = df.withColumnRenamed(tmpName, alias);
+        }
+        return df;
     }
 
     private Dataset<Row> processAggregationFacet(String facet, String fieldName, Dataset<Row> df) {
@@ -275,7 +303,7 @@ public class FacetTransformer extends AbstractTransformer {
             } else if (fieldName.startsWith(POPFREQ_PREFIX)) {
                 String[] splits = fieldName.split(SEPARATOR);
                 return df.withColumn(fieldName, population_frequency("annotation", splits[1], splits[2]));
-            } else if (facet.startsWith(STATS_PREFIX)) {
+            } else if (fieldName.startsWith(STATS_PREFIX)) {
                 String[] splits = fieldName.split(SEPARATOR);
                 return df.withColumn("tmp", study("studies", splits[1]))
                         .withColumn(fieldName, col("tmp.stats." + splits[2] + ".altAlleleFreq"));
