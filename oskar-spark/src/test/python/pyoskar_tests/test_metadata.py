@@ -1,9 +1,6 @@
 import unittest
 
-from pyoskar.spark.sql import *
 from pyoskar_tests.test_utils import *
-from pyspark.sql.functions import *
-
 
 LIMIT = 3
 

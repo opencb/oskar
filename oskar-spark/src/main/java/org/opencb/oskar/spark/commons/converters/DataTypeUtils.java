@@ -32,11 +32,20 @@ public class DataTypeUtils {
     }
 
     public static StructType addField(StructType structType, StructField structField) {
+        return addField(structType, structField, structType.size());
+    }
+
+    public static StructType addField(StructType structType, StructField structField, int idx) {
         StructField[] fields = new StructField[structType.size() + 1];
-        for (int i = 0; i < structType.size(); i++) {
-            fields[i] = structType.apply(i);
+        int f = 0;
+        for (int i = 0; i < fields.length; i++) {
+            if (i == idx) {
+                fields[i] = structField;
+            } else {
+                fields[i] = structType.apply(f++);
+            }
         }
-        fields[fields.length - 1] = structField;
+//        fields[fields.length - 1] = structField;
         return DataTypes.createStructType(fields);
     }
 
