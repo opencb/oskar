@@ -10,6 +10,153 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>oskar-app</artifactId>
+    <version>${oskar.version}</version>
+    <packaging>jar</packaging>
 
+    <properties>
+        <build.dir>${project.basedir}/../build</build.dir>
+        <app.dir>${project.basedir}/app</app.dir>
+        <!--<sonar.skip>true</sonar.skip>-->
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.opencb.oskar</groupId>
+            <artifactId>oskar-spark</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>oskar-app</finalName>
+        <sourceDirectory>src/main/java</sourceDirectory>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <targetPath>${project.basedir}/target/conf</targetPath>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>1.10</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <repositoryName>libs</repositoryName>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <useWildcardClassPath>false</useWildcardClassPath>
+                    <!--By default, "etc".-->
+                    <configurationDirectory>conf</configurationDirectory>
+                    <!--Do we need to include the configuration folder in the classpath?-->
+                    <includeConfigurationDirectoryInClasspath>false</includeConfigurationDirectoryInClasspath>
+                    <!--<environmentSetupFileName>../conf/${opencga.env.file}</environmentSetupFileName>-->
+                    <programs>
+                        <program>
+                            <id>oskar.sh</id>
+                            <mainClass>org.opencb.oskar.app.cli.main.OskarMain</mainClass>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                            <jvmSettings>
+                                <initialMemorySize>256m</initialMemorySize>
+                                <maxMemorySize>2048m</maxMemorySize>
+                                <systemProperties>
+                                    <systemProperty>file.encoding=UTF-8</systemProperty>
+                                </systemProperties>
+                            </jvmSettings>
+                        </program>
+                    </programs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>clean-libs</id>
+                        <phase>clean</phase>
+                        <configuration>
+                            <target>
+                                <echo>Preparing ${build.dir} folder</echo>
+                                <exec executable="rm">
+                                    <arg value="-rf"/>
+                                    <arg value="${build.dir}"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>install-app</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <target>
+                                <echo>Preparing ${build.dir} folder</echo>
+                                <exec executable="rm">
+                                    <arg value="-rf"/>
+                                    <arg value="${build.dir}"/>
+                                </exec>
+
+                                <exec executable="mkdir">
+                                    <arg value="-p"/>
+                                    <arg value="${build.dir}/bin"/>
+                                    <arg value="${build.dir}/conf"/>
+                                    <arg value="${build.dir}/pyoskar"/>
+                                </exec>
+
+                                <echo>Copying to ${build.dir}</echo>
+                                <exec executable="cp">
+                                    <arg value="-r"/>
+                                    <arg value="${project.basedir}/target/appassembler/bin"/>
+                                    <arg value="${project.basedir}/target/appassembler/libs"/>
+                                    <arg value="${project.basedir}/target/conf"/>
+                                    <arg value="${project.basedir}/../LICENSE"/>
+                                    <arg value="${project.basedir}/../README.md"/>
+                                    <arg value="${build.dir}"/>
+                                </exec>
+
+                                <echo>Copying libs to ${build.dir}/libs</echo>
+                                <exec executable="cp">
+                                    <arg value="-r"/>
+                                    <arg value="${project.basedir}/../oskar-spark/target/oskar-spark-0.1.0-jar-with-dependencies.jar"/>
+                                    <arg value="${build.dir}/libs"/>
+                                </exec>
+
+                                <echo>Copying pyoskar to ${build.dir}</echo>
+                                <exec executable="cp">
+                                    <arg value="-r"/>
+                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/pyoskar"/>
+                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebook/variant_filtering.ipynb"/>
+                                    <arg value="${build.dir}/pyoskar"/>
+                                </exec>
+
+                                <echo>Copying configuration files</echo>
+                                <exec executable="cp">
+                                    <arg value="${project.basedir}/../oskar-core/target/classes/configuration.yml"/>
+                                    <arg value="${project.basedir}/../oskar-core/target/classes/log4j.properties"/>
+                                    <arg value="${build.dir}/conf"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
