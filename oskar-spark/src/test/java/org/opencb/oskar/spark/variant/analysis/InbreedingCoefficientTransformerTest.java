@@ -2,10 +2,7 @@ package org.opencb.oskar.spark.variant.analysis;
 
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.commons.OskarException;
 
@@ -37,6 +34,21 @@ public class InbreedingCoefficientTransformerTest {
         df.printSchema();
 
         df.show();
+    }
+
+    @Test
+    public void bySteps() throws IOException, OskarException {
+        InbreedingCoefficientTransformer t = new InbreedingCoefficientTransformer()
+                .setMissingGenotypesAsHomRef(true)
+                .setStep(500000);
+
+
+        Dataset<Row> df = t.transform(inputDf);
+
+        df.printSchema();
+//        Assert.assertEquals(df.schema(), t.transformSchema(inputDf.schema()));
+
+        df.filter("sampleId = 'NA12877'").show();
     }
 
     @Test
