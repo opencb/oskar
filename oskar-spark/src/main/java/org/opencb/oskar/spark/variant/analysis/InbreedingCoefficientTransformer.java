@@ -14,6 +14,7 @@ import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.feature.AllelesCode;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.spark.commons.converters.DataTypeUtils;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
@@ -24,8 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.spark.sql.functions.col;
-import static org.apache.spark.sql.functions.explode;
+import static org.apache.spark.sql.functions.*;
 import static org.apache.spark.sql.types.DataTypes.*;
 import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.SAMPLES_DATA_IDX;
 import static org.opencb.oskar.spark.variant.converters.VariantToRowConverter.STATS_IDX;
@@ -63,6 +63,7 @@ public class InbreedingCoefficientTransformer extends AbstractTransformer implem
     private final Param<Boolean> missingGenotypesAsHomRefParam;
     private final Param<Boolean> includeMultiAllelicGenotypesParam;
     private final Param<Double> mafThresholdParam;
+    private final Param<Integer> stepParam;
 
     public InbreedingCoefficientTransformer() {
         this(null);
@@ -77,11 +78,14 @@ public class InbreedingCoefficientTransformer extends AbstractTransformer implem
                 "Include multi-allelic variants in the calculation");
         mafThresholdParam = new Param<>(this, "mafThreshold",
                 "Include multi-allelic variants in the calculation");
+        stepParam = new Param<>(this, "step",
+                "Calculate inbreeding coefficient grouping by regions of size step");
 
         setDefault(missingGenotypesAsHomRefParam, false);
         setDefault(includeMultiAllelicGenotypesParam, false);
         setDefault(mafThresholdParam, 0.0);
         setDefault(studyIdParam(), "");
+        setDefault(stepParam, -1);
     }
 
     public Param<Boolean> missingGenotypesAsHomRefParam() {
@@ -108,6 +112,15 @@ public class InbreedingCoefficientTransformer extends AbstractTransformer implem
 
     public InbreedingCoefficientTransformer setMafThreshold(double mafThreshold) {
         set(mafThresholdParam, mafThreshold);
+        return this;
+    }
+
+    public Param<Integer> stepParam() {
+        return stepParam;
+    }
+
+    public InbreedingCoefficientTransformer setStep(int step) {
+        set(stepParam, step);
         return this;
     }
 
@@ -143,14 +156,28 @@ public class InbreedingCoefficientTransformer extends AbstractTransformer implem
         } else {
             study = col("studies").apply(0);
         }
-        return dataset.agg(udaf.apply(study).as("r"))
-                .select(explode(col("r").apply("values")).as("value"))
-                .selectExpr("value.*");
+        Integer step = getOrDefault(stepParam);
+        if (step > 0) {
+            return dataset.groupBy(col("chromosome"), floor(col("start").divide(step)).multiply(step).cast(IntegerType).alias("start"))
+                    .agg(udaf.apply(study).as("r"))
+                    .select(col("chromosome"), col("start"), explode(col("r").apply("values")).as("value"))
+                    .selectExpr("chromosome", "start", "value.*").orderBy("chromosome", "start");
+        } else {
+            return dataset.agg(udaf.apply(study).as("r"))
+                    .select(explode(col("r").apply("values")).as("value"))
+                    .selectExpr("value.*");
+        }
+
     }
 
     @Override
     public StructType transformSchema(StructType schema) {
-        return STRUCT_TYPE;
+        if (getOrDefault(stepParam) > 0) {
+            StructType struct = DataTypeUtils.addField(STRUCT_TYPE, createStructField("chromosome", StringType, false), 0);
+            return DataTypeUtils.addField(struct, createStructField("start", IntegerType, false), 1);
+        } else {
+            return STRUCT_TYPE;
+        }
     }
 
     public static class InbreedingCoefficientUserDefinedAggregationFunction extends UserDefinedAggregateFunction {
