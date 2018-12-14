@@ -108,7 +108,7 @@ public class FacetTransformer extends AbstractTransformer {
                     }
                     case RANGE: {
                         // Range facet
-                        String facetName = fieldNames.get(i) + "Range";
+                        String facetName = (fieldNames.get(i) + "Range");
                         res = processRangeFacet(facets[i], fieldNames.get(i), facetName, res);
                         facetNames.add(facetName);
                         break;
@@ -133,8 +133,19 @@ public class FacetTransformer extends AbstractTransformer {
                 // Special case, we have aggregations
                 int index = facets.length - 1;
                 String aggFunct = facets[index].substring(0, facets[index].indexOf("("));
-                res = res.groupBy(cols).agg(getAggregationExpr(aggFunct, fieldNames.get(index)),
-                        count(lit(1)).as("count")).orderBy(cols);
+                if (fieldNames.get(index).startsWith(STATS_PREFIX)) {
+                    String tmpName = fieldNames.get(index).replace(":", "___").replace("@", "____");
+                    res = res.withColumnRenamed(fieldNames.get(index), tmpName).groupBy(cols)
+                            .agg(getAggregationExpr(aggFunct, tmpName).as(fieldNames.get(index)),
+                                    count(lit(1)).as("count"))
+                            .orderBy(cols);
+                } else {
+                    res = res.groupBy(cols).agg(getAggregationExpr(aggFunct, fieldNames.get(index)),
+                            count(lit(1)).as("count")).orderBy(cols);
+                }
+
+
+
             } else {
                 res = res.groupBy(cols).count().orderBy(cols);
             }
@@ -151,7 +162,7 @@ public class FacetTransformer extends AbstractTransformer {
                 }
                 case RANGE: {
                     // Range facet
-                    String facetName = fieldName + "Range";
+                    String facetName = (fieldName + "Range");
                     Dataset<Row> rangeDf = processRangeFacet(facet, fieldName, facetName, (Dataset<Row>) df);
                     res = rangeDf.groupBy(facetName).count().orderBy(facetName);
                     break;
@@ -161,7 +172,14 @@ public class FacetTransformer extends AbstractTransformer {
                     Dataset<Row> cached = processAggregationFacet(facet, fieldName, (Dataset<Row>) df);
                     long count = cached.count();
                     String aggFunct = facet.substring(0, facet.indexOf("("));
-                    res = cached.agg(getAggregationExpr(aggFunct, fieldName)).withColumn("count", lit(count));
+                    if (fieldName.startsWith(STATS_PREFIX)) {
+                        String tmpName = fieldName.replace(":", "___").replace("@", "____");
+                        res = cached.withColumnRenamed(fieldName, tmpName).agg(getAggregationExpr(aggFunct, tmpName))
+                                .withColumn("count", lit(count))
+                                .withColumnRenamed(aggFunct + "(" + tmpName + ")", aggFunct + "(" + fieldName + ")");
+                    } else {
+                        res = cached.agg(getAggregationExpr(aggFunct, fieldName)).withColumn("count", lit(count));
+                    }
                     break;
                 }
                 default:
@@ -201,7 +219,10 @@ public class FacetTransformer extends AbstractTransformer {
                             .withColumn(facetName, col("tmp.stats." + splits[2] + ".altAlleleFreq"));
                 } else {
                     UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
-                    ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
+                    if (isSubstitutionScore(fieldName)) {
+                        res = res.withColumn("tmp1", getColumn(fieldName));
+                    }
+                    ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName, "tmp1");
                     res = res.withColumn(facetName, scoreFunction.apply(functScoreSeq));
                 }
             } else if (isExplode.contains(fieldName)) {
@@ -221,28 +242,40 @@ public class FacetTransformer extends AbstractTransformer {
 
     private Dataset<Row> processRangeFacet(String facet, String fieldName, String facetName, Dataset<Row> df) {
         // Parse range
-        String[] split = facet.replace("[", ":").replace("..", ":").replace("]", "").split(":");
-        double start = Double.parseDouble(split[1]);
-        double end = Double.parseDouble(split[2]);
-        double step = Double.parseDouble(split[3]);
+        String[] split = facet.substring(facet.indexOf("[") + 1).replace("[", ":").replace("..", ":").replace("]", "").split(":");
+        double start = Double.parseDouble(split[0]);
+        double end = Double.parseDouble(split[1]);
+        double step = Double.parseDouble(split[2]);
 
         Column col;
-        Dataset<Row> res = df;
+        String alias = null;
+        String tmpName = facetName;
         if (facet.startsWith(POPFREQ_PREFIX)) {
             String[] splits = fieldName.split(SEPARATOR);
             col = population_frequency("annotation", splits[1], splits[2]);
         } else if (facet.startsWith(STATS_PREFIX)) {
+            alias = facetName;
+            tmpName = facetName.replace(":", "___").replace("@", "____");
+
             String[] splits = fieldName.split(SEPARATOR);
             df = df.withColumn("tmp", study("studies", splits[1]));
             col = col("tmp.stats." + splits[2] + ".altAlleleFreq");
         } else {
             UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
-            ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
-
+            if (isSubstitutionScore(fieldName)) {
+                df = df.withColumn("tmp1", getColumn(fieldName));
+            }
+            ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName, "tmp1");
             col = scoreFunction.apply(functScoreSeq);
         }
-        return df.withColumn(facetName, col.divide(step).cast(DataTypes.IntegerType)
-                .multiply(step)).filter(facetName + ">= " + start + " AND " + facetName + " <= " + end);
+
+        df = df.withColumn(tmpName, col.divide(step).cast(DataTypes.IntegerType).multiply(step))
+                .filter(tmpName + ">= " + start + " AND " + tmpName + " <= " + end);
+
+        if (alias != null) {
+            df = df.withColumnRenamed(tmpName, alias);
+        }
+        return df;
     }
 
     private Dataset<Row> processAggregationFacet(String facet, String fieldName, Dataset<Row> df) {
@@ -259,16 +292,18 @@ public class FacetTransformer extends AbstractTransformer {
             throw new InvalidParameterException("Aggregation function unknown: " + aggFunction);
         }
 
-
         if (isNumeric(fieldName)) {
             if (validRangeFields.containsKey(fieldName)) {
                 UserDefinedFunction scoreFunction = udf(new ScoreFunction(fieldName), DataTypes.DoubleType);
-                ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName);
+                if (isSubstitutionScore(fieldName)) {
+                    df = df.withColumn("tmp1", getColumn(fieldName));
+                }
+                ListBuffer<Column> functScoreSeq = createFunctScoreSeq(fieldName, "tmp1");
                 return df.withColumn(fieldName, scoreFunction.apply(functScoreSeq));
             } else if (fieldName.startsWith(POPFREQ_PREFIX)) {
                 String[] splits = fieldName.split(SEPARATOR);
                 return df.withColumn(fieldName, population_frequency("annotation", splits[1], splits[2]));
-            } else if (facet.startsWith(STATS_PREFIX)) {
+            } else if (fieldName.startsWith(STATS_PREFIX)) {
                 String[] splits = fieldName.split(SEPARATOR);
                 return df.withColumn("tmp", study("studies", splits[1]))
                         .withColumn(fieldName, col("tmp.stats." + splits[2] + ".altAlleleFreq"));
@@ -278,10 +313,19 @@ public class FacetTransformer extends AbstractTransformer {
     }
 
     private ListBuffer<Column> createFunctScoreSeq(String fieldName) {
-        if (fieldName.equals("cadd_scaled") || fieldName.equals("cadd_raw")) {
+        return createFunctScoreSeq(fieldName, null);
+    }
+
+    private ListBuffer<Column> createFunctScoreSeq(String fieldName, String aux) {
+        if (isFunctionalScore(fieldName)) {
             return new ListBuffer<Column>().$plus$eq(col("annotation.functionalScore"));
-        } else {
+        } else if (isSubstitutionScore(fieldName)) {
+            //return new ListBuffer<Column>().$plus$eq(col("annotation.consequenceTypes.proteinVariantAnnotation.substitutionScores"));
+            return new ListBuffer<Column>().$plus$eq(col(aux));
+        } else if (isConservationScore(fieldName)) {
             return new ListBuffer<Column>().$plus$eq(col("annotation.conservation"));
+        } else {
+            return null;
         }
     }
 
@@ -309,6 +353,9 @@ public class FacetTransformer extends AbstractTransformer {
 
         @Override
         public Double apply(WrappedArray<GenericRowWithSchema> functionalScores) {
+            if (functionalScores == null) {
+                return Double.NEGATIVE_INFINITY;
+            }
             for (int i = 0; i < functionalScores.length(); i++) {
                 Row functScore = functionalScores.apply(i);
                 if (functScore.apply(1).equals(source)) {
@@ -380,6 +427,18 @@ public class FacetTransformer extends AbstractTransformer {
             return true;
         }
         return false;
+    }
+
+    private boolean isFunctionalScore(String field) {
+        return (field.equals("cadd_scaled") || field.equals("cadd_raw"));
+    }
+
+    private boolean isConservationScore(String field) {
+        return (field.equals("gerp") || field.equals("phylop") || field.equals("phastCons"));
+    }
+
+    private boolean isSubstitutionScore(String field) {
+        return (field.equals("sift") || field.equals("polyphen"));
     }
 
     private Column getColumn(String facetName) {

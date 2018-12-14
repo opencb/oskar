@@ -14,7 +14,7 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.feature.AllelesCode;
 import org.opencb.biodata.models.feature.Genotype;
-import org.opencb.biodata.tools.variant.algorithm.IdentityByState;
+import org.opencb.biodata.models.variant.stats.IdentityByState;
 import org.opencb.biodata.tools.variant.algorithm.IdentityByStateClustering;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
@@ -435,7 +435,7 @@ public class IBSTransformer extends AbstractTransformer {
                         buffer.getInt(offset + 2),
                 };
 
-                double distance = ibsc.getDistance(counts);
+                double distance = counts.getDistance();
                 values[pairIdx] = new GenericRowWithSchema(new Object[]{
                         new String[]{sampleIdxMap.get(sample1), sampleIdxMap.get(sample2)},
                         distance,
