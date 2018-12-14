@@ -58,7 +58,7 @@ class TestUdfs(TestOskarBase):
         self.df.select(self.df.id, functional("annotation", "cadd_scaled")).show(LIMIT)
 
     def test_conservation_phastCons(self):
-        self.df.select(conservation("annotation", "phastCons").alias("phastCons")).filter("phastCons is not null").show(LIMIT)
+        self.df.select(conservation("annotation", "phastCons").alias("phastCons")).show(LIMIT)
 
     def test_conservation_gerp(self):
         self.df.select(conservation("annotation", "gerp").alias("gerp")).filter("gerp is not null").show(LIMIT)

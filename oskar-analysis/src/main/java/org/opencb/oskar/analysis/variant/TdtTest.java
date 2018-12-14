@@ -6,12 +6,13 @@ import org.opencb.biodata.models.clinical.pedigree.Pedigree;
 import org.opencb.biodata.models.clinical.pedigree.PedigreeManager;
 import org.opencb.biodata.models.commons.Phenotype;
 import org.opencb.biodata.models.feature.Genotype;
+import org.opencb.biodata.tools.pedigree.MendelianError;
+import org.opencb.biodata.tools.pedigree.MendelianError.GenotypeCode;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.variant.MendelianError.GenotypeCode;
 
 import java.util.*;
 
-import static org.opencb.oskar.analysis.variant.MendelianError.getAlternateAlleleCount;
+import static org.opencb.biodata.tools.pedigree.MendelianError.getAlternateAlleleCount;
 
 public class TdtTest {
     public TdtTestResult computeTdtTest(List<Pedigree> pedigrees, Map<String, Genotype> genotypes, Phenotype phenotype,
