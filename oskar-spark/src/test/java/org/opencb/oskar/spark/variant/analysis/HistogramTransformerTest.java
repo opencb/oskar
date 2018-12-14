@@ -34,7 +34,8 @@ public class HistogramTransformerTest {
 
         Dataset<Row> df = sparkTest.getVariantsDataset();
 
-        df = new HistogramTransformer().setStep(100000).setInputCol("start").transform(df);
+        df = new HistogramTransformer().transform(df);
+//        df = new HistogramTransformer().setStep(100000).setInputCol("start").transform(df);
         df.show();
 
         assertEquals(DataTypes.IntegerType, df.schema().apply("start").dataType());
