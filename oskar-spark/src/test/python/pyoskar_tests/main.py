@@ -3,10 +3,9 @@
 
 from pyoskar_tests.test_utils import *
 from pyoskar.core import Oskar
-from pyoskar.spark.analysis import *
-from pyoskar.spark.sql import *
-from pyoskar.spark.analysis import *
-from pyspark.sql.functions import col, udf, count, explode, concat, when, expr
+from pyoskar.sql import *
+from pyoskar.analysis import *
+from pyspark.sql.functions import col
 from pyspark.sql.functions import *
 
 spark = create_testing_pyspark_session()
