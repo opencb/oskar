@@ -141,13 +141,12 @@
                                 <echo>Copying pyoskar to ${build.dir}</echo>
                                 <exec executable="cp">
                                     <arg value="-r"/>
-                                    <!--WHY IS IT NECESSARY EVERYTHING INSIDE PYOSKAR??-->
                                     <arg value="${project.basedir}/../oskar-spark/src/main/python/pyoskar"/>
-                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/variant_filtering.ipynb"/>
-                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/variant_filtering_advanced.ipynb"/>
-                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/stats.ipynb"/>
-                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/facets.ipynb"/>
-                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/GWAS.ipynb"/>
+                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/notebooks/variant_filtering.ipynb"/>
+                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/notebooks/variant_filtering_advanced.ipynb"/>
+                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/notebooks/stats.ipynb"/>
+                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/notebooks/facets.ipynb"/>
+                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/notebooks/GWAS.ipynb"/>
                                     <arg value="${project.basedir}/app/pyoskar/pyoskar-nb.sh"/>
                                     <arg value="${build.dir}/pyoskar"/>
                                 </exec>
