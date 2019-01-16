@@ -36,6 +36,16 @@ class Oskar(JavaWrapper):
         """
         return ChiSquareTransformer(studyId=studyId, phenotype=phenotype).transform(df)
 
+    def chromDensity(self, df, chroms, step):
+        """
+
+        :param df:
+        :param chroms:
+        :param step:
+        :return:
+        """
+        return ChromDensityTransformer(chroms=chroms, step=step).transform(df)
+
     def compoundHeterozygote(self, df, father, mother, child, studyId=None, missingGenotypeAsReference=None):
         """
 

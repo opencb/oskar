@@ -186,6 +186,29 @@ class ChiSquareTransformer(AbstractTransformer):
         return self._set(phenotype=value)
 
 
+class ChromDensityTransformer(AbstractTransformer):
+    chroms = Param(Params._dummy(), "chroms", "", typeConverter=TypeConverters.toString)
+    step = Param(Params._dummy(), "step", "", typeConverter=TypeConverters.toInt)
+
+    @keyword_only
+    def __init__(self, chroms=None, step=None):
+        super(ChromDensityTransformer, self).__init__()
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.ChromDensityTransformer", self.uid)
+        self.setParams(**self._input_kwargs)
+
+    def getChromosome(self):
+        return self.getOrDefault(self.chroms)
+
+    def setChromosome(self, value):
+        return self._set(chroms=value)
+
+    def getStep(self):
+        return self.getOrDefault(self.step)
+
+    def setStep(self, value):
+        return self._set(step=value)
+
+
 class CompoundHeterozigoteTransformer(AbstractTransformer):
     father = Param(Params._dummy(), "father", "", typeConverter=TypeConverters.toString)
     mother = Param(Params._dummy(), "mother", "", typeConverter=TypeConverters.toString)
