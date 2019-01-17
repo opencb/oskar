@@ -30,6 +30,12 @@ class TestTransformers(TestOskarBase):
     def test_histogram(self):
         self.oskar.histogram(self.df, "start", 1000000).show(LIMIT)
 
+    def test_ibd(self):
+        self.oskar.ibd(self.df).show(LIMIT)
+
+    def test_ibd_full(self):
+        self.oskar.ibs(self.df, samples=["NA12877", "NA12878", "NA12879"], skipMultiAllelic=True, skipReference=True).show(LIMIT)
+
     def test_ibs(self):
         self.oskar.ibs(self.df).show(LIMIT)
 

@@ -103,6 +103,31 @@ class Oskar(JavaWrapper):
         """
         return HistogramTransformer(inputCol=inputCol, step=step).transform(df)
 
+    def ibd(self, df, samples=None, skipMultiAllelic=None, skipReference=None, numPairs=None):
+        """
+        Calculates the Identity By Descendent.
+
+        :type df: DataFrame
+        :param df: Original dataframe
+
+        :type samples: list<str>
+        :param samples: List of samples to use for calculating the IBS
+
+        :type skipMultiAllelic: bool
+        :param skipMultiAllelic: Skip variants where any of the samples has a secondary alternate
+
+        :type skipReference: bool
+        :param skipReference: Skip variants where both samples of the pair are HOM_REF
+
+        :type numPairs: int
+        :param numPairs:
+
+        :rtype: DataFrame
+        :return: Transformed dataframe
+        """
+        return IBDTransformer(samples=samples, skipReference=skipReference, skipMultiAllelic=skipMultiAllelic,
+                              numPairs=numPairs).transform(df)
+
     def ibs(self, df, samples=None, skipMultiAllelic=None, skipReference=None, numPairs=None):
         """
         Calculates the Identity By State.
