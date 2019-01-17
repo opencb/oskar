@@ -12,6 +12,9 @@ class TestTransformers(TestOskarBase):
     def test_chi_square(self):
         self.oskar.chiSquare(self.df, "hgvauser@platinum:illumina_platinum", "KK").show(LIMIT)
 
+    def test_chrom_density(self):
+        self.oskar.chromDensity(self.df, "22", 1000000).show(LIMIT)
+
     def test_compound_heterozygote(self):
         self.oskar.compoundHeterozygote(self.df, "NA12877", "NA12878", "NA12879", missingGenotypeAsReference=True).show(LIMIT)
 
@@ -25,7 +28,13 @@ class TestTransformers(TestOskarBase):
         self.oskar.hardyWeinberg(self.df, "hgvauser@platinum:illumina_platinum").show(LIMIT)
 
     def test_histogram(self):
-        self.oskar.histogram(self.df, "start", 5).show(LIMIT)
+        self.oskar.histogram(self.df, "start", 1000000).show(LIMIT)
+
+    def test_ibd(self):
+        self.oskar.ibd(self.df).show(LIMIT)
+
+    def test_ibd_full(self):
+        self.oskar.ibs(self.df, samples=["NA12877", "NA12878", "NA12879"], skipMultiAllelic=True, skipReference=True).show(LIMIT)
 
     def test_ibs(self):
         self.oskar.ibs(self.df).show(LIMIT)
