@@ -39,7 +39,7 @@ class TestUdfs(TestOskarBase):
         self.df.select(genes("annotation").alias("genes")).where("genes[0] is not null").show(LIMIT)
 
     def test_ensembl_genes(self):
-        self.df.select(ensembl_genes("annotation").alias("genes")).where("genes[0] is not null ").show(LIMIT)
+        self.df.select(ensembl_genes("annotation").alias("genes")).where("genes[0] is not null ").show(LIMIT, truncate=False)
 
     def test_consequence_types(self):
         self.df.select(self.df.id, consequence_types("annotation").alias("CT")).show(LIMIT)
