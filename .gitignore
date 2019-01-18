@@ -1,6 +1,10 @@
 
 # Oskar folders
 build
+# Exclude Python developers' symbolic links
+oskar-spark/src/main/python/libs
+oskar-spark/src/main/python/notebooks/data
+oskar-spark/src/main/python/notebooks/pyoskar
 
 # Web
 bower_components

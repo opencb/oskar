@@ -87,26 +87,6 @@
                         <phase>install</phase>
                         <configuration>
                             <target>
-
-                                <!--<echo>Removing notebooks from ${build.dir}/../oskar-spark</echo>-->
-                                <!--<exec executable="rm">-->
-                                    <!--<arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/variant_filtering.ipynb"/>-->
-                                    <!--<arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/variant_filtering_advanced.ipynb"/>-->
-                                    <!--<arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/stats.ipynb"/>-->
-                                    <!--<arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/facets.ipynb"/>-->
-                                    <!--<arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/GWAS.ipynb"/>-->
-                                <!--</exec>-->
-
-                                <!--<echo>Copying notebooks to ${build.dir}/../oskar-spark</echo>-->
-                                <!--<exec executable="cp">-->
-                                    <!--<arg value="${build.dir}/pyoskar/variant_filtering.ipynb"/>-->
-                                    <!--<arg value="${build.dir}/pyoskar/variant_filtering_advanced.ipynb"/>-->
-                                    <!--<arg value="${build.dir}/pyoskar/stats.ipynb"/>-->
-                                    <!--<arg value="${build.dir}/pyoskar/facets.ipynb"/>-->
-                                    <!--<arg value="${build.dir}/pyoskar/GWAS.ipynb"/>-->
-                                    <!--<arg value="${build.dir}/../oskar-spark/src/main/python/notebooks"/>-->
-                                <!--</exec>-->
-
                                 <echo>Preparing ${build.dir} folder</echo>
                                 <exec executable="rm">
                                     <arg value="-rf"/>
@@ -125,7 +105,6 @@
                                     <arg value="-r"/>
                                     <arg value="${project.basedir}/target/appassembler/bin"/>
                                     <arg value="${project.basedir}/target/appassembler/libs"/>
-                                    <!--<arg value="${project.basedir}/target/conf"/>-->
                                     <arg value="${project.basedir}/../LICENSE"/>
                                     <arg value="${project.basedir}/../README.md"/>
                                     <arg value="${build.dir}"/>
@@ -142,19 +121,18 @@
                                 <exec executable="cp">
                                     <arg value="-r"/>
                                     <arg value="${project.basedir}/../oskar-spark/src/main/python/pyoskar"/>
-                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/notebooks/variant_filtering.ipynb"/>
-                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/notebooks/variant_filtering_advanced.ipynb"/>
-                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/notebooks/stats.ipynb"/>
-                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/notebooks/facets.ipynb"/>
-                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/notebooks/GWAS.ipynb"/>
-                                    <arg value="${project.basedir}/app/pyoskar/pyoskar-nb.sh"/>
+                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/variant_filtering.ipynb"/>
+                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/variant_filtering_advanced.ipynb"/>
+                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/stats.ipynb"/>
+                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/facets.ipynb"/>
+                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/GWAS.ipynb"/>
+                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/nb-launcher.sh"/>
                                     <arg value="${build.dir}/pyoskar"/>
                                 </exec>
 
                                 <echo>Copying configuration files</echo>
                                 <exec executable="cp">
                                     <arg value="${project.basedir}/../oskar-core/target/classes/configuration.yml"/>
-                                    <!--<arg value="${project.basedir}/../oskar-core/target/classes/log4j.properties"/>-->
                                     <arg value="${project.basedir}/../oskar-spark/src/main/resources/spark-defaults.conf"/>
                                     <arg value="${build.dir}/conf"/>
                                 </exec>

@@ -26,3 +26,12 @@ We recommend to contact Pyoskar developers by writing to OpenCB mailing list ope
 
 ##### Contributing
 Pyoskar is an open-source and collaborative project. We appreciate any help and feedback from users, you can contribute in many different ways such as simple bug reporting and feature request. Dependending on your skills you are more than welcome to develop client tools, new features or even fixing bugs.
+
+
+
+### Developers
+
+ln -s ../pyoskar pyoskar
+ln -s PATH_TO_DATA data
+
+ln -s ../../../target libs
