@@ -36,6 +36,16 @@ class Oskar(JavaWrapper):
         """
         return ChiSquareTransformer(studyId=studyId, phenotype=phenotype).transform(df)
 
+    def chromDensity(self, df, chroms, step):
+        """
+
+        :param df:
+        :param chroms:
+        :param step:
+        :return:
+        """
+        return ChromDensityTransformer(chroms=chroms, step=step).transform(df)
+
     def compoundHeterozygote(self, df, father, mother, child, studyId=None, missingGenotypeAsReference=None):
         """
 
@@ -92,6 +102,31 @@ class Oskar(JavaWrapper):
         :return:
         """
         return HistogramTransformer(inputCol=inputCol, step=step).transform(df)
+
+    def ibd(self, df, samples=None, skipMultiAllelic=None, skipReference=None, numPairs=None):
+        """
+        Calculates the Identity By Descendent.
+
+        :type df: DataFrame
+        :param df: Original dataframe
+
+        :type samples: list<str>
+        :param samples: List of samples to use for calculating the IBS
+
+        :type skipMultiAllelic: bool
+        :param skipMultiAllelic: Skip variants where any of the samples has a secondary alternate
+
+        :type skipReference: bool
+        :param skipReference: Skip variants where both samples of the pair are HOM_REF
+
+        :type numPairs: int
+        :param numPairs:
+
+        :rtype: DataFrame
+        :return: Transformed dataframe
+        """
+        return IBDTransformer(samples=samples, skipReference=skipReference, skipMultiAllelic=skipMultiAllelic,
+                              numPairs=numPairs).transform(df)
 
     def ibs(self, df, samples=None, skipMultiAllelic=None, skipReference=None, numPairs=None):
         """

@@ -83,22 +83,6 @@
                 <version>1.8</version>
                 <executions>
                     <execution>
-                        <id>clean-libs</id>
-                        <phase>clean</phase>
-                        <configuration>
-                            <target>
-                                <echo>Preparing ${build.dir} folder</echo>
-                                <exec executable="rm">
-                                    <arg value="-rf"/>
-                                    <arg value="${build.dir}"/>
-                                </exec>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                    <execution>
                         <id>install-app</id>
                         <phase>install</phase>
                         <configuration>
@@ -121,7 +105,6 @@
                                     <arg value="-r"/>
                                     <arg value="${project.basedir}/target/appassembler/bin"/>
                                     <arg value="${project.basedir}/target/appassembler/libs"/>
-                                    <arg value="${project.basedir}/target/conf"/>
                                     <arg value="${project.basedir}/../LICENSE"/>
                                     <arg value="${project.basedir}/../README.md"/>
                                     <arg value="${build.dir}"/>
@@ -143,14 +126,13 @@
                                     <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/stats.ipynb"/>
                                     <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/facets.ipynb"/>
                                     <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/GWAS.ipynb"/>
-                                    <arg value="${project.basedir}/../oskar-app/app/pyoskar/pyoskar-nb.sh"/>
+                                    <arg value="${project.basedir}/../oskar-spark/src/main/python/notebooks/nb-launcher.sh"/>
                                     <arg value="${build.dir}/pyoskar"/>
                                 </exec>
 
                                 <echo>Copying configuration files</echo>
                                 <exec executable="cp">
                                     <arg value="${project.basedir}/../oskar-core/target/classes/configuration.yml"/>
-                                    <!--<arg value="${project.basedir}/../oskar-core/target/classes/log4j.properties"/>-->
                                     <arg value="${project.basedir}/../oskar-spark/src/main/resources/spark-defaults.conf"/>
                                     <arg value="${build.dir}/conf"/>
                                 </exec>

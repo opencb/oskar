@@ -11,15 +11,15 @@ class TestOskar(TestOskarBase):
 
     def test_samples(self):
         samples = self.oskar.metadata.samples(self.df)
-        assert len(samples) == 17
+        assert len(samples["hgvauser@platinum:illumina_platinum"]) == 17
         for i in range(0, 17):
-            assert samples[i] == "NA" + str(12877 + i)
+            assert samples["hgvauser@platinum:illumina_platinum"][i] == "NA" + str(12877 + i)
 
     def test_filter_study(self):
         self.df.selectExpr("studies[0].files.fileId").show(10, False)
 
         self.df.select(file_qual("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz").alias("qual")).show(10)
-        self.df.selectExpr("fileQual(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz')").show(10)
+        self.df.selectExpr("file_qual(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz')").show(10)
 
     def test_filter_annot(self):
         self.df.withColumn("freqs", population_frequency_as_map("annotation")).where("freqs['1kG_phase3:ALL'] > 0").show(

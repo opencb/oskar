@@ -123,6 +123,46 @@ class HardyWeinbergTransformer(AbstractTransformer):
         return self._set(studyId=value)
 
 
+class IBDTransformer(AbstractTransformer):
+    samples = Param(Params._dummy(), "samples", "List of samples to use for calculating the IBS",
+                    typeConverter=TypeConverters.toListString)
+    skipMultiAllelic = Param(Params._dummy(), "skipMultiAllelic", "Skip variants where any of the samples has a secondary alternate",
+                             typeConverter=TypeConverters.toBoolean)
+    skipReference = Param(Params._dummy(), "skipReference", "Skip variants where both samples of the pair are HOM_REF",
+                          typeConverter=TypeConverters.toBoolean)
+    numPairs = Param(Params._dummy(), "numPairs", "", typeConverter=TypeConverters.toInt)
+
+    @keyword_only
+    def __init__(self, samples=None, skipMultiAllelic=None, skipReference=None, numPairs=None):
+        super(IBDTransformer, self).__init__()
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.IBDTransformer", self.uid)
+        self.setParams(**self._input_kwargs)
+
+    def getSamples(self):
+        return self.getOrDefault(self.samples)
+
+    def setSamples(self, value):
+        return self._set(samples=value)
+
+    def getSkipMultiAllelic(self):
+        return self.getOrDefault(self.skipMultiAllelic)
+
+    def setSkipMultiAllelic(self, value):
+        return self._set(skipMultiAllelic=value)
+
+    def getSkipReference(self):
+        return self.getOrDefault(self.skipReference)
+
+    def setSkipReference(self, value):
+        return self._set(skipReference=value)
+
+    def getNumPairs(self):
+        return self.getOrDefault(self.numPairs)
+
+    def setNumPairs(self, value):
+        return self._set(numPairs=value)
+
+
 class IBSTransformer(AbstractTransformer):
     samples = Param(Params._dummy(), "samples", "List of samples to use for calculating the IBS",
                     typeConverter=TypeConverters.toListString)
@@ -184,6 +224,29 @@ class ChiSquareTransformer(AbstractTransformer):
 
     def setPhenotype(self, value):
         return self._set(phenotype=value)
+
+
+class ChromDensityTransformer(AbstractTransformer):
+    chroms = Param(Params._dummy(), "chroms", "", typeConverter=TypeConverters.toString)
+    step = Param(Params._dummy(), "step", "", typeConverter=TypeConverters.toInt)
+
+    @keyword_only
+    def __init__(self, chroms=None, step=None):
+        super(ChromDensityTransformer, self).__init__()
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.ChromDensityTransformer", self.uid)
+        self.setParams(**self._input_kwargs)
+
+    def getChromosome(self):
+        return self.getOrDefault(self.chroms)
+
+    def setChromosome(self, value):
+        return self._set(chroms=value)
+
+    def getStep(self):
+        return self.getOrDefault(self.step)
+
+    def setStep(self, value):
+        return self._set(step=value)
 
 
 class CompoundHeterozigoteTransformer(AbstractTransformer):

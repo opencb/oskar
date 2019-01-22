@@ -15,13 +15,13 @@ class TestUdfs(TestOskarBase):
         self.df.select(study("studies", "hgvauser@platinum:illumina_platinum")).show(1, truncate=False)
 
     def test_file(self):
-        self.df.select(file("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz").alias("platinum-genomes-vcf-NA12877_S1.genome.vcf.gz")).show(LIMIT)
+        self.df.select(file("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz").alias("platinum-genomes-vcf-NA12877_S1.genome.vcf.gz")).show(LIMIT, truncate=False)
 
     def test_file_attribute(self):
         self.df.select(file_attribute("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz", "DP").alias("DP")).where("DP is not null").show(LIMIT)
 
     def test_file_filter(self):
-        self.df.select(file_filter("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz")).show(LIMIT)
+        self.df.select(file_filter("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz")).show(LIMIT, truncate=False)
 
     def test_file_qual(self):
         self.df.select(file_qual("studies", "platinum-genomes-vcf-NA12877_S1.genome.vcf.gz")).show(LIMIT)
@@ -39,7 +39,7 @@ class TestUdfs(TestOskarBase):
         self.df.select(genes("annotation").alias("genes")).where("genes[0] is not null").show(LIMIT)
 
     def test_ensembl_genes(self):
-        self.df.select(ensembl_genes("annotation").alias("genes")).where("genes[0] is not null ").show(LIMIT)
+        self.df.select(ensembl_genes("annotation").alias("genes")).where("genes[0] is not null ").show(LIMIT, truncate=False)
 
     def test_consequence_types(self):
         self.df.select(self.df.id, consequence_types("annotation").alias("CT")).show(LIMIT)

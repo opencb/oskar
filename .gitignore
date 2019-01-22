@@ -1,6 +1,12 @@
 
 # Oskar folders
 build
+# Exclude Python developers' symbolic links
+oskar-spark/src/main/python/libs
+oskar-spark/src/main/python/notebooks/data
+oskar-spark/src/main/python/notebooks/pyoskar
+oskar-spark/src/main/python/notebooks/metastore_db
+oskar-spark/src/main/python/notebooks/.ipynb_checkpoints
 
 # Web
 bower_components
