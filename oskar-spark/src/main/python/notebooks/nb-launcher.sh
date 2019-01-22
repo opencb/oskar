@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export PYSPARK_DRIVER_PYTHON=jupyter
-export PYSPARK_DRIVER_PYTHON_OPTS='notebook'
+export PYSPARK_DRIVER_PYTHON_OPTS='lab'
 export SPARK_CONF_DIR='../conf'
 
 if [[ -z "$SPARK_HOME" ]]; then
