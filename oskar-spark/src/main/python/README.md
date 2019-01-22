@@ -31,7 +31,6 @@ Pyoskar is an open-source and collaborative project. We appreciate any help and 
 
 ### Developers
 
-ln -s ../pyoskar pyoskar
-ln -s PATH_TO_DATA data
-
-ln -s ../../../target libs
+ln -s ../pyoskar pyoskar [from: python to: notebooks]
+ln -s PATH_TO_DATA data [from: PATH_TO_DATA to: notebooks]
+ln -s ../../../target libs [from: target to: python]
