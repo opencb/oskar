@@ -67,10 +67,10 @@
             <property name="max" value="140"/>
         </module>
         <module name="MethodLength">
-            <property name="max" value="400"/>
+            <property name="max" value="200"/>
         </module>
         <module name="ParameterNumber">
-            <property name="max" value="10"/>
+            <property name="max" value="15"></property>
         </module>
         <module name="OuterTypeNumber"/>
 
@@ -133,7 +133,7 @@
         <!--<property name="ignoreConstructorParameter" value="true"/>-->
         <!--</module>-->
         <module name="IllegalInstantiation"/>
-        <module name="InnerAssignment"/>
+        <!--<module name="InnerAssignment"/>-->
         <module name="MissingSwitchDefault"/>
         <!--<module name="RedundantThrows"/>-->
         <module name="SimplifyBooleanExpression"/>
@@ -145,9 +145,11 @@
         <module name="FinalClass"/>
         <!--<module name="HideUtilityClassConstructor"/>-->
         <module name="InterfaceIsType"/>
+<!--
         <module name="VisibilityModifier">
             <property name="protectedAllowed" value="true"/>
         </module>
+        -->
         <module name="MissingOverride"/>
 
         <!-- Miscellaneous other checks.                   -->
