@@ -285,6 +285,13 @@ class Oskar(JavaWrapper):
         return ModeOfInheritanceTransformer(family=family, modeOfInheritance=modeOfInheritance, phenotype=phenotype, studyId=studyId,
                                             incompletePenetrance=incompletePenetrance, missingAsReference=missingAsReference).transform(df)
 
+    def PCA(self, df, studyId, k):
+        """
+
+        :type df: DataFrame
+        """
+        return PCATransformer(studyId=studyId, k=k).transform(df)
+
     def tdt(self, df, studyId, phenotype):
         """
 
