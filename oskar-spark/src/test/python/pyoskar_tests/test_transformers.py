@@ -77,6 +77,9 @@ class TestTransformers(TestOskarBase):
 
         self.oskar.modeOfInheritance(dataframe, family=family, modeOfInheritance="biallelic", phenotype=phenotype, studyId="hgvauser@platinum:illumina_platinum").show(LIMIT)
 
+    def test_pca(self):
+        self.oskar.PCA(self.df, "hgvauser@platinum:illumina_platinum", 2).show(LIMIT, truncate=False)
+
     def test_tdt(self):
         self.oskar.tdt(self.df, "hgvauser@platinum:illumina_platinum", "KK").show(LIMIT)
 
