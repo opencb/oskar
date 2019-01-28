@@ -1,6 +1,5 @@
 package org.opencb.oskar.spark.variant.analysis;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.spark.ml.feature.Bucketizer;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -16,7 +15,6 @@ import java.io.IOException;
 
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.explode;
-import static org.apache.spark.sql.functions.*;
 import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.biotypes;
 
 
