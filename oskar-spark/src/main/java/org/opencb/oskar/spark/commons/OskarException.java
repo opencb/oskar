@@ -11,7 +11,7 @@ import java.util.Collection;
 public class OskarException extends Exception {
 
     // Do not use constructor from outside. Add a factory method.
-    protected OskarException(String message) {
+    public OskarException(String message) {
         super(message);
     }
 
