@@ -148,9 +148,6 @@ public class PCATransformer extends AbstractTransformer implements HasStudyId {
                 }, RowEncoder.apply(createSchema(GENOTYPES_COLUMN_NAME)));
 
 
-//        ds1.show(20, false);
-//        ds2.show(20, false);
-
         // fit PCA
         PCAModel pca = new PCA()
                 .setInputCol(GENOTYPES_COLUMN_NAME)
@@ -166,12 +163,12 @@ public class PCATransformer extends AbstractTransformer implements HasStudyId {
         return createSchema(PCA_COLUMN_NAME);
     }
 
-    public StructType createSchema(String columnName) {
+    private StructType createSchema(String columnName) {
         return new StructType(new StructField[] {
                 new StructField(columnName, new VectorUDT(), false, Metadata.empty()), });
     }
 
-    public StructType createSchema3() {
+    private StructType createSchema3() {
         return new StructType(new StructField[] {
                 new StructField(ROW_COLUMN_NAME, DataTypes.IntegerType, false, Metadata.empty()),
                 new StructField(COLUMN_COLUMN_NAME, DataTypes.IntegerType, false, Metadata.empty()),
