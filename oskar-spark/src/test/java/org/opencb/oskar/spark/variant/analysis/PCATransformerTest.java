@@ -22,7 +22,7 @@ public class PCATransformerTest {
 
         new PCATransformer().setStudyId(studyId)
                 .setK(k)
-                .transform(df)
+                .transform(df.limit(5))
                 .show(false);
     }
 }
