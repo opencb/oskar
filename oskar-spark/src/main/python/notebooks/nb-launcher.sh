@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export PYSPARK_DRIVER_PYTHON=jupyter
+export PYSPARK_PYTHON=python3
 export PYSPARK_DRIVER_PYTHON_OPTS='lab'
 export SPARK_CONF_DIR='../conf'
 
