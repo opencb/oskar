@@ -509,6 +509,29 @@ class ModeOfInheritanceTransformer(AbstractTransformer):
         return self._set(missingAsReference=value)
 
 
+class PCATransformer(AbstractTransformer):
+    studyId = Param(Params._dummy(), "studyId", "", typeConverter=TypeConverters.toString)
+    k = Param(Params._dummy(), "k", "", typeConverter=TypeConverters.toInt)
+
+    @keyword_only
+    def __init__(self, studyId=None, k=None):
+        super(PCATransformer, self).__init__()
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.PCATransformer", self.uid)
+        self.setParams(**self._input_kwargs)
+
+    def getStudyId(self):
+        return self.getOrDefault(self.studyId)
+
+    def setStudyId(self, value):
+        return self._set(studyId=value)
+
+    def getK(self):
+        return self.getOrDefault(self.k)
+
+    def setK(self, value):
+        return self._set(k=value)
+
+
 class TdtTransformer(AbstractTransformer):
     studyId = Param(Params._dummy(), "studyId", "", typeConverter=TypeConverters.toString)
     phenotype = Param(Params._dummy(), "phenotype", "", typeConverter=TypeConverters.toString)
