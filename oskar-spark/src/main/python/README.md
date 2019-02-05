@@ -30,8 +30,16 @@ Pyoskar is an open-source and collaborative project. We appreciate any help and 
 
 
 ### Developers
+In order to ease the development, developers need to create three symbolic links:
 
-ln -s ../pyoskar pyoskar
-ln -s PATH_TO_DATA data
+1. PyOskar needs access to the Java JAr files where code is actually implemented, so we need 
+to crate a link to that _libs_ folder:
 
-ln -s ../../../target libs
+```bash
+cd oskar-spark/src/main/python
+ln -s ../../../target libs [from: target to: python]
+```
+
+ln -s ../pyoskar pyoskar [from: python to: notebooks]
+
+ln -s PATH_TO_DATA data [from: PATH_TO_DATA to: notebooks]
