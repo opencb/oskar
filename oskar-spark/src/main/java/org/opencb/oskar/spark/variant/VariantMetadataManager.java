@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -47,8 +48,13 @@ public class VariantMetadataManager {
                 .setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
     }
 
-    public String getMetadataPath(String path) {
-        return path + ".meta.json.gz";
+    public String getMetadataPath(String path) throws OskarException {
+        if (Paths.get(path + ".meta.json.gz").toFile().exists()) {
+            return path + ".meta.json.gz";
+        } else if (Paths.get(path + ".meta.json").toFile().exists()) {
+            return path + ".meta.json";
+        }
+        throw OskarException.errorLoadingVariantMetadataFile(new IOException("Variant metadata not found"), path);
     }
 
     public VariantMetadata readMetadata(String path) throws OskarException {
@@ -129,14 +135,19 @@ public class VariantMetadataManager {
                 for (Sample sample : individual.getSamples()) {
                     samples.add(sample.getId());
 
-                    Metadata attrMetadata = new MetadataBuilder()
+                    MetadataBuilder metadataBuilder = new MetadataBuilder()
                             .putString("phenotype", phenotype)
                             .putString("sex", sex)
                             .putString("mother", mother)
-                            .putString("father", father)
-                            .build();
+                            .putString("father", father);
 
-                    pedigreeMap.get(study.getId()).get(family).put(sample.getId(), attrMetadata);
+                    if (MapUtils.isNotEmpty(sample.getAnnotations())) {
+                        for (Map.Entry<String, String> entry : sample.getAnnotations().entrySet()) {
+                            metadataBuilder.putString(entry.getKey(), entry.getValue());
+                        }
+                    }
+
+                    pedigreeMap.get(study.getId()).get(family).put(sample.getId(), metadataBuilder.build());
                 }
             }
             samplesMap.put(study.getId(), samples);
@@ -229,7 +240,7 @@ public class VariantMetadataManager {
                 while (sampleIt.hasNext()) {
                     String sampleId = sampleIt.next();
                     if (!membersMap.containsKey(sampleId)) {
-                        membersMap.put(sampleId, new Member().setId(sampleId));
+                        membersMap.put(sampleId, new Member().setId(sampleId).setAttributes(new HashMap<>()));
                     }
                     Member member = membersMap.get(sampleId);
 
@@ -266,6 +277,23 @@ public class VariantMetadataManager {
                     member.setSex(Member.Sex.getEnum(attrMetadata.getString("sex")));
                     member.setPhenotypes(Collections.singletonList(new Phenotype(attrMetadata.getString("phenotype"),
                             attrMetadata.getString("phenotype"), null)));
+
+                    Iterator<String> iterator = attrMetadata.map().keys().iterator();
+                    while (iterator.hasNext()) {
+                        String key = iterator.next();
+                        switch (key) {
+                            case "mother":
+                            case "father":
+                            case "sex":
+                            case "phenotype":
+                                break;
+                            default:
+                                if (StringUtils.isNotEmpty(attrMetadata.getString(key))) {
+                                    member.getAttributes().put(key, attrMetadata.getString(key));
+                                }
+                                break;
+                        }
+                    }
 
                     // Finally, add member to the pedigreee/family
                     pedigree.getMembers().add(member);
