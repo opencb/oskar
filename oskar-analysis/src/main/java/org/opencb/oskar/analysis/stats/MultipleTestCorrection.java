@@ -1,4 +1,4 @@
-package org.opencb.oskar.analysis.common;
+package org.opencb.oskar.analysis.stats;
 
 import java.security.InvalidParameterException;
 

@@ -1,4 +1,4 @@
-package org.opencb.oskar.analysis.common;
+package org.opencb.oskar.analysis.stats;
 
 public class StatsUtils {
     /**

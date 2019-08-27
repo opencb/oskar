@@ -13,7 +13,8 @@ import org.opencb.biodata.models.clinical.pedigree.Pedigree;
 import org.opencb.biodata.models.commons.Phenotype;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.utils.ListUtils;
-import org.opencb.oskar.analysis.variant.TdtTest;
+import org.opencb.oskar.analysis.stats.TdtTest;
+import org.opencb.oskar.core.annotations.Analysis;
 import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.analysis.params.HasPhenotype;
 import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
@@ -30,6 +31,7 @@ import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.udf;
 import static org.apache.spark.sql.types.DataTypes.*;
 
+@Analysis(id = "aaa", data = Analysis.AnalysisData.VARIANT)
 public class TdtTransformer extends AbstractTransformer implements HasStudyId, HasPhenotype {
 
     public TdtTransformer() {

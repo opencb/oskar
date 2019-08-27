@@ -1,10 +1,10 @@
-package org.opencb.oskar.analysis.variant;
+package org.opencb.oskar.analysis.stats;
 
 import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.models.clinical.pedigree.Member;
 import org.opencb.biodata.models.clinical.pedigree.Pedigree;
 import org.opencb.biodata.models.clinical.pedigree.PedigreeManager;
-import org.opencb.biodata.models.commons.Phenotype;
+import org.opencb.biodata.models.commons.Disorder;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.biodata.tools.pedigree.MendelianError;
 import org.opencb.biodata.tools.pedigree.MendelianError.GenotypeCode;
@@ -15,8 +15,8 @@ import java.util.*;
 import static org.opencb.biodata.tools.pedigree.MendelianError.getAlternateAlleleCount;
 
 public class TdtTest {
-    public TdtTestResult computeTdtTest(List<Pedigree> pedigrees, Map<String, Genotype> genotypes, Phenotype phenotype,
-                                        String chrom) {
+
+    public TdtTestResult computeTdtTest(List<Pedigree> pedigrees, Map<String, Genotype> genotypes, Disorder phenotype, String chrom) {
         Set<String> fatherMotherDone = new HashSet<>();
 
         // Transmission counts
@@ -82,8 +82,7 @@ public class TdtTest {
         return new TdtTestResult(tdtChisq, (t2 == 0.0) ? -1 : ((double) t1 / t2), -1, 1, t1, t2);
     }
 
-    public TdtTestResult computeTdtTest(ObjectMap families, Map<String, String> genotypes, Set<String> affectedSamples,
-                                        String chrom) {
+    public TdtTestResult computeTdtTest(ObjectMap families, Map<String, String> genotypes, Set<String> affectedSamples, String chrom) {
         Set<String> fatherMotherDone = new HashSet<>();
 
         // Transmission counts

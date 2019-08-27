@@ -1,6 +1,7 @@
-package org.opencb.oskar.analysis.variant;
+package org.opencb.oskar.analysis.stats;
 
 public class TdtTestResult {
+
     private double chiSquare;
     private double oddRatio;
     private double pValue;

@@ -1,12 +1,12 @@
 package org.opencb.oskar.spark.variant.analysis;
 
-import org.opencb.oskar.analysis.variant.VariantAnalysisExecutor;
+import org.opencb.oskar.analysis.variant.VariantOskarAnalysis;
 import org.opencb.oskar.core.config.OskarConfiguration;
 
 /**
  * Created by jtarraga on 30/05/17.
  */
-public class LinearRegressionAnalysis extends VariantAnalysisExecutor {
+public class LogisticRegressionOskarAnalysis extends VariantOskarAnalysis {
 
     private String depVarName;
     private String indepVarName;
@@ -17,48 +17,59 @@ public class LinearRegressionAnalysis extends VariantAnalysisExecutor {
 
     @Override
     public void execute() {
-//        LinearRegression lr = new LinearRegression()
+//        LogisticRegression lr = new LogisticRegression()
 //                .setMaxIter(numIterations)
 //                .setRegParam(regularization)
 //                .setElasticNetParam(elasticNet);
 //
 //        // prepare dataset
-//        int numFeatures = 10;
-//        double target = Double.NaN;
-//        double[] features = new double[numFeatures];
-//        LabeledPoint lp = new LabeledPoint(target, Vectors.dense(features));
-//
-//        List<LabeledPoint> list = new ArrayList<LabeledPoint>();
-//        list.add(lp);
-//        JavaSparkContext jsc = new JavaSparkContext();
-//        SQLContext sqlContext = new SQLContext(jsc);
-//        JavaRDD<LabeledPoint> data = jsc.parallelize(list);
-//        data.cache();
+//        Dataset<Row> training = null;
 //
 //        // fit the model
-//        Dataset<Row> training = sqlContext.createDataFrame(data.rdd(), LabeledPoint.class);
-//        LinearRegressionModel lrModel = lr.fit(training);
+//        LogisticRegressionModel lrModel = lr.fit(training);
 //
 //        // print the coefficients and intercept for linear regression
 //        System.out.println("Coefficients: "
 //                + lrModel.coefficients() + " Intercept: " + lrModel.intercept());
 //
 //        // summarize the model over the training set and print out some metrics
-//        LinearRegressionTrainingSummary trainingSummary = lrModel.summary();
+//        LogisticRegressionTrainingSummary trainingSummary = lrModel.summary();
 //        System.out.println("numIterations: " + trainingSummary.totalIterations());
 //        System.out.println("objectiveHistory: " + Vectors.dense(trainingSummary.objectiveHistory()));
-//        trainingSummary.residuals().show();
-//        System.out.println("RMSE: " + trainingSummary.rootMeanSquaredError());
-//        System.out.println("r2: " + trainingSummary.r2());
+//
+//        // obtain the loss per iteration
+//        double[] objectiveHistory = trainingSummary.objectiveHistory();
+//        for (double lossPerIteration : objectiveHistory) {
+//            System.out.println(lossPerIteration);
+//        }
+//
+//        // obtain the metrics useful to judge performance on test data
+//        // we cast the summary to a BinaryLogisticRegressionSummary since the problem is a binary
+//        // classification problem.
+//        BinaryLogisticRegressionSummary binarySummary =
+//                (BinaryLogisticRegressionSummary) trainingSummary;
+//
+//        // obtain the receiver-operating characteristic as a dataframe and areaUnderROC
+//        Dataset<Row> roc = binarySummary.roc();
+//        roc.show();
+//        roc.select("FPR").show();
+//        System.out.println(binarySummary.areaUnderROC());
+//
+//        // get the threshold corresponding to the maximum F-Measure and rerun LogisticRegression with
+//        // this selected threshold
+//        Dataset<Row> fMeasure = binarySummary.fMeasureByThreshold();
+//        double maxFMeasure = fMeasure.select(functions.max("F-Measure")).head().getDouble(0);
+//        double bestThreshold = fMeasure.where(fMeasure.col("F-Measure").equalTo(maxFMeasure))
+//                .select("threshold").head().getDouble(0);
+//        lrModel.setThreshold(bestThreshold);
     }
 
-    public LinearRegressionAnalysis(String studyId, String depVarName, String indepVarName, OskarConfiguration configuration) {
+    public LogisticRegressionOskarAnalysis(String studyId, String depVarName, String indepVarName, OskarConfiguration configuration) {
         this(studyId, depVarName, indepVarName, 10, 0.3, 0.8, configuration);
     }
 
-    public LinearRegressionAnalysis(String studyId, String depVarName, String indepVarName,
-                                    int numIterations, double regularization, double elasticNet,
-                                    OskarConfiguration configuration) {
+    public LogisticRegressionOskarAnalysis(String studyId, String depVarName, String indepVarName,
+                                           int numIterations, double regularization, double elasticNet, OskarConfiguration configuration) {
         super(studyId, configuration);
         this.depVarName = depVarName;
         this.indepVarName = indepVarName;

@@ -1,7 +1,7 @@
-package org.opencb.oskar.analysis.variant;
+package org.opencb.oskar.analysis.stats;
 
 
-public class FisherTestResult {
+public class FisherTestResult extends AbstractTestResult {
 
     private double pValue;
     private double oddRatio;
@@ -9,6 +9,16 @@ public class FisherTestResult {
     public FisherTestResult(double pValue, double oddRatio) {
         this.pValue = pValue;
         this.oddRatio = oddRatio;
+    }
+
+    @Override
+    public String[] getColumns() {
+        return new String[]{"ODD_RATIO", "PVALUE"};
+    }
+
+    @Override
+    public String getResult() {
+        return this.oddRatio + "\t" + this.pValue;
     }
 
     @Override

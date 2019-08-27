@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * Created by joaquin on 1/19/17.
  */
-public class RvTestsWrapper extends VariantAnalysisWrapper {
+public class RvTestsWrapper extends VariantOskarAnalysisWrapper {
 
     public static final String ANALYSIS_NAME = "rvtests";
 

@@ -6,8 +6,8 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.functions;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.opencb.oskar.analysis.variant.FisherExactTest;
-import org.opencb.oskar.analysis.variant.FisherTestResult;
+import org.opencb.oskar.analysis.stats.FisherExactTest;
+import org.opencb.oskar.analysis.stats.FisherTestResult;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.commons.OskarException;
 

@@ -18,7 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-public class PlinkWrapper extends VariantAnalysisWrapper {
+public class PlinkWrapper extends VariantOskarAnalysisWrapper {
     public static final String ANALYSIS_NAME = "plink";
 
     private String inFilename;

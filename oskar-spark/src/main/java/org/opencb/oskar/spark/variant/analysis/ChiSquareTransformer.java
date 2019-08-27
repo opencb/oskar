@@ -14,7 +14,7 @@ import org.opencb.biodata.models.commons.Phenotype;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.biodata.tools.pedigree.MendelianError;
 import org.opencb.commons.utils.ListUtils;
-import org.opencb.oskar.analysis.variant.ChiSquareTest;
+import org.opencb.oskar.analysis.stats.ChiSquareTest;
 import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.analysis.params.HasPhenotype;
 import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;

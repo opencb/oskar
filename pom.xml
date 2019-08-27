@@ -6,7 +6,7 @@
 
     <groupId>org.opencb.oskar</groupId>
     <artifactId>oskar</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -17,14 +17,15 @@
     </modules>
 
     <properties>
-        <oskar.version>0.1.0</oskar.version>
-        <cellbase.version>4.6.1</cellbase.version>
+        <oskar.version>0.2.0-SNAPSHOT</oskar.version>
+        <cellbase.version>4.8.0-SNAPSHOT</cellbase.version>
         <biodata.version>1.4.3-SNAPSHOT</biodata.version>
         <commons-lib.version>3.8.0-SNAPSHOT</commons-lib.version>
-        <spark.version>2.3.2</spark.version>
+        <commons-math.version>3.6.1</commons-math.version>
         <hadoop.version>2.7.3</hadoop.version>
-        <avro.version>1.7.7</avro.version>
+        <spark.version>2.3.2</spark.version>
         <parquet.version>1.8.2</parquet.version>
+        <avro.version>1.7.7</avro.version>
         <jackson.version>2.6.6</jackson.version>
         <slf4j.version>1.7.21</slf4j.version>
         <junit.version>4.12</junit.version>
@@ -79,6 +80,17 @@
                 <groupId>org.opencb.oskar</groupId>
                 <artifactId>oskar-spark</artifactId>
                 <version>${oskar.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opencb.biodata</groupId>
+                <artifactId>biodata-tools</artifactId>
+                <version>${biodata.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-simple</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.opencb.commons</groupId>

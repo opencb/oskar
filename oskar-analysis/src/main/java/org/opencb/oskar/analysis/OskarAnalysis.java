@@ -4,12 +4,12 @@ import org.opencb.oskar.analysis.exceptions.AnalysisExecutorException;
 import org.opencb.oskar.core.config.OskarConfiguration;
 
 
-public abstract class AnalysisExecutor {
+public abstract class OskarAnalysis {
 
     protected String studyId;
     protected OskarConfiguration configuration;
 
-    protected AnalysisExecutor(String studyId, OskarConfiguration configuration) {
+    protected OskarAnalysis(String studyId, OskarConfiguration configuration) {
         this.studyId = studyId;
         this.configuration = configuration;
     }
@@ -25,7 +25,7 @@ public abstract class AnalysisExecutor {
         return studyId;
     }
 
-    public AnalysisExecutor setStudyId(String studyId) {
+    public OskarAnalysis setStudyId(String studyId) {
         this.studyId = studyId;
         return this;
     }
@@ -34,7 +34,7 @@ public abstract class AnalysisExecutor {
         return configuration;
     }
 
-    public AnalysisExecutor setConfiguration(OskarConfiguration configuration) {
+    public OskarAnalysis setConfiguration(OskarConfiguration configuration) {
         this.configuration = configuration;
         return this;
     }

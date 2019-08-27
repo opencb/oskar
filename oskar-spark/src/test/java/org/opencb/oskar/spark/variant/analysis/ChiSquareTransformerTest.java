@@ -4,10 +4,8 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.opencb.oskar.analysis.variant.ChiSquareTest;
-import org.opencb.oskar.analysis.variant.ChiSquareTestResult;
-import org.opencb.oskar.analysis.variant.FisherExactTest;
-import org.opencb.oskar.analysis.variant.FisherTestResult;
+import org.opencb.oskar.analysis.stats.ChiSquareTest;
+import org.opencb.oskar.analysis.stats.ChiSquareTestResult;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.commons.OskarException;
 

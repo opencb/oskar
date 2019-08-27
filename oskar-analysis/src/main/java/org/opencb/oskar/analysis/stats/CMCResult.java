@@ -1,4 +1,4 @@
-package org.opencb.oskar.analysis.variant;
+package org.opencb.oskar.analysis.stats;
 
 
 public class CMCResult {

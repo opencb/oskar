@@ -1,4 +1,4 @@
-package org.opencb.oskar.analysis.variant;
+package org.opencb.oskar.analysis.stats;
 
 import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.linear.*;

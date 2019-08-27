@@ -7,12 +7,13 @@ import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.biodata.tools.variant.converters.VCFExporter;
 import org.opencb.biodata.tools.variant.metadata.VariantMetadataManager;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.oskar.analysis.AbstractAnalysis;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class VariantAnalysisUtils {
+public class VariantAnalysisUtils extends AbstractAnalysis {
 
     /**
      * Export Avro variant into a VCF file.
@@ -64,5 +65,10 @@ public class VariantAnalysisUtils {
         metadataManager.load(Paths.get(metaFilename));
         List<Pedigree> pedigrees = metadataManager.getPedigree(studyId);
         PedigreeParser.save(pedigrees, Paths.get(pedFilename));
+    }
+
+    @Override
+    public void execute() {
+
     }
 }
