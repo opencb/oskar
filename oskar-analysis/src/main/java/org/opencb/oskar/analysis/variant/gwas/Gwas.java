@@ -1,9 +1,14 @@
 package org.opencb.oskar.analysis.variant.gwas;
 
+import org.apache.commons.lang.StringUtils;
 import org.opencb.commons.datastore.core.ObjectMap;
+import org.opencb.commons.utils.CollectionUtils;
 import org.opencb.oskar.analysis.AbstractAnalysis;
+import org.opencb.oskar.analysis.AnalysisResult;
+import org.opencb.oskar.analysis.exceptions.AnalysisException;
 import org.opencb.oskar.core.annotations.Analysis;
 
+import java.nio.file.Path;
 import java.util.List;
 
 @Analysis(id = Gwas.ID, data = Analysis.AnalysisData.VARIANT)
@@ -11,15 +16,25 @@ public class Gwas extends AbstractAnalysis {
 
     private List<String> list1;
     private List<String> list2;
+    private String phenotype;
     private ObjectMap executorParams;
+    private Path outDir;
     private GwasConfiguration configuration;
 
     public static final String ID = "GWAS";
 
-    public Gwas(List<String> list1, List<String> list2, ObjectMap executorParams, GwasConfiguration configuration) {
+    public Gwas(List<String> list1, List<String> list2, ObjectMap executorParams, Path outDir, GwasConfiguration configuration) {
         this.list1 = list1;
         this.list2 = list2;
         this.executorParams = executorParams;
+        this.outDir = outDir;
+        this.configuration = configuration;
+    }
+
+    public Gwas(String phenotype, ObjectMap executorParams, Path outDir, GwasConfiguration configuration) {
+        this.phenotype = phenotype;
+        this.executorParams = executorParams;
+        this.outDir = outDir;
         this.configuration = configuration;
     }
 
@@ -35,17 +50,26 @@ public class Gwas extends AbstractAnalysis {
     }
 
     @Override
-    public void execute() {
+    public AnalysisResult execute() throws AnalysisException {
         // checks
 
+        AnalysisResult analysisResult;
         Class executor = getAnalysisExecutorId(executorParams.getString("ID"), Gwas.ID);
         try {
             AbstractGwasExecutor gwasExecutor = (AbstractGwasExecutor) executor.newInstance();
-            gwasExecutor.setup(list1, list2, executorParams, configuration);
-            gwasExecutor.exec();
+            if (CollectionUtils.isNotEmpty(list1) && CollectionUtils.isNotEmpty(list2)) {
+                gwasExecutor.setup(list1, list2, executorParams, outDir, configuration);
+            } else if (StringUtils.isNotEmpty(phenotype)) {
+                gwasExecutor.setup(phenotype, executorParams, outDir, configuration);
+            } else {
+                throw new AnalysisException("Invalid input parameters for GWAS analysis");
+            }
+            analysisResult = gwasExecutor.exec();
         } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
+            throw new AnalysisException("Error when executing GWAS analysis", e);
         }
+
+        return analysisResult;
     }
 
 }

@@ -26,5 +26,20 @@ public class GwasConfiguration {
 
     private Method method;
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("GwasConfiguration{");
+        sb.append("method=").append(method);
+        sb.append('}');
+        return sb.toString();
+    }
 
+    public Method getMethod() {
+        return method;
+    }
+
+    public GwasConfiguration setMethod(Method method) {
+        this.method = method;
+        return this;
+    }
 }

@@ -1,6 +1,7 @@
 package org.opencb.oskar.analysis;
 
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.oskar.analysis.exceptions.AnalysisException;
 import org.opencb.oskar.core.annotations.AnalysisExecutor;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -33,6 +34,5 @@ public abstract class AbstractAnalysis {
         return null;
     }
 
-    public abstract void execute();
-
+    public abstract AnalysisResult execute() throws AnalysisException;
 }

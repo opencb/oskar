@@ -4,9 +4,9 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.opencb.oskar.spark.commons.OskarException;
-import org.opencb.oskar.spark.variant.analysis.ModeOfInheritanceTransformer;
-import org.opencb.oskar.spark.variant.analysis.VariantSetStatsTransformer;
-import org.opencb.oskar.spark.variant.analysis.VariantStatsTransformer;
+import org.opencb.oskar.spark.variant.analysis.transformers.ModeOfInheritanceTransformer;
+import org.opencb.oskar.spark.variant.analysis.transformers.VariantSetStatsTransformer;
+import org.opencb.oskar.spark.variant.analysis.transformers.VariantStatsTransformer;
 import org.opencb.oskar.spark.variant.udf.VariantUdfManager;
 
 import java.nio.file.Path;

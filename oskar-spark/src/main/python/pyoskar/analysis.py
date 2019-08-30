@@ -30,7 +30,7 @@ class VariantStatsTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, cohort=None, samples=None, studyId=None, missingAsReference=None):
         super(VariantStatsTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.VariantStatsTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.VariantStatsTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getCohort(self):
@@ -68,7 +68,7 @@ class VariantSetStatsTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, studyId=None, fileId=None):
         super(VariantSetStatsTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.VariantSetStatsTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.VariantSetStatsTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getStudyId(self):
@@ -91,7 +91,7 @@ class HistogramTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, step=None, inputCol=None):
         super(HistogramTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.HistogramTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.HistogramTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getStep(self):
@@ -113,7 +113,7 @@ class HardyWeinbergTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, studyId=None):
         super(HardyWeinbergTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.HardyWeinbergTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.HardyWeinbergTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getStudyId(self):
@@ -135,7 +135,7 @@ class IBDTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, samples=None, skipMultiAllelic=None, skipReference=None, numPairs=None):
         super(IBDTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.IBDTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.IBDTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getSamples(self):
@@ -175,7 +175,7 @@ class IBSTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, samples=None, skipMultiAllelic=None, skipReference=None, numPairs=None):
         super(IBSTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.IBSTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.IBSTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getSamples(self):
@@ -210,7 +210,7 @@ class ChiSquareTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, studyId=None, phenotype=None):
         super(ChiSquareTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.ChiSquareTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.ChiSquareTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getStudyId(self):
@@ -233,7 +233,7 @@ class ChromDensityTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, chroms=None, step=None):
         super(ChromDensityTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.ChromDensityTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.ChromDensityTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getChromosome(self):
@@ -259,7 +259,7 @@ class CompoundHeterozigoteTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, father=None, mother=None, child=None, studyId=None, missingGenotypeAsReference=None):
         super(CompoundHeterozigoteTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.CompoundHeterozigoteTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.CompoundHeterozigoteTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getFather(self):
@@ -299,7 +299,7 @@ class FacetTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, facet=None):
         super(FacetTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.FacetTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.FacetTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getFacet(self):
@@ -316,7 +316,7 @@ class FisherTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, studyId=None, phenotype=None):
         super(FisherTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.FisherTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.FisherTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getStudyId(self):
@@ -344,7 +344,7 @@ class ImputeSexTransformer(AbstractTransformer):
     def __init__(self, lowerThreshold=None, upperThreshold=None, chromosomeX=None, includePseudoautosomalRegions=None, par1chrX=None,
                  par2chrX=None):
         super(ImputeSexTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.ImputeSexTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.ImputeSexTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getLowerThreshold(self):
@@ -395,7 +395,7 @@ class InbreedingCoefficientTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, missingGenotypesAsHomRef=None, includeMultiAllelicGenotypes=None, mafThreshold=None):
         super(InbreedingCoefficientTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.InbreedingCoefficientTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.InbreedingCoefficientTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getMissingGenotypesAsHomRef(self):
@@ -426,7 +426,7 @@ class MendelianErrorTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, studyId=None, father=None, mother=None, child=None):
         super(MendelianErrorTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.MendelianErrorTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.MendelianErrorTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getStudyId(self):
@@ -469,7 +469,7 @@ class ModeOfInheritanceTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, family=None, modeOfInheritance=None, studyId=None, phenotype=None, incompletePenetrance=None, missingAsReference=None):
         super(ModeOfInheritanceTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.ModeOfInheritanceTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.ModeOfInheritanceTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getFamily(self):
@@ -516,7 +516,7 @@ class PCATransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, studyId=None, k=None):
         super(PCATransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.PCATransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.PCATransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getStudyId(self):
@@ -539,7 +539,7 @@ class TdtTransformer(AbstractTransformer):
     @keyword_only
     def __init__(self, studyId=None, phenotype=None):
         super(TdtTransformer, self).__init__()
-        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.TdtTransformer", self.uid)
+        self._java_obj = self._new_java_obj("org.opencb.oskar.spark.variant.analysis.transformers.TdtTransformer", self.uid)
         self.setParams(**self._input_kwargs)
 
     def getStudyId(self):
