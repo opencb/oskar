@@ -15,7 +15,6 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class VariantAnalysisUtils extends AbstractAnalysis {
-
     /**
      * Export Avro variant into a VCF file.
      *

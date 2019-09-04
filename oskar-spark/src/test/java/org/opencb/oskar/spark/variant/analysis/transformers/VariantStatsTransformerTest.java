@@ -2,6 +2,7 @@ package org.opencb.oskar.spark.variant.analysis.transformers;
 
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.types.StructField;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -11,11 +12,13 @@ import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.variant.analysis.transformers.VariantStatsTransformer;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.size;
+import static org.apache.spark.sql.functions.soundex;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.opencb.oskar.spark.OskarSparkTestUtils.*;
@@ -48,7 +51,7 @@ public class VariantStatsTransformerTest {
         long withStats = transform.filter(size(col("studies").getItem(0).getField("stats")).equalTo(1)).count();
         assertEquals(count, withStats);
 
-//        transform.select(col("studies").getItem(0).getField("stats").getField("ALL").as("ALL")).selectExpr("ALL.*").show(false);
+        transform.select(col("studies").getItem(0).getField("stats").getField("ALL").as("ALL")).selectExpr("ALL.*").show(false);
     }
 
     @Test
@@ -115,5 +118,71 @@ public class VariantStatsTransformerTest {
         VariantStatsTransformer transformer = new VariantStatsTransformer().setSamples(Arrays.asList("unknown_sample")).setCohort("ID");
         thrown.expect(IllegalArgumentException.class);
         transformer.transform(df);
+    }
+
+
+    @Test
+    public void testVariantStats00() throws Exception {
+
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+
+        VariantStatsTransformer transformer = new VariantStatsTransformer();
+//        transformer.transform(df).select(col("id"), col("studies").getItem(0).getField("stats").getField("ALL").as("cohort"))
+//                .selectExpr("id", "cohort.*")
+
+
+        Dataset<Row> outDf = transformer.transform(df).select(col("id"), col("studies").getItem(0).getField("stats").getField("ALL").as("cohort"))
+                .selectExpr("id", "cohort.*");
+
+        StringBuilder line = new StringBuilder("#");
+        for (StructField field : outDf.schema().fields()) {
+            if (line.length() != 1) {
+                line.append("\t");
+            }
+            line.append(field.name());
+        }
+
+        System.out.println(line);
+
+        Iterator<Row> rowIterator = outDf.toLocalIterator();
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+            line.setLength(0);
+            for (int i = 0; i < row.size(); i++) {
+                if (line.length() != 0) {
+                    line.append("\t");
+                }
+                if (row.get(i) instanceof scala.collection.immutable.Map) {
+                    scala.collection.Map<Object, Object> map = row.getMap(i);
+                    scala.collection.Iterator<Object> iterator = map.keys().iterator();
+                    while (iterator.hasNext()) {
+                        Object key = iterator.next();
+                        line.append(key).append(":").append(map.get(key).get()).append(";");
+                    }
+                } else {
+                    line.append(row.get(i));
+                }
+            }
+            System.out.println(line);
+            break;
+        }
+
+//                .show(false);
+//        System.out.println("count = " + count);
+        //.getItem(0).getField("stats").getField("ALL").as("ALL")).selectExpr("ALL.*").show(false);
+
+
+
+//        long count = df.count();
+//        long noStats = df.filter(size(col("studies").getItem(0).getField("stats")).equalTo(0)).count();
+//        assertEquals(count, noStats);
+//
+//        VariantStatsTransformer transformer = new VariantStatsTransformer().setCohort("ALL");
+//        Dataset<Row> transform = transformer.transform(df);
+//
+//        long withStats = transform.filter(size(col("studies").getItem(0).getField("stats")).equalTo(1)).count();
+//        assertEquals(count, withStats);
+//
+//        transform.select(col("studies").getItem(0).getField("stats").getField("ALL").as("ALL")).selectExpr("ALL.*").show(false);
     }
 }

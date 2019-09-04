@@ -61,7 +61,7 @@ public class GwasSparkParquetAnalysisExecutor extends AbstractGwasExecutor {
         try {
             inputDastaset = oskar.load(parquetFilename);
         } catch (OskarException e) {
-            e.printStackTrace();
+            throw new AnalysisException("Error loading Parquet file: " + parquetFilename, e);
         }
 
         if (getConfiguration().getMethod() == null) {

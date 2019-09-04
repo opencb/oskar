@@ -14,27 +14,23 @@ import java.util.List;
 @Analysis(id = Gwas.ID, data = Analysis.AnalysisData.VARIANT)
 public class Gwas extends AbstractAnalysis {
 
+    public static final String ID = "GWAS";
+
     private List<String> list1;
     private List<String> list2;
     private String phenotype;
-    private ObjectMap executorParams;
-    private Path outDir;
     private GwasConfiguration configuration;
 
-    public static final String ID = "GWAS";
-
     public Gwas(List<String> list1, List<String> list2, ObjectMap executorParams, Path outDir, GwasConfiguration configuration) {
+        super(executorParams, outDir);
         this.list1 = list1;
         this.list2 = list2;
-        this.executorParams = executorParams;
-        this.outDir = outDir;
         this.configuration = configuration;
     }
 
     public Gwas(String phenotype, ObjectMap executorParams, Path outDir, GwasConfiguration configuration) {
+        super(executorParams, outDir);
         this.phenotype = phenotype;
-        this.executorParams = executorParams;
-        this.outDir = outDir;
         this.configuration = configuration;
     }
 

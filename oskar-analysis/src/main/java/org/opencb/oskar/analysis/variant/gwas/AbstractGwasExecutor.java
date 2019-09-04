@@ -16,8 +16,6 @@ public abstract class AbstractGwasExecutor extends AbstractAnalysisExecutor {
     private List<String> list1;
     private List<String> list2;
     private String phenotype;
-    private ObjectMap executorParams;
-    private Path outDir;
     private GwasConfiguration configuration;
 
     public AbstractGwasExecutor() {
@@ -25,29 +23,27 @@ public abstract class AbstractGwasExecutor extends AbstractAnalysisExecutor {
 
     public AbstractGwasExecutor(List<String> list1, List<String> list2, ObjectMap executorParams, Path outDir,
                                 GwasConfiguration configuration) {
-        this.setup(list1, list2, executorParams,  outDir, configuration);
+        this.setup(list1, list2, executorParams, outDir, configuration);
     }
 
     public AbstractGwasExecutor(String phenotype, ObjectMap executorParams, Path outDir,
                                 GwasConfiguration configuration) {
-        this.setup(phenotype, executorParams,  outDir, configuration);
+        this.setup(phenotype, executorParams, outDir, configuration);
     }
 
     protected void setup(List<String> list1, List<String> list2, ObjectMap executorParams, Path outDir, GwasConfiguration configuration) {
+        super.setup(executorParams, outDir);
         this.list1 = list1;
         this.list2 = list2;
         this.phenotype = null;
-        this.executorParams = executorParams;
-        this.outDir = outDir;
         this.configuration = configuration;
     }
 
     protected void setup(String phenotype, ObjectMap executorParams, Path outDir, GwasConfiguration configuration) {
+        super.setup(executorParams, outDir);
         this.list1 = null;
         this.list2 = null;
         this.phenotype = phenotype;
-        this.executorParams = executorParams;
-        this.outDir = outDir;
         this.configuration = configuration;
     }
 
@@ -91,9 +87,9 @@ public abstract class AbstractGwasExecutor extends AbstractAnalysisExecutor {
         sb.append("list1=").append(list1);
         sb.append(", list2=").append(list2);
         sb.append(", phenotype='").append(phenotype).append('\'');
+        sb.append(", configuration=").append(configuration);
         sb.append(", executorParams=").append(executorParams);
         sb.append(", outDir=").append(outDir);
-        sb.append(", configuration=").append(configuration);
         sb.append('}');
         return sb.toString();
     }
@@ -122,24 +118,6 @@ public abstract class AbstractGwasExecutor extends AbstractAnalysisExecutor {
 
     public AbstractGwasExecutor setPhenotype(String phenotype) {
         this.phenotype = phenotype;
-        return this;
-    }
-
-    public ObjectMap getExecutorParams() {
-        return executorParams;
-    }
-
-    public AbstractGwasExecutor setExecutorParams(ObjectMap executorParams) {
-        this.executorParams = executorParams;
-        return this;
-    }
-
-    public Path getOutDir() {
-        return outDir;
-    }
-
-    public AbstractGwasExecutor setOutDir(Path outDir) {
-        this.outDir = outDir;
         return this;
     }
 
