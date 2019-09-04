@@ -33,8 +33,7 @@ import static org.apache.spark.sql.types.DataTypes.*;
 
 public class TdtTransformer extends AbstractTransformer implements HasStudyId, HasPhenotype {
 
-    public static final String TDT_COL_NAME = "Chi square, p-value, odd ratio, degrees of freedom, transmission count 1"
-            + ", transmission count 2";
+    public static final String TDT_COL_NAME = "stats";
 
     public TdtTransformer() {
         this(null);
@@ -99,9 +98,16 @@ public class TdtTransformer extends AbstractTransformer implements HasStudyId, H
         UserDefinedFunction tdt = udf(new TdtTransformer.TdtFunction(getStudyId(), families, affectedSamples, sampleNames),
                 DataTypes.createArrayType(DoubleType));
 
-
+        String columnName = "stats";
         ListBuffer<Column> seq = new ListBuffer<Column>().$plus$eq(col("studies")).$plus$eq(col("chromosome"));
-        return dataset.withColumn(TDT_COL_NAME, tdt.apply(seq));
+        Dataset<Row> ds = dataset.withColumn(columnName, tdt.apply(seq));
+        return ds.withColumn("chiSquare", col(columnName).apply(0))
+                .withColumn("pValue", col(columnName).apply(1))
+                .withColumn("oddRatio", col(columnName).apply(2))
+                .withColumn("freedomDegrees", col(columnName).apply(3))
+                .withColumn("t1", col(columnName).apply(4))
+                .withColumn("t2", col(columnName).apply(5))
+                .drop(columnName);
     }
 
     @Override
