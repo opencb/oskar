@@ -38,11 +38,9 @@ public class Gwas extends AbstractAnalysis {
      * Checks if list and list2 are not empty and no common samples exist.
      */
     protected void checkSamples() {
-
     }
 
     protected void createManhattanPlot() {
-
     }
 
     @Override
@@ -67,5 +65,4 @@ public class Gwas extends AbstractAnalysis {
 
         return analysisResult;
     }
-
 }
