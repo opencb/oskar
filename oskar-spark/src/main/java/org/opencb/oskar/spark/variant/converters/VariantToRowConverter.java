@@ -106,5 +106,4 @@ public class VariantToRowConverter extends AvroToRowConverter implements Convert
     public Row convert(VariantSetStats stats) {
         return (Row) convert(stats, SchemaConverters.toSqlType(VariantSetStats.getClassSchema()).dataType());
     }
-
 }

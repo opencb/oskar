@@ -12,18 +12,28 @@ import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.commons.OskarException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.apache.spark.sql.functions.col;
-import static org.apache.spark.sql.functions.explode;
-import static org.apache.spark.sql.functions.soundex;
+import static org.apache.spark.sql.functions.*;
 import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.biotypes;
 
 
 public class FisherTransformerTest {
     @ClassRule
     public static OskarSparkTestUtils sparkTest = new OskarSparkTestUtils();
+
+    @Test
+    public void gg() throws IOException, OskarException {
+        Integer[] indices = new Integer[3];
+        indices[0] = 1;
+        indices[1] = 3;
+        indices[2] = 5;
+
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+        df.select("id","chromosome", "type").withColumn("test", lit(indices)).show(false);
+    }
 
     @Test
     public void kk() throws IOException, OskarException {
@@ -51,11 +61,11 @@ public class FisherTransformerTest {
 
         Dataset<Row> df1 = df0.filter("type = 'INDEL'");
         Dataset<Row> bucketedData1 = bucketizer.transform(df1).groupBy("range").count().orderBy("range")
-                .withColumn("type", functions.lit("INDEL"));
+                .withColumn("type", lit("INDEL"));
 
         Dataset<Row> df2 = df0.filter("type = 'SNV'");
         Dataset<Row> bucketedData2 = bucketizer.transform(df2).groupBy("range").count().orderBy("range")
-                .withColumn("type", functions.lit("SNV"));
+                .withColumn("type", lit("SNV"));
 
         Dataset<Row> df00 = bucketedData1.union(bucketedData2);
         df00.show();

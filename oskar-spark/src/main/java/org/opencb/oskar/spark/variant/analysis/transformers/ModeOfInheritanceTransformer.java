@@ -6,6 +6,7 @@ import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.catalyst.expressions.ArrayContains;
+import org.opencb.biodata.models.clinical.interpretation.ClinicalProperty;
 import org.opencb.biodata.models.clinical.pedigree.Pedigree;
 import org.opencb.biodata.models.commons.Disorder;
 import org.opencb.biodata.tools.pedigree.ModeOfInheritance;
@@ -123,6 +124,9 @@ public class ModeOfInheritanceTransformer extends AbstractTransformer implements
         String phenotype = getPhenotype();
         String studyId = getStudyId();
         Boolean incompletePenetrance = getOrDefault(incompletePenetranceParam);
+        ClinicalProperty.Penetrance penetrance = getOrDefault(incompletePenetranceParam)
+                ? ClinicalProperty.Penetrance.INCOMPLETE
+                : ClinicalProperty.Penetrance.COMPLETE;
         Boolean missingAsReference = getOrDefault(missingAsReferenceParam);
 
         Map<String, List<String>> samplesMap = vmm.samples(df);
@@ -142,22 +146,22 @@ public class ModeOfInheritanceTransformer extends AbstractTransformer implements
         switch (moiLowerCase) {
             case MONOALLELIC:
             case "dominant":
-                gtsMap = ModeOfInheritance.dominant(pedigree, disorder, incompletePenetrance);
+                gtsMap = ModeOfInheritance.dominant(pedigree, disorder, penetrance);
                 break;
             case BIALLELIC:
             case "recessive":
-                gtsMap = ModeOfInheritance.recessive(pedigree, disorder, incompletePenetrance);
+                gtsMap = ModeOfInheritance.recessive(pedigree, disorder, penetrance);
                 break;
             case X_LINKED_MONOALLELIC_INTERNAL: // Internal values already in lower case
-                gtsMap = ModeOfInheritance.xLinked(pedigree, disorder, true);
+                gtsMap = ModeOfInheritance.xLinked(pedigree, disorder, true, penetrance);
                 df = df.filter(df.col("chromosome").equalTo("X"));
                 break;
             case X_LINKED_BIALLELIC_INTERNAL: // Internal values already in lower case
-                gtsMap = ModeOfInheritance.xLinked(pedigree, disorder, false);
+                gtsMap = ModeOfInheritance.xLinked(pedigree, disorder, false, penetrance);
                 df = df.filter(df.col("chromosome").equalTo("X"));
                 break;
             case Y_LINKED_INTERNAL: // Internal values already in lower case
-                gtsMap = ModeOfInheritance.yLinked(pedigree, disorder);
+                gtsMap = ModeOfInheritance.yLinked(pedigree, disorder, penetrance);
                 df = df.filter(df.col("chromosome").equalTo("Y"));
                 break;
             default:
