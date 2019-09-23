@@ -19,7 +19,7 @@
     <properties>
         <oskar.version>0.2.0-SNAPSHOT</oskar.version>
         <cellbase.version>4.8.0-SNAPSHOT</cellbase.version>
-        <biodata.version>1.4.3-SNAPSHOT</biodata.version>
+        <biodata.version>1.6.0-SNAPSHOT</biodata.version>
         <commons-lib.version>3.8.0-SNAPSHOT</commons-lib.version>
         <commons-math.version>3.6.1</commons-math.version>
         <hadoop.version>2.7.3</hadoop.version>
