@@ -1,26 +1,14 @@
 package org.opencb.oskar.spark.variant.analysis.transformers;
 
 import com.databricks.spark.avro.SchemaConverters;
-import org.apache.parquet.hadoop.ParquetFileReader;
-import org.apache.parquet.hadoop.ParquetFileWriter;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.sources.v2.reader.DataReader;
-import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.StructType;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
-import org.opencb.biodata.models.variant.metadata.VariantSetStats;
 import org.opencb.biodata.models.variant.stats.VariantSampleStats;
-import org.opencb.biodata.tools.variant.stats.VariantSampleStatsCalculator;
-import org.opencb.commons.io.DataWriter;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.commons.OskarException;
-import org.opencb.oskar.spark.variant.converters.RowToVariantConverter;
-import scala.Function1;
-import scala.collection.JavaConversions;
-import scala.runtime.AbstractFunction1;
 
 import java.io.IOException;
 import java.nio.file.Path;
