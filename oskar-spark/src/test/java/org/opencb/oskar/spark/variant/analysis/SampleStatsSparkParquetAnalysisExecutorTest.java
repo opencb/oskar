@@ -9,8 +9,13 @@ import org.opencb.oskar.spark.OskarSparkTestUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.opencb.oskar.spark.OskarSparkTestUtils.*;
 
 public class SampleStatsSparkParquetAnalysisExecutorTest {
+    private List<String> sampleNames;
     private String cohort;
     private ObjectMap executorParams;
 
@@ -27,11 +32,17 @@ public class SampleStatsSparkParquetAnalysisExecutorTest {
         executorParams.put("STUDY_ID", OskarSparkTestUtils.PLATINUM_STUDY);
         executorParams.put("MASTER", "local[*]");
         executorParams.put("FILE", file.getAbsolutePath());
+
+        sampleNames = new ArrayList<>();
+        sampleNames.add(NA12877);
+        sampleNames.add(NA12879);
+        sampleNames.add(NA12885);
+        sampleNames.add(NA12890);
     }
 
     @Test
-    public void variantStats() throws IOException, AnalysisException {
-        SampleStatsSparkParquetAnalysisExecutor executor = new SampleStatsSparkParquetAnalysisExecutor(executorParams,
+    public void sampleStats() throws IOException, AnalysisException {
+        SampleStatsSparkParquetAnalysisExecutor executor = new SampleStatsSparkParquetAnalysisExecutor(sampleNames, executorParams,
                 oskarSparkTestUtils.getRootDir().toAbsolutePath());
         AnalysisResult analysisResult = executor.exec();
 

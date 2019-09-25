@@ -6,18 +6,32 @@ import org.opencb.oskar.analysis.AnalysisResult;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
 
 import java.nio.file.Path;
+import java.util.List;
 
 public class AbstractSampleStatsExecutor extends AbstractAnalysisExecutor {
+
+    protected List<String> sampleNames;
+    protected String cohortName;
 
     public AbstractSampleStatsExecutor() {
     }
 
-    public AbstractSampleStatsExecutor(ObjectMap executorParams, Path outDir) {
-        this.setup(executorParams, outDir);
+    public AbstractSampleStatsExecutor(List<String> sampleNames, ObjectMap executorParams, Path outDir) {
+        this.setup(sampleNames, executorParams, outDir);
     }
 
-    protected void setup(ObjectMap executorParams, Path outDir) {
+    public AbstractSampleStatsExecutor(String cohortName, ObjectMap executorParams, Path outDir) {
+        this.setup(sampleNames, executorParams, outDir);
+    }
+
+    protected void setup(List<String> sampleNames, ObjectMap executorParams, Path outDir) {
         super.setup(executorParams, outDir);
+        this.sampleNames = sampleNames;
+    }
+
+    protected void setup(String cohortName, ObjectMap executorParams, Path outDir) {
+        super.setup(executorParams, outDir);
+        this.cohortName = cohortName;
     }
 
     @Override
@@ -28,6 +42,8 @@ public class AbstractSampleStatsExecutor extends AbstractAnalysisExecutor {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("AbstractSampleStatsExecutor{");
+        sb.append("sampleNames=").append(sampleNames);
+        sb.append(", cohortName='").append(cohortName).append('\'');
         sb.append(", executorParams=").append(executorParams);
         sb.append(", outDir=").append(outDir);
         sb.append('}');

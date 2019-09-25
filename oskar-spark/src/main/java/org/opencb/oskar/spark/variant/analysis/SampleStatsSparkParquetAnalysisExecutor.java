@@ -7,17 +7,15 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema;
-import org.opencb.biodata.models.variant.metadata.VariantSetStats;
+import org.opencb.biodata.models.variant.stats.VariantSampleStats;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.oskar.analysis.AnalysisResult;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
 import org.opencb.oskar.analysis.variant.stats.AbstractSampleStatsExecutor;
 import org.opencb.oskar.analysis.variant.stats.VariantStats;
 import org.opencb.oskar.spark.commons.OskarException;
-import org.opencb.oskar.spark.commons.converters.RowToAvroConverter;
 import org.opencb.oskar.spark.variant.Oskar;
-import org.opencb.oskar.spark.variant.analysis.transformers.VariantSetStatsTransformer;
+import org.opencb.oskar.spark.variant.analysis.transformers.VariantSampleStatsTransformer;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -25,14 +23,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class SampleStatsSparkParquetAnalysisExecutor extends AbstractSampleStatsExecutor {
 
     public SampleStatsSparkParquetAnalysisExecutor() {
     }
 
-    public SampleStatsSparkParquetAnalysisExecutor(ObjectMap executorParams, Path outDir) {
-        super(executorParams, outDir);
+    public SampleStatsSparkParquetAnalysisExecutor(List<String> sampleNames, ObjectMap executorParams, Path outDir) {
+        super(sampleNames, executorParams, outDir);
     }
 
     @Override
@@ -46,7 +45,7 @@ public class SampleStatsSparkParquetAnalysisExecutor extends AbstractSampleStats
         // Prepare input dataset from the input parquet file
         SparkSession sparkSession = SparkSession.builder()
                 .master(master)
-                .appName("variant stats")
+                .appName("sample stats")
                 .config("spark.ui.enabled", "false")
                 .getOrCreate();
 
@@ -59,9 +58,11 @@ public class SampleStatsSparkParquetAnalysisExecutor extends AbstractSampleStats
         }
 
         // Call to the dataset transformer
-        VariantSetStatsTransformer transformer = new VariantSetStatsTransformer();
-        GenericRowWithSchema result = (GenericRowWithSchema) transformer.transform(inputDastaset).collectAsList().get(0);
-        VariantSetStats stats = RowToAvroConverter.convert(result, new VariantSetStats());
+        VariantSampleStatsTransformer transformer = new VariantSampleStatsTransformer();
+
+
+        Dataset<Row> outputDs = transformer.setSamples(sampleNames).transform(inputDastaset);
+        Map<String, VariantSampleStats> stats = VariantSampleStatsTransformer.toSampleStats(outputDs);
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
