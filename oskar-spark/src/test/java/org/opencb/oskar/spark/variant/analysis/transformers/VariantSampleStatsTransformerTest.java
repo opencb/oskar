@@ -7,12 +7,10 @@ import org.apache.spark.sql.types.StructType;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
-import org.opencb.biodata.models.variant.stats.VariantSampleStats;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
 
 import static org.opencb.oskar.spark.OskarSparkTestUtils.*;
 
@@ -36,12 +34,7 @@ public class VariantSampleStatsTransformerTest {
         VariantSampleStatsTransformer transformer = new VariantSampleStatsTransformer();
         Dataset<Row> outputDs = transformer.setSamples(NA12877, NA12879, NA12885, NA12890).transform(inputDs);
 
-        outputDs.show();
-
-        Map<String, VariantSampleStats> stats = VariantSampleStatsTransformer.toSampleStats(outputDs);
-        for (String sample : stats.keySet()) {
-            System.out.println(sample + " -> " + stats.get(sample));
-        }
+        outputDs.show(false);
     }
 
     public void changeParquetSchema() throws IOException {
