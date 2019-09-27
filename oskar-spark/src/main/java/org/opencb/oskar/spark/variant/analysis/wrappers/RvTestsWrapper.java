@@ -21,26 +21,29 @@ public class RvTestsWrapper extends VariantOskarAnalysisWrapper {
 
     public static final String ANALYSIS_NAME = "rvtests";
 
+    private final String studyId;
     private String inFilename;
     private String metaFilename;
     private Query query;
     private Map<String, String> rvtestsParams;
+    private final OskarConfiguration configuration;
 
     private Logger logger;
 
     public RvTestsWrapper(String studyId, String inFilename, String metaFilename,
                           Query query, Map<String, String> rvTestsParams, OskarConfiguration configuration) {
-        super(studyId, configuration);
+        this.studyId = studyId;
         this.inFilename = inFilename;
         this.metaFilename = metaFilename;
         this.query = query;
         this.rvtestsParams = rvTestsParams;
+        this.configuration = configuration;
 
         this.logger = LoggerFactory.getLogger(RvTestsWrapper.class);
     }
 
     @Override
-    public void execute() throws AnalysisExecutorException {
+    public void exec() throws AnalysisExecutorException {
         // Sanity check
         Path binPath;
         try {
@@ -77,12 +80,12 @@ public class RvTestsWrapper extends VariantOskarAnalysisWrapper {
         // Compress vcf to bgz
         sb.setLength(0);
         sb.append(BGZIP_BIN).append(" ").append(vcfFilename);
-        Executor.execute(sb.toString(), outDir, true);
+        Executor.exec(sb.toString(), outDir, true);
 
         // ...create tabix index
         sb.setLength(0);
         sb.append(TABIX_BIN).append(" -p vcf ").append(vcfFilename).append(".gz");
-        Executor.execute(sb.toString(), outDir, true);
+        Executor.exec(sb.toString(), outDir, true);
 */
         // ...and finally, run rvtests
         sb.setLength(0);

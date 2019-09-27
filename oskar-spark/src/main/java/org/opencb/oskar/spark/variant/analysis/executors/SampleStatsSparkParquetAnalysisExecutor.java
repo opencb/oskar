@@ -3,16 +3,16 @@ package org.opencb.oskar.spark.variant.analysis.executors;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.time.StopWatch;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.opencb.biodata.models.variant.stats.VariantSampleStats;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.AnalysisResult;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
-import org.opencb.oskar.analysis.variant.stats.AbstractSampleStatsExecutor;
-import org.opencb.oskar.analysis.variant.stats.VariantStats;
+import org.opencb.oskar.analysis.result.FileResult;
+import org.opencb.oskar.analysis.variant.stats.SampleStatsAnalysis;
+import org.opencb.oskar.analysis.variant.stats.SampleStatsExecutor;
+import org.opencb.oskar.core.annotations.AnalysisExecutor;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.analysis.transformers.VariantSampleStatsTransformer;
@@ -21,11 +21,15 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class SampleStatsSparkParquetAnalysisExecutor extends AbstractSampleStatsExecutor {
+@AnalysisExecutor(
+        id = "spark-parquet",
+        analysis = SampleStatsAnalysis.ID,
+        source= AnalysisExecutor.Source.PARQUET_FILE,
+        framework = AnalysisExecutor.Framework.SPARK)
+public class SampleStatsSparkParquetAnalysisExecutor extends SampleStatsExecutor {
 
     public SampleStatsSparkParquetAnalysisExecutor() {
     }
@@ -35,9 +39,7 @@ public class SampleStatsSparkParquetAnalysisExecutor extends AbstractSampleStats
     }
 
     @Override
-    public AnalysisResult exec() throws AnalysisException {
-        StopWatch watch = StopWatch.createStarted();
-
+    public void exec() throws AnalysisException {
         String parquetFilename = getExecutorParams().getString("FILE");
         String studyId = getExecutorParams().getString("STUDY_ID");
         String master = getExecutorParams().getString("MASTER");
@@ -80,16 +82,8 @@ public class SampleStatsSparkParquetAnalysisExecutor extends AbstractSampleStats
             throw new AnalysisException("Error writing output file: " + outFilename, e);
         }
 
-        List<AnalysisResult.File> resultFiles = new ArrayList<>();
         if (new File(outFilename).exists()) {
-            resultFiles.add(new AnalysisResult.File(Paths.get(outFilename), AnalysisResult.FileType.JSON));
+            arm.addFile(Paths.get(outFilename), FileResult.FileType.JSON);
         }
-
-        return new AnalysisResult()
-                .setAnalysisId(VariantStats.ID)
-                .setDateTime(getDateTime())
-                .setExecutorParams(executorParams)
-                .setOutputFiles(resultFiles)
-                .setExecutionTime(watch.getTime());
     }
 }

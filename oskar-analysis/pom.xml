@@ -27,9 +27,17 @@
             <version>${commons-math.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <!--WARNING-->
+            <!--DO NOT UPGRADE OR HADOOP WILL NOT WORK-->
+            <!--See opencb/opencga#1086-->
+            <version>19.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
-            <version>0.9.11</version>
+            <version>0.9.10</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

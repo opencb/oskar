@@ -1,13 +1,13 @@
 package org.opencb.oskar.spark.variant.analysis.executors;
 
-import org.apache.commons.lang3.time.StopWatch;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.AnalysisResult;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
-import org.opencb.oskar.analysis.variant.tdt.AbstractTdtExecutor;
+import org.opencb.oskar.analysis.variant.tdt.Tdt;
+import org.opencb.oskar.analysis.variant.tdt.TdtExecutor;
+import org.opencb.oskar.core.annotations.AnalysisExecutor;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.analysis.transformers.TdtTransformer;
@@ -20,7 +20,12 @@ import java.util.Iterator;
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.explode;
 
-public class TdtSparkParquetAnalysisExecutor extends AbstractTdtExecutor {
+@AnalysisExecutor(
+        id="spark-parquet",
+        analysis = Tdt.ID,
+        source = AnalysisExecutor.Source.PARQUET_FILE,
+        framework = AnalysisExecutor.Framework.SPARK)
+public class TdtSparkParquetAnalysisExecutor extends TdtExecutor {
 
     public TdtSparkParquetAnalysisExecutor() {
     }
@@ -30,9 +35,7 @@ public class TdtSparkParquetAnalysisExecutor extends AbstractTdtExecutor {
     }
 
     @Override
-    public AnalysisResult exec() throws AnalysisException {
-        StopWatch watch = StopWatch.createStarted();
-
+    public void exec() throws AnalysisException {
         String parquetFilename = getExecutorParams().getString("FILE");
         String studyId = getExecutorParams().getString("STUDY_ID");
         String master = getExecutorParams().getString("MASTER");
@@ -83,6 +86,6 @@ public class TdtSparkParquetAnalysisExecutor extends AbstractTdtExecutor {
             throw new AnalysisException("Error saving TDT results", e);
         }
 
-        return createAnalysisResult().setExecutionTime(watch.getTime());
+        registerFiles();
     }
 }

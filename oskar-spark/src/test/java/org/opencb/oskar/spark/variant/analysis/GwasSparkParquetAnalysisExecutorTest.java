@@ -3,8 +3,9 @@ package org.opencb.oskar.spark.variant.analysis;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.AnalysisResult;
+import org.opencb.oskar.analysis.result.AnalysisResult;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
+import org.opencb.oskar.analysis.result.AnalysisResultManager;
 import org.opencb.oskar.analysis.variant.gwas.GwasConfiguration;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.variant.analysis.executors.GwasSparkParquetAnalysisExecutor;
@@ -13,6 +14,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.opencb.oskar.spark.OskarSparkTestUtils.getRootDir;
 
 public class GwasSparkParquetAnalysisExecutorTest {
 
@@ -49,13 +52,21 @@ public class GwasSparkParquetAnalysisExecutorTest {
     private AnalysisResult executeGwasByLists() throws IOException, AnalysisException {
         GwasSparkParquetAnalysisExecutor executor = new GwasSparkParquetAnalysisExecutor(sampleList1, sampleList2, executorParams,
                 oskarSparkTestUtils.getRootDir().toAbsolutePath(), configuration);
-        return executor.exec();
+        AnalysisResultManager amr = new AnalysisResultManager(getRootDir()).init("", new ObjectMap());
+        executor.init(amr);
+        executor.exec();
+
+        return amr.close();
     }
 
     private AnalysisResult executeGwasByPhenotype() throws IOException, AnalysisException {
         GwasSparkParquetAnalysisExecutor executor = new GwasSparkParquetAnalysisExecutor(phenotype, executorParams,
                 oskarSparkTestUtils.getRootDir().toAbsolutePath(), configuration);
-        return executor.exec();
+        AnalysisResultManager amr = new AnalysisResultManager(getRootDir()).init("", new ObjectMap());
+        executor.init(amr);
+        executor.exec();
+
+        return amr.close();
     }
 
     @Test

@@ -3,8 +3,7 @@ package org.opencb.oskar.analysis.variant.gwas;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.utils.CollectionUtils;
-import org.opencb.oskar.analysis.AbstractAnalysis;
-import org.opencb.oskar.analysis.AnalysisResult;
+import org.opencb.oskar.analysis.OskarAnalysis;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
 import org.opencb.oskar.core.annotations.Analysis;
 
@@ -12,7 +11,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 @Analysis(id = Gwas.ID, data = Analysis.AnalysisData.VARIANT)
-public class Gwas extends AbstractAnalysis {
+public class Gwas extends OskarAnalysis {
 
     public static final String ID = "GWAS";
 
@@ -37,32 +36,32 @@ public class Gwas extends AbstractAnalysis {
     /**
      * Checks if list and list2 are not empty and no common samples exist.
      */
-    protected void checkSamples() {
+    @Override
+    protected void check() {
+        // checks
     }
 
     protected void createManhattanPlot() {
     }
 
     @Override
-    public AnalysisResult execute() throws AnalysisException {
-        // checks
+    protected void exec() throws AnalysisException {
+        GwasExecutor gwasExecutor = getAnalysisExecutor(GwasExecutor.class, executorParams.getString("ID"));
 
-        AnalysisResult analysisResult;
-        Class executor = getAnalysisExecutorId(executorParams.getString("ID"), Gwas.ID);
-        try {
-            AbstractGwasExecutor gwasExecutor = (AbstractGwasExecutor) executor.newInstance();
-            if (CollectionUtils.isNotEmpty(list1) && CollectionUtils.isNotEmpty(list2)) {
-                gwasExecutor.setup(list1, list2, executorParams, outDir, configuration);
-            } else if (StringUtils.isNotEmpty(phenotype)) {
-                gwasExecutor.setup(phenotype, executorParams, outDir, configuration);
-            } else {
-                throw new AnalysisException("Invalid input parameters for GWAS analysis");
-            }
-            analysisResult = gwasExecutor.exec();
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new AnalysisException("Error when executing GWAS analysis", e);
+        if (CollectionUtils.isNotEmpty(list1) && CollectionUtils.isNotEmpty(list2)) {
+            gwasExecutor.setup(list1, list2, executorParams, outDir, configuration);
+        } else if (StringUtils.isNotEmpty(phenotype)) {
+            gwasExecutor.setup(phenotype, executorParams, outDir, configuration);
+        } else {
+            throw new AnalysisException("Invalid input parameters for GWAS analysis");
         }
 
-        return analysisResult;
+        arm.startStep("gwas");
+        gwasExecutor.exec();
+        arm.endStep(70);
+
+        arm.startStep("manhattan-plot");
+        createManhattanPlot();
+        arm.endStep(100);
     }
 }

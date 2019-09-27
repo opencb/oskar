@@ -1,7 +1,6 @@
 package org.opencb.oskar.spark.variant.analysis.transformers;
 
 import org.opencb.oskar.analysis.variant.VariantOskarAnalysis;
-import org.opencb.oskar.core.config.OskarConfiguration;
 
 /**
  * Created by jtarraga on 30/05/17.
@@ -16,7 +15,7 @@ public class LogisticRegressionOskarAnalysis extends VariantOskarAnalysis {
     private double elasticNet = 0.8; // elastic net mixing parameter
 
     @Override
-    public void execute() {
+    public void exec() {
 //        LogisticRegression lr = new LogisticRegression()
 //                .setMaxIter(numIterations)
 //                .setRegParam(regularization)
@@ -64,13 +63,12 @@ public class LogisticRegressionOskarAnalysis extends VariantOskarAnalysis {
 //        lrModel.setThreshold(bestThreshold);
     }
 
-    public LogisticRegressionOskarAnalysis(String studyId, String depVarName, String indepVarName, OskarConfiguration configuration) {
-        this(studyId, depVarName, indepVarName, 10, 0.3, 0.8, configuration);
+    public LogisticRegressionOskarAnalysis(String depVarName, String indepVarName) {
+        this(depVarName, indepVarName, 10, 0.3, 0.8);
     }
 
-    public LogisticRegressionOskarAnalysis(String studyId, String depVarName, String indepVarName,
-                                           int numIterations, double regularization, double elasticNet, OskarConfiguration configuration) {
-        super(studyId, configuration);
+    public LogisticRegressionOskarAnalysis(String depVarName, String indepVarName,
+                                           int numIterations, double regularization, double elasticNet) {
         this.depVarName = depVarName;
         this.indepVarName = indepVarName;
         this.numIterations = numIterations;

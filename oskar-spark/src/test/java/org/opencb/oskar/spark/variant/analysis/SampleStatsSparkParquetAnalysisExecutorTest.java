@@ -3,8 +3,9 @@ package org.opencb.oskar.spark.variant.analysis;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.AnalysisResult;
+import org.opencb.oskar.analysis.result.AnalysisResult;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
+import org.opencb.oskar.analysis.result.AnalysisResultManager;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.variant.analysis.executors.SampleStatsSparkParquetAnalysisExecutor;
 
@@ -45,7 +46,10 @@ public class SampleStatsSparkParquetAnalysisExecutorTest {
     public void sampleStats() throws IOException, AnalysisException {
         SampleStatsSparkParquetAnalysisExecutor executor = new SampleStatsSparkParquetAnalysisExecutor(sampleNames, executorParams,
                 oskarSparkTestUtils.getRootDir().toAbsolutePath());
-        AnalysisResult analysisResult = executor.exec();
+        AnalysisResultManager amr = new AnalysisResultManager(getRootDir()).init("", new ObjectMap());
+        executor.init(amr);
+        executor.exec();
+        AnalysisResult analysisResult = amr.close();
 
         System.out.println("Sample stats done! Results at " + oskarSparkTestUtils.getRootDir().toAbsolutePath());
         System.out.println(analysisResult.toString());

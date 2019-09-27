@@ -7,14 +7,13 @@ import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.biodata.tools.variant.converters.VCFExporter;
 import org.opencb.biodata.tools.variant.metadata.VariantMetadataManager;
 import org.opencb.commons.datastore.core.Query;
-import org.opencb.oskar.analysis.AbstractAnalysis;
-import org.opencb.oskar.analysis.AnalysisResult;
+import org.opencb.oskar.analysis.OskarAnalysis;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class VariantAnalysisUtils extends AbstractAnalysis {
+public class VariantAnalysisUtils extends OskarAnalysis {
     /**
      * Export Avro variant into a VCF file.
      *
@@ -68,7 +67,6 @@ public class VariantAnalysisUtils extends AbstractAnalysis {
     }
 
     @Override
-    public AnalysisResult execute() {
-        return null;
+    public void exec() {
     }
 }

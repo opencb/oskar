@@ -1,24 +1,22 @@
 package org.opencb.oskar.analysis.variant.tdt;
 
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.AbstractAnalysisExecutor;
-import org.opencb.oskar.analysis.AnalysisResult;
+import org.opencb.oskar.analysis.OskarAnalysisExecutor;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
+import org.opencb.oskar.analysis.result.FileResult;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
-public abstract class AbstractTdtExecutor extends AbstractAnalysisExecutor {
+public abstract class TdtExecutor extends OskarAnalysisExecutor {
 
     private String phenotype;
 
-    public AbstractTdtExecutor() {
+    public TdtExecutor() {
     }
 
-    public AbstractTdtExecutor(String phenotype, ObjectMap executorParams, Path outDir) {
+    public TdtExecutor(String phenotype, ObjectMap executorParams, Path outDir) {
         this.setup(phenotype, executorParams, outDir);
     }
 
@@ -37,22 +35,18 @@ public abstract class AbstractTdtExecutor extends AbstractAnalysisExecutor {
         return sb.toString();
     }
 
-    protected AnalysisResult createAnalysisResult() throws AnalysisException {
-        List<AnalysisResult.File> resultFiles = new ArrayList<>();
+    protected void registerFiles() throws AnalysisException {
         String outFilename = getOutDir() + "/tdt.txt";
         if (new File(outFilename).exists()) {
-            resultFiles.add(new AnalysisResult.File(Paths.get(outFilename), AnalysisResult.FileType.TAB_SEPARATED));
+            arm.addFile(Paths.get(outFilename), FileResult.FileType.TAB_SEPARATED);
         }
-
-        return new AnalysisResult().setAnalysisId(Tdt.ID).setDateTime(getDateTime()).setExecutorParams(executorParams)
-                .setOutputFiles(resultFiles);
     }
 
     public String getPhenotype() {
         return phenotype;
     }
 
-    public AbstractTdtExecutor setPhenotype(String phenotype) {
+    public TdtExecutor setPhenotype(String phenotype) {
         this.phenotype = phenotype;
         return this;
     }

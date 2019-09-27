@@ -1,15 +1,15 @@
 package org.opencb.oskar.spark.variant.analysis.executors;
 
-import org.apache.commons.lang3.time.StopWatch;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.StructField;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.AnalysisResult;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
-import org.opencb.oskar.analysis.variant.stats.AbstractVariantStatsExecutor;
-import org.opencb.oskar.analysis.variant.stats.SampleStats;
+import org.opencb.oskar.analysis.result.FileResult;
+import org.opencb.oskar.analysis.variant.stats.VariantStatsAnalysis;
+import org.opencb.oskar.analysis.variant.stats.VariantStatsExecutor;
+import org.opencb.oskar.core.annotations.AnalysisExecutor;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.analysis.transformers.VariantStatsTransformer;
@@ -19,13 +19,16 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.explode;
 
-public class VariantStatsSparkParquetAnalysisExecutor extends AbstractVariantStatsExecutor {
+@AnalysisExecutor(
+        id = "spark-parquet",
+        analysis = VariantStatsAnalysis.ID,
+        source= AnalysisExecutor.Source.PARQUET_FILE,
+        framework = AnalysisExecutor.Framework.SPARK)
+public class VariantStatsSparkParquetAnalysisExecutor extends VariantStatsExecutor {
 
     public VariantStatsSparkParquetAnalysisExecutor() {
     }
@@ -35,9 +38,7 @@ public class VariantStatsSparkParquetAnalysisExecutor extends AbstractVariantSta
     }
 
     @Override
-    public AnalysisResult exec() throws AnalysisException {
-        StopWatch watch = StopWatch.createStarted();
-
+    public void exec() throws AnalysisException {
         String parquetFilename = getExecutorParams().getString("FILE");
         String studyId = getExecutorParams().getString("STUDY_ID");
         String master = getExecutorParams().getString("MASTER");
@@ -89,16 +90,8 @@ public class VariantStatsSparkParquetAnalysisExecutor extends AbstractVariantSta
 
         pw.close();
 
-        List<AnalysisResult.File> resultFiles = new ArrayList<>();
         if (new File(outFilename).exists()) {
-            resultFiles.add(new AnalysisResult.File(Paths.get(outFilename), AnalysisResult.FileType.TAB_SEPARATED));
+            arm.addFile(Paths.get(outFilename), FileResult.FileType.TAB_SEPARATED);
         }
-
-        return new AnalysisResult()
-                .setAnalysisId(SampleStats.ID)
-                .setDateTime(getDateTime())
-                .setExecutorParams(executorParams)
-                .setOutputFiles(resultFiles)
-                .setExecutionTime(watch.getTime());
     }
 }

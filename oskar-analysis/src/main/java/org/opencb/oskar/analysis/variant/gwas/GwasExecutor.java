@@ -1,33 +1,32 @@
 package org.opencb.oskar.analysis.variant.gwas;
 
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.AbstractAnalysisExecutor;
-import org.opencb.oskar.analysis.AnalysisResult;
+import org.opencb.oskar.analysis.OskarAnalysisExecutor;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
+import org.opencb.oskar.analysis.result.FileResult;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractGwasExecutor extends AbstractAnalysisExecutor {
+public abstract class GwasExecutor extends OskarAnalysisExecutor {
 
     private List<String> list1;
     private List<String> list2;
     private String phenotype;
     private GwasConfiguration configuration;
 
-    public AbstractGwasExecutor() {
+    public GwasExecutor() {
     }
 
-    public AbstractGwasExecutor(List<String> list1, List<String> list2, ObjectMap executorParams, Path outDir,
-                                GwasConfiguration configuration) {
+    public GwasExecutor(List<String> list1, List<String> list2, ObjectMap executorParams, Path outDir,
+                        GwasConfiguration configuration) {
         this.setup(list1, list2, executorParams, outDir, configuration);
     }
 
-    public AbstractGwasExecutor(String phenotype, ObjectMap executorParams, Path outDir,
-                                GwasConfiguration configuration) {
+    public GwasExecutor(String phenotype, ObjectMap executorParams, Path outDir,
+                        GwasConfiguration configuration) {
         this.setup(phenotype, executorParams, outDir, configuration);
     }
 
@@ -70,20 +69,16 @@ public abstract class AbstractGwasExecutor extends AbstractAnalysisExecutor {
         }
     }
 
-    protected AnalysisResult createAnalysisResult() throws AnalysisException {
-        List<AnalysisResult.File> resultFiles = new ArrayList<>();
+    protected void registerFiles() throws AnalysisException {
         String outFilename = getOutDir() + "/" + getOutputFilename();
         if (new File(outFilename).exists()) {
-            resultFiles.add(new AnalysisResult.File(Paths.get(outFilename), AnalysisResult.FileType.TAB_SEPARATED));
+            arm.addFile(Paths.get(outFilename), FileResult.FileType.TAB_SEPARATED);
         }
-
-        return new AnalysisResult().setAnalysisId(Gwas.ID).setDateTime(getDateTime()).setExecutorParams(executorParams)
-                .setOutputFiles(resultFiles);
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("AbstractGwasExecutor{");
+        final StringBuilder sb = new StringBuilder("GwasExecutor{");
         sb.append("list1=").append(list1);
         sb.append(", list2=").append(list2);
         sb.append(", phenotype='").append(phenotype).append('\'');
@@ -98,7 +93,7 @@ public abstract class AbstractGwasExecutor extends AbstractAnalysisExecutor {
         return list1;
     }
 
-    public AbstractGwasExecutor setList1(List<String> list1) {
+    public GwasExecutor setList1(List<String> list1) {
         this.list1 = list1;
         return this;
     }
@@ -107,7 +102,7 @@ public abstract class AbstractGwasExecutor extends AbstractAnalysisExecutor {
         return list2;
     }
 
-    public AbstractGwasExecutor setList2(List<String> list2) {
+    public GwasExecutor setList2(List<String> list2) {
         this.list2 = list2;
         return this;
     }
@@ -116,7 +111,7 @@ public abstract class AbstractGwasExecutor extends AbstractAnalysisExecutor {
         return phenotype;
     }
 
-    public AbstractGwasExecutor setPhenotype(String phenotype) {
+    public GwasExecutor setPhenotype(String phenotype) {
         this.phenotype = phenotype;
         return this;
     }
@@ -125,7 +120,7 @@ public abstract class AbstractGwasExecutor extends AbstractAnalysisExecutor {
         return configuration;
     }
 
-    public AbstractGwasExecutor setConfiguration(GwasConfiguration configuration) {
+    public GwasExecutor setConfiguration(GwasConfiguration configuration) {
         this.configuration = configuration;
         return this;
     }

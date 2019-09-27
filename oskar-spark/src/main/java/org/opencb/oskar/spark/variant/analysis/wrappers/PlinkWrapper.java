@@ -25,22 +25,23 @@ public class PlinkWrapper extends VariantOskarAnalysisWrapper {
     private String metaFilename;
     private Query query;
     private Map<String, String> plinkParams;
+    private final OskarConfiguration configuration;
 
     private Logger logger;
 
-    public PlinkWrapper(String studyId, String inFilename, String metaFilename,
+    public PlinkWrapper(String inFilename, String metaFilename,
                         Query query, Map<String, String> plinkParams, OskarConfiguration configuration) {
-        super(studyId, configuration);
         this.inFilename = inFilename;
         this.metaFilename = metaFilename;
         this.query = query;
         this.plinkParams = plinkParams;
+        this.configuration = configuration;
 
         this.logger = LoggerFactory.getLogger(PlinkWrapper.class);
     }
 
 
-    public void execute() throws AnalysisExecutorException {
+    public void exec() throws AnalysisExecutorException {
         // Sanity check
         Path binPath;
         try {

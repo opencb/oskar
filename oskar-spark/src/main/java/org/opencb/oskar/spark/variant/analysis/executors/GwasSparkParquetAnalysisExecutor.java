@@ -1,17 +1,17 @@
 package org.opencb.oskar.spark.variant.analysis.executors;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.time.StopWatch;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.utils.CollectionUtils;
-import org.opencb.oskar.analysis.AnalysisResult;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
 import org.opencb.oskar.analysis.stats.FisherExactTest;
-import org.opencb.oskar.analysis.variant.gwas.AbstractGwasExecutor;
+import org.opencb.oskar.analysis.variant.gwas.Gwas;
+import org.opencb.oskar.analysis.variant.gwas.GwasExecutor;
 import org.opencb.oskar.analysis.variant.gwas.GwasConfiguration;
+import org.opencb.oskar.core.annotations.AnalysisExecutor;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.analysis.transformers.ChiSquareTransformer;
@@ -28,7 +28,12 @@ import static org.apache.spark.sql.functions.explode;
 import static org.opencb.oskar.analysis.variant.gwas.GwasConfiguration.Method.CHI_SQUARE_TEST;
 import static org.opencb.oskar.analysis.variant.gwas.GwasConfiguration.Method.FISHER_TEST;
 
-public class GwasSparkParquetAnalysisExecutor extends AbstractGwasExecutor {
+@AnalysisExecutor(
+        id = "spark-parquet",
+        analysis = Gwas.ID,
+        source= AnalysisExecutor.Source.PARQUET_FILE,
+        framework = AnalysisExecutor.Framework.SPARK)
+public class GwasSparkParquetAnalysisExecutor extends GwasExecutor {
 
     public GwasSparkParquetAnalysisExecutor() {
     }
@@ -43,8 +48,7 @@ public class GwasSparkParquetAnalysisExecutor extends AbstractGwasExecutor {
     }
 
     @Override
-    public AnalysisResult exec() throws AnalysisException {
-        StopWatch watch = StopWatch.createStarted();
+    public void exec() throws AnalysisException {
 
         String parquetFilename = getExecutorParams().getString("FILE");
         String studyId = getExecutorParams().getString("STUDY_ID");
@@ -80,7 +84,7 @@ public class GwasSparkParquetAnalysisExecutor extends AbstractGwasExecutor {
                         + CHI_SQUARE_TEST + " and " + FISHER_TEST);
         }
 
-        return createAnalysisResult().setExecutionTime(watch.getTime());
+        registerFiles();
     }
 
     private void fisher(Dataset<Row> inputDastaset, String studyId, int mode) throws AnalysisException {

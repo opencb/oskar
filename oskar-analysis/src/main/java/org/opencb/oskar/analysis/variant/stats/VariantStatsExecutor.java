@@ -2,24 +2,22 @@ package org.opencb.oskar.analysis.variant.stats;
 
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.AbstractAnalysisExecutor;
-import org.opencb.oskar.analysis.AnalysisResult;
-import org.opencb.oskar.analysis.exceptions.AnalysisException;
+import org.opencb.oskar.analysis.OskarAnalysisExecutor;
 
 import java.nio.file.Path;
 
-public class AbstractVariantStatsExecutor extends AbstractAnalysisExecutor {
+public abstract class VariantStatsExecutor extends OskarAnalysisExecutor {
 
     private String cohort;
 
-    public AbstractVariantStatsExecutor() {
+    public VariantStatsExecutor() {
     }
 
-    public AbstractVariantStatsExecutor(ObjectMap executorParams, Path outDir) {
+    public VariantStatsExecutor(ObjectMap executorParams, Path outDir) {
         this(null, executorParams, outDir);
     }
 
-    public AbstractVariantStatsExecutor(String cohort, ObjectMap executorParams, Path outDir) {
+    public VariantStatsExecutor(String cohort, ObjectMap executorParams, Path outDir) {
         setup(cohort, executorParams, outDir);
     }
 
@@ -29,13 +27,8 @@ public class AbstractVariantStatsExecutor extends AbstractAnalysisExecutor {
     }
 
     @Override
-    public AnalysisResult exec() throws AnalysisException {
-        return null;
-    }
-
-    @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("AbstractVariantStatsExecutor{");
+        final StringBuilder sb = new StringBuilder("VariantStatsExecutor{");
         sb.append("cohort='").append(cohort).append('\'');
         sb.append(", executorParams=").append(executorParams);
         sb.append(", outDir=").append(outDir);
@@ -47,7 +40,7 @@ public class AbstractVariantStatsExecutor extends AbstractAnalysisExecutor {
         return cohort;
     }
 
-    public AbstractVariantStatsExecutor setCohort(String cohort) {
+    public VariantStatsExecutor setCohort(String cohort) {
         this.cohort = cohort;
         return this;
     }

@@ -27,6 +27,20 @@ public @interface AnalysisExecutor {
 
     String id();
     String analysis();
+    Source source();
+    Framework framework();
     String description() default "";
 
+    enum Source {
+        VCF_FILE,
+        PARQUET_FILE,
+        MONGODB,
+        HBASE
+    }
+
+    enum Framework {
+        ITERATOR,
+        MAP_REDUCE,
+        SPARK
+    }
 }
