@@ -1,4 +1,4 @@
-package org.opencb.oskar.spark.variant.analysis;
+package org.opencb.oskar.spark.variant.analysis.executors;
 
 import org.apache.spark.sql.Row;
 import org.opencb.commons.utils.CollectionUtils;

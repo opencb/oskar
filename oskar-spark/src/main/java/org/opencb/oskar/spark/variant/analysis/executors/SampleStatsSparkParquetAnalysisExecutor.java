@@ -1,4 +1,4 @@
-package org.opencb.oskar.spark.variant.analysis;
+package org.opencb.oskar.spark.variant.analysis.executors;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;

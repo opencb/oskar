@@ -1,4 +1,4 @@
-package org.opencb.oskar.spark.variant.analysis;
+package org.opencb.oskar.spark.variant.analysis.executors;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.spark.sql.Dataset;
