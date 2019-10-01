@@ -9,37 +9,53 @@ import java.util.List;
 public abstract class SampleStatsExecutor extends OskarAnalysisExecutor {
 
     protected List<String> sampleNames;
-    protected String cohortName;
+    protected String individualId;
+    protected String familyId;
 
     public SampleStatsExecutor() {
     }
 
-    public SampleStatsExecutor(List<String> sampleNames, ObjectMap executorParams, Path outDir) {
-        this.setup(sampleNames, executorParams, outDir);
-    }
-
-    public SampleStatsExecutor(String cohortName, ObjectMap executorParams, Path outDir) {
-        this.setup(sampleNames, executorParams, outDir);
-    }
-
-    protected void setup(List<String> sampleNames, ObjectMap executorParams, Path outDir) {
+    public SampleStatsExecutor(ObjectMap executorParams, Path outDir) {
         super.setup(executorParams, outDir);
-        this.sampleNames = sampleNames;
-    }
-
-    protected void setup(String cohortName, ObjectMap executorParams, Path outDir) {
-        super.setup(executorParams, outDir);
-        this.cohortName = cohortName;
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SampleStatsExecutor{");
         sb.append("sampleNames=").append(sampleNames);
-        sb.append(", cohortName='").append(cohortName).append('\'');
+        sb.append(", individualId='").append(individualId).append('\'');
+        sb.append(", familyId='").append(familyId).append('\'');
         sb.append(", executorParams=").append(executorParams);
         sb.append(", outDir=").append(outDir);
+        sb.append(", arm=").append(arm);
         sb.append('}');
         return sb.toString();
+    }
+
+    public List<String> getSampleNames() {
+        return sampleNames;
+    }
+
+    public SampleStatsExecutor setSampleNames(List<String> sampleNames) {
+        this.sampleNames = sampleNames;
+        return this;
+    }
+
+    public String getIndividualId() {
+        return individualId;
+    }
+
+    public SampleStatsExecutor setIndividualId(String individualId) {
+        this.individualId = individualId;
+        return this;
+    }
+
+    public String getFamilyId() {
+        return familyId;
+    }
+
+    public SampleStatsExecutor setFamilyId(String familyId) {
+        this.familyId = familyId;
+        return this;
     }
 }
