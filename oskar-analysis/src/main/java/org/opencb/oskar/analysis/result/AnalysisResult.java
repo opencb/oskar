@@ -29,6 +29,23 @@ public class AnalysisResult {
         attributes = new ObjectMap();
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("AnalysisResult{");
+        sb.append("id='").append(id).append('\'');
+        sb.append(", executorId='").append(executorId).append('\'');
+        sb.append(", executorParams=").append(executorParams);
+        sb.append(", start=").append(start);
+        sb.append(", end=").append(end);
+        sb.append(", status=").append(status);
+        sb.append(", warnings=").append(warnings);
+        sb.append(", outputFiles=").append(outputFiles);
+        sb.append(", steps=").append(steps);
+        sb.append(", attributes=").append(attributes);
+        sb.append('}');
+        return sb.toString();
+    }
+
     public String getId() {
         return id;
     }
