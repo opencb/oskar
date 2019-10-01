@@ -160,8 +160,18 @@ public abstract class OskarAnalysis {
         try {
             T t = executorClass.newInstance();
             t.init(arm);
+
+            // Update executor ID, if necessary
+            if (StringUtils.isEmpty(analysisExecutorId)) {
+                arm.updateResult(analysisResult -> {
+                    String executorId = t.getClass().getAnnotation(AnalysisExecutor.class).id();
+                    analysisResult.setExecutorId(executorId);
+                    analysisResult.getExecutorParams().put("ID", executorId);
+                });
+            }
+
             return t;
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException | AnalysisException e) {
             throw AnalysisExecutorException.cantInstantiate(executorClass, e);
         }
     }
