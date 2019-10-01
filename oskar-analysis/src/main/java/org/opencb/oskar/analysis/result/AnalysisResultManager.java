@@ -59,6 +59,7 @@ public class AnalysisResultManager {
         Date now = now();
         AnalysisResult analysisResult = new AnalysisResult()
                 .setId(analysisId)
+                .setExecutorId(executorParams.getString("ID"))
                 .setStart(now)
                 .setExecutorParams(executorParams);
         analysisResult.getStatus()
