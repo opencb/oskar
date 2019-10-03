@@ -16,15 +16,56 @@
 
 package org.opencb.oskar.analysis.variant.gwas;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class GwasConfiguration {
 
     public enum Method {
-        FISHER_TEST,
-        CHI_SQUARE_TEST,
-        TDT
+        FISHER_TEST("fisher-test"),
+        CHI_SQUARE_TEST("chi-square-test");
+
+        public final String label;
+
+        Method(String label) {
+            this.label = label;
+        }
+    }
+
+    public enum FisherMode {
+        LESS("less", 1),
+        GREATER("greater", 2),
+        TWO_SIDED("two-sided", 3);
+
+        private static final Map<String, FisherMode> BY_LABEL = new HashMap<>();
+        private static final Map<Integer, FisherMode> BY_NUMBER = new HashMap<>();
+
+        static {
+            for (FisherMode e : values()) {
+                BY_LABEL.put(e.label, e);
+                BY_NUMBER.put(e.number, e);
+            }
+        }
+
+        public final String label;
+        public final int number;
+
+        FisherMode(String label, int number) {
+            this.label = label;
+            this.number = number;
+        }
+
+        public static FisherMode valueOfLabel(String label) {
+            return BY_LABEL.get(label);
+        }
+
+        public static FisherMode valueOfNumber(int number) {
+            return BY_NUMBER.get(number);
+        }
     }
 
     private Method method;
+    private FisherMode fisherMode;
 
     @Override
     public String toString() {
@@ -40,6 +81,15 @@ public class GwasConfiguration {
 
     public GwasConfiguration setMethod(Method method) {
         this.method = method;
+        return this;
+    }
+
+    public FisherMode getFisherMode() {
+        return fisherMode;
+    }
+
+    public GwasConfiguration setFisherMode(FisherMode fisherMode) {
+        this.fisherMode = fisherMode;
         return this;
     }
 }

@@ -148,7 +148,7 @@ public class GwasTransformer extends AbstractTransformer implements HasStudyId {
     public Param<String> cohort2Param() {
         return cohort2Param;
     }
-    public GwasTransformer setCohort22(String cohort2) {
+    public GwasTransformer setCohort2(String cohort2) {
         set(cohort2Param, cohort2);
         return this;
     }
@@ -285,16 +285,16 @@ public class GwasTransformer extends AbstractTransformer implements HasStudyId {
 
     private StructType fisherSchema() {
         return createStructType(new StructField[]{
-                createStructField("p-value", DoubleType, false),
-                createStructField("odd-ratio", DoubleType, false),
+                createStructField("pValue", DoubleType, false),
+                createStructField("oddRatio", DoubleType, false),
         });
     }
 
     private StructType chiSquareSchema() {
         return createStructType(new StructField[]{
-                createStructField("chi-square", DoubleType, false),
-                createStructField("p-value", DoubleType, false),
-                createStructField("odd-ratio", DoubleType, false),
+                createStructField("chiSquare", DoubleType, false),
+                createStructField("pValue", DoubleType, false),
+                createStructField("oddRatio", DoubleType, false),
         });
     }
 
