@@ -1,5 +1,6 @@
 package org.opencb.oskar.spark.variant.analysis.executors;
 
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.collections.CollectionUtils;
@@ -9,42 +10,44 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.opencb.biodata.models.metadata.Individual;
 import org.opencb.biodata.models.metadata.Sample;
+import org.opencb.biodata.models.variant.metadata.SampleVariantStats;
 import org.opencb.biodata.models.variant.metadata.VariantMetadata;
 import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
-import org.opencb.biodata.models.variant.stats.VariantSampleStats;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
 import org.opencb.oskar.analysis.result.FileResult;
-import org.opencb.oskar.analysis.variant.stats.SampleStatsAnalysis;
-import org.opencb.oskar.analysis.variant.stats.SampleStatsExecutor;
+import org.opencb.oskar.analysis.variant.stats.SampleVariantStatsAnalysis;
+import org.opencb.oskar.analysis.variant.stats.SampleVariantStatsExecutor;
 import org.opencb.oskar.core.annotations.AnalysisExecutor;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
-import org.opencb.oskar.spark.variant.analysis.transformers.VariantSampleStatsTransformer;
+import org.opencb.oskar.spark.variant.analysis.transformers.SampleVariantStatsTransformer;
 
 import java.io.File;
-import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @AnalysisExecutor(
         id = "spark-parquet",
-        analysis = SampleStatsAnalysis.ID,
+        analysis = SampleVariantStatsAnalysis.ID,
         source= AnalysisExecutor.Source.PARQUET_FILE,
         framework = AnalysisExecutor.Framework.SPARK)
-public class SampleStatsSparkParquetAnalysisExecutor extends SampleStatsExecutor {
+public class SampleVariantStatsSparkParquetAnalysisExecutor extends SampleVariantStatsExecutor {
 
     private Oskar oskar;
 
     private Dataset<Row> inputDataset;
     private String studyId;
 
-    public SampleStatsSparkParquetAnalysisExecutor() {
+    public SampleVariantStatsSparkParquetAnalysisExecutor() {
     }
 
-    public SampleStatsSparkParquetAnalysisExecutor(ObjectMap executorParams, Path outDir) {
+    public SampleVariantStatsSparkParquetAnalysisExecutor(ObjectMap executorParams, Path outDir) {
         super(executorParams, outDir);
     }
 
@@ -69,7 +72,8 @@ public class SampleStatsSparkParquetAnalysisExecutor extends SampleStatsExecutor
         }
 
         // Call to the dataset transformer
-        VariantSampleStatsTransformer transformer = new VariantSampleStatsTransformer();
+        SampleVariantStatsTransformer transformer = new SampleVariantStatsTransformer();
+        transformer.setStudyId(studyId);
 
         if (CollectionUtils.isEmpty(sampleNames)) {
             if (StringUtils.isNotEmpty(familyId)) {
@@ -85,17 +89,21 @@ public class SampleStatsSparkParquetAnalysisExecutor extends SampleStatsExecutor
         }
 
         Dataset<Row> outputDs = transformer.setSamples(sampleNames).transform(inputDataset);
-        Map<String, VariantSampleStats> stats = VariantSampleStatsTransformer.toSampleStats(outputDs);
+        List<SampleVariantStats> stats = SampleVariantStatsTransformer.toSampleVariantStats(outputDs);
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper().configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
 
-        String outFilename = getOutDir() + "/sample_stats.json";
+        String outFilename = getOutDir() + "/sample_variant_stats.json";
         try {
-            PrintWriter pw = new PrintWriter(outFilename);
-            pw.println(objectWriter.writeValueAsString(stats));
-            pw.close();
+            objectWriter.writeValue(new File(outFilename), stats);
+
+//            PrintWriter pw = new PrintWriter(outFilename);
+//            pw.println(new String(data));
+////            pw.println(stats.get(0).toString());//objectWriter.writeValueAsString(stats));
+//            pw.close();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new AnalysisException("Error writing output file: " + outFilename, e);
         }
 

@@ -19,19 +19,17 @@ import static org.opencb.oskar.spark.OskarSparkTestUtils.*;
  *
  * @author Joaquin Tarraga &lt;joaquintarraga@gmail.com&gt;
  */
-public class VariantSampleStatsTransformerTest {
+public class SampleVariantStatsTransformerTest {
 
     @ClassRule
     public static OskarSparkTestUtils sparkTest = new OskarSparkTestUtils();
 
     @Test
     public void testVariantSampleStats() throws Exception {
-
         Dataset<Row> inputDs = sparkTest.getVariantsDataset();
-
         inputDs.printSchema();
 
-        VariantSampleStatsTransformer transformer = new VariantSampleStatsTransformer();
+        SampleVariantStatsTransformer transformer = new SampleVariantStatsTransformer();
         Dataset<Row> outputDs = transformer.setSamples(NA12877, NA12879, NA12885, NA12890).transform(inputDs);
 
         outputDs.show(false);

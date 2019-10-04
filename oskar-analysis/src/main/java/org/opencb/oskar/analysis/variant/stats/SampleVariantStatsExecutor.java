@@ -6,16 +6,16 @@ import org.opencb.oskar.analysis.OskarAnalysisExecutor;
 import java.nio.file.Path;
 import java.util.List;
 
-public abstract class SampleStatsExecutor extends OskarAnalysisExecutor {
+public abstract class SampleVariantStatsExecutor extends OskarAnalysisExecutor {
 
     protected List<String> sampleNames;
     protected String individualId;
     protected String familyId;
 
-    public SampleStatsExecutor() {
+    public SampleVariantStatsExecutor() {
     }
 
-    public SampleStatsExecutor(ObjectMap executorParams, Path outDir) {
+    public SampleVariantStatsExecutor(ObjectMap executorParams, Path outDir) {
         super.setup(executorParams, outDir);
     }
 
@@ -36,7 +36,7 @@ public abstract class SampleStatsExecutor extends OskarAnalysisExecutor {
         return sampleNames;
     }
 
-    public SampleStatsExecutor setSampleNames(List<String> sampleNames) {
+    public SampleVariantStatsExecutor setSampleNames(List<String> sampleNames) {
         this.sampleNames = sampleNames;
         return this;
     }
@@ -45,7 +45,7 @@ public abstract class SampleStatsExecutor extends OskarAnalysisExecutor {
         return individualId;
     }
 
-    public SampleStatsExecutor setIndividualId(String individualId) {
+    public SampleVariantStatsExecutor setIndividualId(String individualId) {
         this.individualId = individualId;
         return this;
     }
@@ -54,7 +54,7 @@ public abstract class SampleStatsExecutor extends OskarAnalysisExecutor {
         return familyId;
     }
 
-    public SampleStatsExecutor setFamilyId(String familyId) {
+    public SampleVariantStatsExecutor setFamilyId(String familyId) {
         this.familyId = familyId;
         return this;
     }

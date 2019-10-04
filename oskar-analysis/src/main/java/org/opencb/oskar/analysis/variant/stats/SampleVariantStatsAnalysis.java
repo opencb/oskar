@@ -10,8 +10,8 @@ import org.opencb.oskar.core.annotations.Analysis;
 import java.nio.file.Path;
 import java.util.List;
 
-@Analysis(id = SampleStatsAnalysis.ID, data = Analysis.AnalysisData.VARIANT)
-public class SampleStatsAnalysis extends OskarAnalysis {
+@Analysis(id = SampleVariantStatsAnalysis.ID, data = Analysis.AnalysisData.VARIANT)
+public class SampleVariantStatsAnalysis extends OskarAnalysis {
 
     public static final String ID = "SAMPLE_STATS";
 
@@ -19,13 +19,13 @@ public class SampleStatsAnalysis extends OskarAnalysis {
     private String individualId;
     private String familyId;
 
-    public SampleStatsAnalysis(ObjectMap executorParams, Path outDir) {
+    public SampleVariantStatsAnalysis(ObjectMap executorParams, Path outDir) {
         super(executorParams, outDir);
     }
 
     @Override
     public void exec() throws AnalysisException {
-        SampleStatsExecutor executor = getAnalysisExecutor(SampleStatsExecutor.class, executorParams.getString("ID"));
+        SampleVariantStatsExecutor executor = getAnalysisExecutor(SampleVariantStatsExecutor.class, executorParams.getString("ID"));
 
         executor.setup(executorParams, outDir);
         if (CollectionUtils.isNotEmpty(sampleNames)) {
@@ -47,7 +47,7 @@ public class SampleStatsAnalysis extends OskarAnalysis {
         return sampleNames;
     }
 
-    public SampleStatsAnalysis setSampleNames(List<String> sampleNames) {
+    public SampleVariantStatsAnalysis setSampleNames(List<String> sampleNames) {
         this.sampleNames = sampleNames;
         return this;
     }
@@ -56,7 +56,7 @@ public class SampleStatsAnalysis extends OskarAnalysis {
         return individualId;
     }
 
-    public SampleStatsAnalysis setIndividualId(String individualId) {
+    public SampleVariantStatsAnalysis setIndividualId(String individualId) {
         this.individualId = individualId;
         return this;
     }
@@ -65,7 +65,7 @@ public class SampleStatsAnalysis extends OskarAnalysis {
         return familyId;
     }
 
-    public SampleStatsAnalysis setFamilyId(String familyId) {
+    public SampleVariantStatsAnalysis setFamilyId(String familyId) {
         this.familyId = familyId;
         return this;
     }

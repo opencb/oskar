@@ -3,13 +3,12 @@ package org.opencb.oskar.spark.variant.analysis;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.result.AnalysisResult;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
+import org.opencb.oskar.analysis.result.AnalysisResult;
 import org.opencb.oskar.analysis.result.AnalysisResultManager;
-import org.opencb.oskar.analysis.variant.gwas.Gwas;
-import org.opencb.oskar.analysis.variant.stats.SampleStatsAnalysis;
+import org.opencb.oskar.analysis.variant.stats.SampleVariantStatsAnalysis;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.variant.analysis.executors.SampleStatsSparkParquetAnalysisExecutor;
+import org.opencb.oskar.spark.variant.analysis.executors.SampleVariantStatsSparkParquetAnalysisExecutor;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +16,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.opencb.oskar.analysis.variant.gwas.GwasConfiguration.Method.CHI_SQUARE_TEST;
 import static org.opencb.oskar.spark.OskarSparkTestUtils.*;
 
 public class SampleStatsSparkParquetAnalysisExecutorTest {
@@ -53,7 +51,7 @@ public class SampleStatsSparkParquetAnalysisExecutorTest {
 
     @Test
     public void sampleStatsExecutor() throws IOException, AnalysisException {
-        SampleStatsSparkParquetAnalysisExecutor executor = new SampleStatsSparkParquetAnalysisExecutor(executorParams, outDir);
+        SampleVariantStatsSparkParquetAnalysisExecutor executor = new SampleVariantStatsSparkParquetAnalysisExecutor(executorParams, outDir);
         executor.setSampleNames(sampleNames);
 
         AnalysisResultManager amr = new AnalysisResultManager(getRootDir()).init("", new ObjectMap());
@@ -69,7 +67,7 @@ public class SampleStatsSparkParquetAnalysisExecutorTest {
     public void sampleStatsAnalysisBySampleList() throws AnalysisException {
         executorParams.put("ID", "spark-parquet");
 
-        SampleStatsAnalysis analysis = new SampleStatsAnalysis(executorParams, outDir).setSampleNames(sampleNames);
+        SampleVariantStatsAnalysis analysis = new SampleVariantStatsAnalysis(executorParams, outDir).setSampleNames(sampleNames);
         AnalysisResult result = analysis.execute();
         System.out.println(result.toString());
 
@@ -80,7 +78,7 @@ public class SampleStatsSparkParquetAnalysisExecutorTest {
     public void sampleStatsAnalysisByFamilyId() throws AnalysisException {
         executorParams.put("ID", "spark-parquet");
 
-        SampleStatsAnalysis analysis = new SampleStatsAnalysis(executorParams, outDir).setFamilyId("FF");
+        SampleVariantStatsAnalysis analysis = new SampleVariantStatsAnalysis(executorParams, outDir).setFamilyId("FF");
         AnalysisResult result = analysis.execute();
         System.out.println(result.toString());
 
@@ -91,7 +89,7 @@ public class SampleStatsSparkParquetAnalysisExecutorTest {
     public void sampleStatsAnalysisByIndividualId() throws AnalysisException {
         executorParams.put("ID", "spark-parquet");
 
-        SampleStatsAnalysis analysis = new SampleStatsAnalysis(executorParams, outDir).setIndividualId(NA12877);
+        SampleVariantStatsAnalysis analysis = new SampleVariantStatsAnalysis(executorParams, outDir).setIndividualId(NA12877);
         AnalysisResult result = analysis.execute();
         System.out.println(result.toString());
 
