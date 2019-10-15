@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 public @interface Analysis {
 
     String id();
-    AnalysisData[] data();
+    AnalysisData data();
     String description() default "";
 
     enum AnalysisData {

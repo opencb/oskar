@@ -25,17 +25,37 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 public @interface AnalysisExecutor {
 
+    /**
+     * @return Analysis executor ID.
+     */
     String id();
+
+    /**
+     * @return Analysis ID.
+     */
     String analysis();
+
+    /**
+     * @return List of accepted sources.
+     */
     Source source();
+
+    /**
+     * @return Required frameworks.
+     */
     Framework framework();
+
+    /**
+     * @return Analysis executor description.
+     */
     String description() default "";
 
     enum Source {
         VCF_FILE,
         PARQUET_FILE,
         MONGODB,
-        HBASE
+        HBASE,
+        OPENCGA
     }
 
     enum Framework {
