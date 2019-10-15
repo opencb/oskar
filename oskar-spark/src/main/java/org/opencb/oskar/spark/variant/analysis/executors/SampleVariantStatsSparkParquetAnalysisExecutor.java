@@ -1,8 +1,5 @@
 package org.opencb.oskar.spark.variant.analysis.executors;
 
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.sql.Dataset;
@@ -15,17 +12,14 @@ import org.opencb.biodata.models.variant.metadata.VariantMetadata;
 import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
-import org.opencb.oskar.analysis.result.FileResult;
 import org.opencb.oskar.analysis.variant.stats.SampleVariantStatsAnalysis;
-import org.opencb.oskar.analysis.variant.stats.SampleVariantStatsExecutor;
+import org.opencb.oskar.analysis.variant.stats.SampleVariantStatsAnalysisExecutor;
 import org.opencb.oskar.core.annotations.AnalysisExecutor;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.analysis.transformers.SampleVariantStatsTransformer;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -37,7 +31,7 @@ import java.util.stream.Collectors;
         analysis = SampleVariantStatsAnalysis.ID,
         source= AnalysisExecutor.Source.PARQUET_FILE,
         framework = AnalysisExecutor.Framework.SPARK)
-public class SampleVariantStatsSparkParquetAnalysisExecutor extends SampleVariantStatsExecutor {
+public class SampleVariantStatsSparkParquetAnalysisExecutor extends SampleVariantStatsAnalysisExecutor {
 
     private Oskar oskar;
 
@@ -91,25 +85,7 @@ public class SampleVariantStatsSparkParquetAnalysisExecutor extends SampleVarian
         Dataset<Row> outputDs = transformer.setSamples(sampleNames).transform(inputDataset);
         List<SampleVariantStats> stats = SampleVariantStatsTransformer.toSampleVariantStats(outputDs);
 
-        ObjectMapper objectMapper = new ObjectMapper().configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
-        ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
-
-        String outFilename = getOutDir() + "/sample_variant_stats.json";
-        try {
-            objectWriter.writeValue(new File(outFilename), stats);
-
-//            PrintWriter pw = new PrintWriter(outFilename);
-//            pw.println(new String(data));
-////            pw.println(stats.get(0).toString());//objectWriter.writeValueAsString(stats));
-//            pw.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new AnalysisException("Error writing output file: " + outFilename, e);
-        }
-
-        if (new File(outFilename).exists()) {
-            arm.addFile(Paths.get(outFilename), FileResult.FileType.JSON);
-        }
+        writeStatsToFile(stats);
     }
 
     private List<String> getSampleNamesByFamilyId(String familyId) throws AnalysisException {

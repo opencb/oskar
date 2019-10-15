@@ -21,7 +21,7 @@ public abstract class TdtExecutor extends OskarAnalysisExecutor {
     }
 
     protected void setup(String phenotype, ObjectMap executorParams, Path outDir) {
-        super.setup(executorParams, outDir);
+        super.setUp(executorParams, outDir);
         this.phenotype = phenotype;
     }
 

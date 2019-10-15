@@ -11,7 +11,7 @@ public abstract class CohortStatsExecutor extends OskarAnalysisExecutor {
     }
 
     public CohortStatsExecutor(ObjectMap executorParams, Path outDir) {
-        this.setup(executorParams, outDir);
+        this.setUp(executorParams, outDir);
     }
 
     @Override

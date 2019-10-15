@@ -27,11 +27,7 @@ import java.util.List;
 
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.explode;
-import static org.opencb.oskar.analysis.variant.gwas.GwasConfiguration.FisherMode.GREATER;
-import static org.opencb.oskar.analysis.variant.gwas.GwasConfiguration.FisherMode.LESS;
-import static org.opencb.oskar.analysis.variant.gwas.GwasConfiguration.FisherMode.TWO_SIDED;
 import static org.opencb.oskar.analysis.variant.gwas.GwasConfiguration.Method.CHI_SQUARE_TEST;
-import static org.opencb.oskar.analysis.variant.gwas.GwasConfiguration.Method.FISHER_TEST;
 
 @AnalysisExecutor(
         id = "spark-parquet",
@@ -70,28 +66,8 @@ public class GwasSparkParquetAnalysisExecutor extends GwasExecutor {
         GwasTransformer gwasTransformer = new GwasTransformer().setStudyId(studyId);
 
         // Set configuration
-        GwasConfiguration.Method method = getConfiguration().getMethod();
-        GwasConfiguration.FisherMode fisherMode = getConfiguration().getFisherMode();
-        if (method == null) {
-            throw new AnalysisException("Missing GWAS method. Valid methods are: " + CHI_SQUARE_TEST.label + " and " + FISHER_TEST.label);
-        }
-        if (method != FISHER_TEST && method != CHI_SQUARE_TEST) {
-            throw new AnalysisException("Invalid GWAS method: " + method + ". Valid methods are: " + CHI_SQUARE_TEST.label + " and "
-                    + FISHER_TEST.label);
-        }
-        gwasTransformer.setMethod(method.label);
-
-        if (method == FISHER_TEST) {
-            if (fisherMode == null) {
-                throw new AnalysisException("Missing Fisher mode for GWAS. Valid modes are: " + LESS.label + ", " + GREATER.label + ", "
-                + TWO_SIDED.label);
-            }
-            if (fisherMode != LESS && fisherMode != GREATER && fisherMode != TWO_SIDED) {
-                throw new AnalysisException("Invalid Fisher method: " + method + ". Valid methods are: " + LESS.label + ", "
-                        + GREATER.label + ", " + TWO_SIDED.label);
-            }
-            gwasTransformer.setFisherMode(fisherMode.label);
-        }
+        gwasTransformer.setMethod(getConfiguration().getMethod().label);
+        gwasTransformer.setFisherMode(getConfiguration().getFisherMode().label);
 
         // Set input
         if (CollectionUtils.isNotEmpty(getSampleList1()) || CollectionUtils.isNotEmpty(getSampleList2())) {
@@ -111,14 +87,14 @@ public class GwasSparkParquetAnalysisExecutor extends GwasExecutor {
             throw new AnalysisException("Something wrong happened! Output dataset is null when executing GWAS analysis");
         }
 
-        String outFilename = getOutDir() + "/" + getOutputFilename();
+        String outFilename = getOutputFile().toString();
         try {
             PrintWriter pw = new PrintWriter(outFilename);
             pw.println(getHeaderLine());
 
             // IMPORTANT: be careful with indices of each field in the row,
             Iterator<Row> rowIterator = outputDataset.withColumn("ct", explode(col("annotation.consequenceTypes")))
-                    .selectExpr(getColumnNames(method)).toLocalIterator();
+                    .selectExpr(getColumnNames(getConfiguration().getMethod())).toLocalIterator();
 
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
@@ -141,14 +117,11 @@ public class GwasSparkParquetAnalysisExecutor extends GwasExecutor {
         } catch (FileNotFoundException e) {
             throw new AnalysisException("Error saving GWAS results", e);
         }
-
-        // Register output files
-        registerFiles();
     }
 
     private Seq<String> getColumnNames(GwasConfiguration.Method method) {
         List<String> colNames = new ArrayList<>();
-        colNames.addAll(Arrays.asList(("chromosome,start,end,strand,reference,alternate,annotation.id as dbSNP,"
+        colNames.addAll(Arrays.asList(("chromosome,start,end,reference,alternate,annotation.id as dbSNP,"
                 + "ct.ensemblGeneId as ensemblGeneId,ct.biotype as biotype,ct.sequenceOntologyTerms.name as SO")
                 .split(",")));
         if (method == CHI_SQUARE_TEST) {
