@@ -6,19 +6,16 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.StructField;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
-import org.opencb.oskar.analysis.result.FileResult;
 import org.opencb.oskar.analysis.variant.stats.VariantStatsAnalysis;
-import org.opencb.oskar.analysis.variant.stats.VariantStatsExecutor;
+import org.opencb.oskar.analysis.variant.stats.VariantStatsAnalysisExecutor;
 import org.opencb.oskar.core.annotations.AnalysisExecutor;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.analysis.transformers.VariantStatsTransformer;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.explode;
@@ -28,7 +25,7 @@ import static org.apache.spark.sql.functions.explode;
         analysis = VariantStatsAnalysis.ID,
         source= AnalysisExecutor.Source.PARQUET_FILE,
         framework = AnalysisExecutor.Framework.SPARK)
-public class VariantStatsSparkParquetAnalysisExecutor extends VariantStatsExecutor {
+public class VariantStatsSparkParquetAnalysisExecutor extends VariantStatsAnalysisExecutor {
 
     public VariantStatsSparkParquetAnalysisExecutor() {
     }
@@ -40,7 +37,7 @@ public class VariantStatsSparkParquetAnalysisExecutor extends VariantStatsExecut
     @Override
     public void exec() throws AnalysisException {
         String parquetFilename = getExecutorParams().getString("FILE");
-        String studyId = getExecutorParams().getString("STUDY_ID");
+        String studyId = getStudy();
         String master = getExecutorParams().getString("MASTER");
 
         // Prepare input dataset from the input parquet file
@@ -77,10 +74,10 @@ public class VariantStatsSparkParquetAnalysisExecutor extends VariantStatsExecut
             line.append(field.name());
         }
 
-        String outFilename = getOutDir() + "/variant_stats.txt";
+        Path outFilename = getOutputFile();
         PrintWriter pw;
         try {
-            pw = new PrintWriter(outFilename);
+            pw = new PrintWriter(outFilename.toFile());
         } catch (FileNotFoundException e) {
             throw new AnalysisException("Error creating output file: " + outFilename, e);
         }
@@ -89,9 +86,6 @@ public class VariantStatsSparkParquetAnalysisExecutor extends VariantStatsExecut
         SparkAnalysisExecutorUtils.writeRows(outDf.toLocalIterator(), pw);
 
         pw.close();
-
-        if (new File(outFilename).exists()) {
-            arm.addFile(Paths.get(outFilename), FileResult.FileType.TAB_SEPARATED);
-        }
     }
+
 }
