@@ -10,6 +10,7 @@ import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.commons.converters.RowToAvroConverter;
 import org.opencb.oskar.spark.variant.analysis.transformers.VariantSetStatsTransformer;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,6 +67,9 @@ public class VariantSetStatsTransformerTest {
         GenericRowWithSchema result = (GenericRowWithSchema) transformer.transform(df).collectAsList().get(0);
         VariantSetStats stats = RowToAvroConverter.convert(result, new VariantSetStats());
 
+        long expectedNumVariants = df.where("file(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz') is not null").count();
+        assertEquals(expectedNumVariants, stats.getNumVariants().longValue());
+
         long expectedNumPass = df.selectExpr("file_attribute(studies, 'platinum-genomes-vcf-NA12877_S1.genome.vcf.gz', 'FILTER') as FILTER")
                 .filter("FILTER == 'PASS'")
                 .count();
@@ -81,5 +85,24 @@ public class VariantSetStatsTransformerTest {
 
 
         System.out.println("stats = " + stats);
+    }
+
+    @Test
+    public void testVariantSetStatsBySample() throws Exception {
+
+        Dataset<Row> df = sparkTest.getVariantsDataset();
+
+        VariantSetStatsTransformer transformer = new VariantSetStatsTransformer()
+                .setSamples(Arrays.asList("NA12877", "NA12878"));
+
+        GenericRowWithSchema result = (GenericRowWithSchema) transformer.transform(df).collectAsList().get(0);
+        VariantSetStats stats = RowToAvroConverter.convert(result, new VariantSetStats());
+
+        System.out.println("stats = " + stats);
+
+        assertEquals(2, stats.getNumSamples().intValue());
+
+        long expectedNumVariants = df.where("genotype(studies, 'NA12877') RLIKE '1' OR genotype(studies, 'NA12878') RLIKE '1' OR ").count();
+        assertEquals(expectedNumVariants, stats.getNumVariants().longValue());
     }
 }

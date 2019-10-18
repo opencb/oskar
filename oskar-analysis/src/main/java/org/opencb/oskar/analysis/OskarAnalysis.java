@@ -107,7 +107,7 @@ public abstract class OskarAnalysis {
         return this.getClass().getAnnotation(Analysis.class).data();
     }
 
-    public OskarAnalysis addSource(AnalysisExecutor.Source source) {
+    public final OskarAnalysis addSource(AnalysisExecutor.Source source) {
         if (sourceTypes == null) {
             sourceTypes = new ArrayList<>();
         }
@@ -115,7 +115,7 @@ public abstract class OskarAnalysis {
         return this;
     }
 
-    public OskarAnalysis addFramework(AnalysisExecutor.Framework framework) {
+    public final OskarAnalysis addFramework(AnalysisExecutor.Framework framework) {
         if (availableFrameworks == null) {
             availableFrameworks = new ArrayList<>();
         }
@@ -231,7 +231,9 @@ public abstract class OskarAnalysis {
                     analysisResult.setExecutorId(executorId);
                     analysisResult.getExecutorParams().put(EXECUTOR_ID, executorId);
                 });
+
             }
+            t.setUp(executorParams, outDir);
 
             return t;
         } catch (InstantiationException | IllegalAccessException | AnalysisException e) {

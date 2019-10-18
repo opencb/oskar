@@ -61,7 +61,6 @@ public class VariantStatsAnalysis extends OskarAnalysis {
                 .setSamples(samples)
                 .setOutputFile(outputFile)
                 .setVariantsQuery(variantsQuery);
-        executor.setUp(executorParams, outDir);
 
         arm.startStep("variant-stats");
         executor.exec();

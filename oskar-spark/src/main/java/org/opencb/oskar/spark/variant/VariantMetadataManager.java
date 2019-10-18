@@ -112,6 +112,25 @@ public class VariantMetadataManager {
         }
     }
 
+    public VariantStudyMetadata variantStudyMetadata(Dataset<Row> df, String studyId) {
+        VariantMetadata variantMetadata = variantMetadata(df);
+        for (VariantStudyMetadata study : variantMetadata.getStudies()) {
+            if (study.getId().equals(studyId)) {
+                return study;
+            }
+        }
+        List<String> studies = studies(variantMetadata);
+        throw OskarException.unknownStudy(studyId, studies);
+    }
+
+    public List<String> studies(Dataset<Row> df) {
+        return studies(variantMetadata(df));
+    }
+
+    private List<String> studies(VariantMetadata variantMetadata) {
+        return variantMetadata.getStudies().stream().map(VariantStudyMetadata::getId).collect(Collectors.toList());
+    }
+
     private Metadata createDatasetMetadata(VariantMetadata variantMetadata) {
         Map<String, List<String>> samplesMap = new HashMap<>();
         Map<String, Map<String, Map<String, Metadata>>> pedigreeMap = new HashMap<>();

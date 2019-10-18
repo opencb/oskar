@@ -29,11 +29,9 @@ public class SampleVariantStatsAnalysis extends OskarAnalysis {
 
     @Override
     public void exec() throws AnalysisException {
-        SampleVariantStatsAnalysisExecutor executor = getAnalysisExecutor(SampleVariantStatsAnalysisExecutor.class);
-
-        executor.setUp(executorParams, outDir);
-        executor.setOutputFile(getOutputFile());
-        executor.setStudy(getStudy());
+        SampleVariantStatsAnalysisExecutor executor = getAnalysisExecutor(SampleVariantStatsAnalysisExecutor.class)
+                .setOutputFile(getOutputFile())
+                .setStudy(getStudy());
         if (CollectionUtils.isNotEmpty(sampleNames)) {
             executor.setSampleNames(sampleNames);
         } else if (StringUtils.isNotEmpty(familyId)) {
