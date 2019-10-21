@@ -32,7 +32,7 @@ public abstract class OskarAnalysisExecutor {
         return this.getClass().getAnnotation(AnalysisExecutor.class).id();
     }
 
-    public final void setup(ObjectMap executorParams, Path outDir) {
+    public void setup(ObjectMap executorParams, Path outDir) {
         this.executorParams = executorParams;
         this.outDir = outDir;
     }
