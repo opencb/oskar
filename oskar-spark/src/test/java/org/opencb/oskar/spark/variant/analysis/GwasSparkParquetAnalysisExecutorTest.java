@@ -3,6 +3,7 @@ package org.opencb.oskar.spark.variant.analysis;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.commons.datastore.core.ObjectMap;
+import org.opencb.oskar.analysis.OskarAnalysis;
 import org.opencb.oskar.analysis.result.AnalysisResult;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
 import org.opencb.oskar.analysis.result.AnalysisResultManager;
@@ -105,7 +106,7 @@ public class GwasSparkParquetAnalysisExecutorTest {
 
         AnalysisResult analysisResult = executeGwasByLists();
 
-        System.out.println("GWAS/fisher done! Results at " + oskarSparkTestUtils.getRootDir().toAbsolutePath());
+        System.out.println("GWAS/fisher done! Results at " + getRootDir().toAbsolutePath());
         System.out.println(analysisResult.toString());
     }
 
@@ -116,13 +117,13 @@ public class GwasSparkParquetAnalysisExecutorTest {
 
         AnalysisResult analysisResult = executeGwasByPhenotype();
 
-        System.out.println("GWAS/fisher done! Results at " + oskarSparkTestUtils.getRootDir().toAbsolutePath());
+        System.out.println("GWAS/fisher done! Results at " + getRootDir().toAbsolutePath());
         System.out.println(analysisResult.toString());
     }
 
     @Test
     public void gwasAnalysisByLists() throws AnalysisException {
-        executorParams.put("ID", "spark-parquet");
+        executorParams.put(OskarAnalysis.EXECUTOR_ID, "spark-parquet");
         configuration.setMethod(FISHER_TEST);
         configuration.setFisherMode(GwasConfiguration.FisherMode.TWO_SIDED);
 
@@ -137,7 +138,7 @@ public class GwasSparkParquetAnalysisExecutorTest {
 
     @Test
     public void gwasAnalysisByPhenotype() throws AnalysisException {
-        executorParams.put("ID", "spark-parquet");
+        executorParams.put(OskarAnalysis.EXECUTOR_ID, "spark-parquet");
         configuration.setMethod(CHI_SQUARE_TEST);
 
         Gwas gwas = new Gwas(executorParams, outDir, configuration);

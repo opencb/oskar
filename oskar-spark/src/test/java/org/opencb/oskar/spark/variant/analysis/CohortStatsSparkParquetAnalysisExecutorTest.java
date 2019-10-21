@@ -7,7 +7,7 @@ import org.opencb.oskar.analysis.result.AnalysisResult;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
 import org.opencb.oskar.analysis.result.AnalysisResultManager;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.variant.analysis.executors.CohortStatsSparkParquetAnalysisExecutor;
+import org.opencb.oskar.spark.variant.analysis.executors.CohortVariantStatsSparkParquetAnalysisExecutor;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +35,7 @@ public class CohortStatsSparkParquetAnalysisExecutorTest {
 
     @Test
     public void cohortStats() throws IOException, AnalysisException {
-        CohortStatsSparkParquetAnalysisExecutor executor = new CohortStatsSparkParquetAnalysisExecutor(executorParams,
+        CohortVariantStatsSparkParquetAnalysisExecutor executor = new CohortVariantStatsSparkParquetAnalysisExecutor(executorParams,
                 oskarSparkTestUtils.getRootDir().toAbsolutePath());
         AnalysisResultManager amr = new AnalysisResultManager(getRootDir()).init("", new ObjectMap());
         executor.init(amr);

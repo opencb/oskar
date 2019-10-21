@@ -2,22 +2,21 @@ package org.opencb.oskar.analysis.variant.gwas;
 
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.oskar.analysis.OskarAnalysisExecutor;
-import org.opencb.oskar.analysis.exceptions.AnalysisException;
-import org.opencb.oskar.analysis.result.FileResult;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class GwasExecutor extends OskarAnalysisExecutor {
 
+    private String study;
     private List<String> sampleList1;
     private List<String> sampleList2;
     private String phenotype1;
     private String phenotype2;
     private String cohort1;
     private String cohort2;
+    private Path outputFile;
     private GwasConfiguration configuration;
 
     public GwasExecutor() {
@@ -28,38 +27,31 @@ public abstract class GwasExecutor extends OskarAnalysisExecutor {
     }
 
     protected void setup(ObjectMap executorParams, Path outDir, GwasConfiguration configuration) {
-        super.setup(executorParams, outDir);
+        super.setUp(executorParams, outDir);
         this.configuration = configuration;
     }
 
-    protected String getHeaderLine() {
-        StringBuilder sb = new StringBuilder("#");
-        sb.append("chromosome").append("\t").append("start").append("\t").append("end").append("\t").append("strand").append("\t")
-                .append("reference").append("\t").append("alternate").append("\t").append("dbSNP").append("\t").append("gene").append("\t")
-                .append("biotype").append("\t").append("consequence-types");
+    protected List<String> getHeaderColumns() {
+        List<String> columns = new ArrayList<>();
+        columns.add("chromosome");
+        columns.add("start");
+        columns.add("end");
+        columns.add("reference");
+        columns.add("alternate");
+        columns.add("dbSNP");
+        columns.add("gene");
+        columns.add("biotype");
+        columns.add("consequence-types");
         if (configuration.getMethod() == GwasConfiguration.Method.CHI_SQUARE_TEST) {
-            sb.append("\t").append("chi-square");
+            columns.add("chi-square");
         }
-        sb.append("\t").append("p-value").append("\t").append("odd-ratio");
-        return sb.toString();
+        columns.add("p-value");
+        columns.add("odd-ratio");
+        return columns;
     }
 
-    protected String getOutputFilename() throws AnalysisException {
-        GwasConfiguration.Method method = configuration.getMethod();
-        switch (method) {
-            case CHI_SQUARE_TEST:
-            case FISHER_TEST:
-                return method.label + ".txt";
-            default:
-                throw new AnalysisException("Unknown GWAS method: " + method);
-        }
-    }
-
-    protected void registerFiles() throws AnalysisException {
-        String outFilename = getOutDir() + "/" + getOutputFilename();
-        if (new File(outFilename).exists()) {
-            arm.addFile(Paths.get(outFilename), FileResult.FileType.TAB_SEPARATED);
-        }
+    protected String getHeaderLine() {
+        return "#" + String.join("\t", getHeaderColumns());
     }
 
     @Override
@@ -77,6 +69,15 @@ public abstract class GwasExecutor extends OskarAnalysisExecutor {
         sb.append(", arm=").append(arm);
         sb.append('}');
         return sb.toString();
+    }
+
+    public String getStudy() {
+        return study;
+    }
+
+    public GwasExecutor setStudy(String study) {
+        this.study = study;
+        return this;
     }
 
     public List<String> getSampleList1() {
@@ -133,6 +134,14 @@ public abstract class GwasExecutor extends OskarAnalysisExecutor {
         return this;
     }
 
+    public Path getOutputFile() {
+        return outputFile;
+    }
+
+    public GwasExecutor setOutputFile(Path outputFile) {
+        this.outputFile = outputFile;
+        return this;
+    }
 
     public GwasConfiguration getConfiguration() {
         return configuration;

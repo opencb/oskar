@@ -1,8 +1,10 @@
 package org.opencb.oskar.spark.variant.analysis.transformers;
 
 import com.databricks.spark.avro.SchemaConverters;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.ml.param.Param;
+import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.expressions.MutableAggregationBuffer;
@@ -12,20 +14,24 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.variant.StudyEntry;
 import org.opencb.biodata.models.variant.metadata.ChromosomeStats;
+import org.opencb.biodata.models.variant.metadata.VariantFileMetadata;
 import org.opencb.biodata.models.variant.metadata.VariantSetStats;
+import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.biodata.models.variant.stats.VariantStats;
+import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
+import org.opencb.oskar.spark.variant.udf.VariantUdfManager;
 import scala.Option;
 import scala.Tuple2;
 import scala.collection.Map;
 import scala.collection.Seq;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.apache.spark.sql.functions.col;
+import static org.apache.spark.sql.functions.lit;
 import static org.apache.spark.sql.types.DataTypes.*;
 import static scala.collection.JavaConversions.mapAsJavaMap;
 
@@ -37,6 +43,7 @@ import static scala.collection.JavaConversions.mapAsJavaMap;
 public class VariantSetStatsTransformer extends AbstractTransformer implements HasStudyId  {
 
     private Param<String> fileIdParam;
+    private Param<List<String>> samplesParam;
 
     public VariantSetStatsTransformer() {
         this(null);
@@ -56,6 +63,7 @@ public class VariantSetStatsTransformer extends AbstractTransformer implements H
         super(uid);
         setDefault(studyIdParam(), "");
         setDefault(fileIdParam(), "");
+        setDefault(samplesParam(), Collections.emptyList());
     }
 
     @Override
@@ -77,12 +85,97 @@ public class VariantSetStatsTransformer extends AbstractTransformer implements H
         return getOrDefault(fileIdParam());
     }
 
+    public Param<List<String>> samplesParam() {
+        return samplesParam = samplesParam == null ? new Param<>(this, "samples", "") : samplesParam;
+    }
+
+    public VariantSetStatsTransformer setSamples(List<String> samples) {
+        set(samplesParam(), samples);
+        return this;
+    }
+
+    public List<String> getSamples() {
+        return getOrDefault(samplesParam());
+    }
+
     @Override
     public Dataset<Row> transform(Dataset<?> dataset) {
         Dataset<Row> df = (Dataset<Row>) dataset;
 
+        VariantMetadataManager metadataManager = new VariantMetadataManager();
+        List<String> studies = metadataManager.studies(df);
+        String studyId = getStudyId();
+        if (StringUtils.isEmpty(studyId)) {
+            if (studies.size() == 1) {
+                studyId = studies.get(0);
+            } else {
+                throw OskarException.missingStudy(studies);
+            }
+        } else if (!studies.contains(studyId)) {
+            throw OskarException.unknownStudy(studyId, studies);
+        }
 
-        VariantSetStatsFunction udaf = new VariantSetStatsFunction(getStudyId(), getFileId());
+        List<String> files = new ArrayList<>();
+        if (StringUtils.isNotEmpty(getFileId())) {
+            files.add(getFileId());
+        }
+
+        int numSamples;
+        List<String> samples = getSamples();
+        if (CollectionUtils.isNotEmpty(samples)) {
+            Column filter = null;
+            for (String sample : samples) {
+                Column rlike = VariantUdfManager.genotype("studies", sample).rlike("1");
+                if (filter == null) {
+                    filter = rlike;
+                } else {
+                    filter = filter.or(rlike);
+                }
+            }
+            df = df.where(filter);
+            numSamples = samples.size();
+
+
+            if (files.isEmpty()) {
+                VariantStudyMetadata metadata = metadataManager.variantStudyMetadata(df, studyId);
+                for (VariantFileMetadata file : metadata.getFiles()) {
+                    if (CollectionUtils.containsAny(file.getSampleIds(), samples)) {
+                        files.add(file.getId());
+                        files.add(file.getPath());
+                    }
+                }
+            }
+        } else if (!files.isEmpty()) {
+            samples = new ArrayList<>();
+            VariantStudyMetadata metadata = metadataManager.variantStudyMetadata(df, studyId);
+            for (VariantFileMetadata file : metadata.getFiles()) {
+                if (files.contains(file.getId()) || files.contains(file.getPath())) {
+                    samples.addAll(file.getSampleIds());
+                }
+            }
+            numSamples = samples.size();
+        } else {
+            numSamples = metadataManager.samples(df, studyId).size();
+        }
+
+        if (CollectionUtils.isNotEmpty(files)) {
+            Column filter = null;
+            for (String file : files) {
+                Column rlike = VariantUdfManager.file("studies", file).isNotNull();
+                if (filter == null) {
+                    filter = rlike;
+                } else {
+                    filter = filter.or(rlike);
+                }
+            }
+            df = df.where(filter);
+
+        }
+
+        System.out.println("samples = " + samples);
+        System.out.println("files = " + files);
+
+        VariantSetStatsFunction udaf = new VariantSetStatsFunction(studyId, files);
 
         return df.agg(udaf.apply(
                 col("chromosome"),
@@ -91,17 +184,17 @@ public class VariantSetStatsTransformer extends AbstractTransformer implements H
                 col("type"),
                 col("studies"),
                 col("annotation")).alias("stats")
-        ).selectExpr("stats.*");
+        ).selectExpr("stats.*").withColumn("numSamples", lit(numSamples));
     }
 
     private static class VariantSetStatsFunction extends UserDefinedAggregateFunction {
 
         private final String studyId;
-        private final String fileId;
+        private final Set<String> fileIds;
 
-        VariantSetStatsFunction(String studyId, String fileId) {
+        VariantSetStatsFunction(String studyId, Collection<String> fileIds) {
             this.studyId = studyId == null || studyId.isEmpty() ? null : studyId;
-            this.fileId = fileId == null || fileId.isEmpty() ? null : fileId;
+            this.fileIds = fileIds == null || fileIds.isEmpty() ? null : new HashSet<>(fileIds);
         }
 
         @Override
@@ -185,7 +278,7 @@ public class VariantSetStatsTransformer extends AbstractTransformer implements H
             Seq<Row> files = study.getSeq(study.fieldIndex("files"));
             for (int i = 0; i < files.length(); i++) {
                 Row file = files.apply(i);
-                if (fileId != null && !file.getString(file.fieldIndex("fileId")).equals(fileId)) {
+                if (fileIds != null && !fileIds.contains(file.getString(file.fieldIndex("fileId")))) {
                     continue;
                 }
                 Map<String, String> attributesMap = file.getMap(file.fieldIndex("attributes"));

@@ -33,13 +33,22 @@ public class OskarAnalysisTest {
         assertEquals(MyExecutor1.class, analysis.getAnalysisExecutorClass("test-executor"));
         assertEquals(MyExecutor2.class, analysis.getAnalysisExecutorClass("test-executor-mr"));
 
-        analysis.setUp(null, Paths.get(""), Source.HBASE, Arrays.asList(Framework.MAP_REDUCE, Framework.ITERATOR));
+        analysis.setUp(null, Paths.get(""), Collections.singletonList(Source.HBASE), Arrays.asList(Framework.MAP_REDUCE, Framework.ITERATOR));
         assertEquals("test-executor-mr", analysis.getAnalysisExecutor().getId());
 
-        analysis.setUp(null, Paths.get(""), Source.VCF_FILE, Collections.singleton(Framework.ITERATOR));
+        analysis.setUp(null, Paths.get(""), Collections.singletonList(Source.VCF_FILE), Collections.singletonList(Framework.ITERATOR));
         assertEquals("test-executor", analysis.getAnalysisExecutor().getId());
 
-        analysis.setUp(null, Paths.get(""), Source.VCF_FILE, Arrays.asList(Framework.MAP_REDUCE, Framework.ITERATOR));
+        analysis.setUp(null, Paths.get(""), Collections.singletonList(Source.VCF_FILE), Arrays.asList(Framework.MAP_REDUCE, Framework.ITERATOR));
         assertEquals("test-executor", analysis.getAnalysisExecutor().getId());
+
+        analysis.setUp(null, Paths.get(""), Arrays.asList(Source.VCF_FILE, Source.HBASE), Arrays.asList(Framework.ITERATOR, Framework.MAP_REDUCE));
+        assertEquals("test-executor", analysis.getAnalysisExecutor().getId());
+
+        analysis.setUp(null, Paths.get(""), Arrays.asList(Source.VCF_FILE, Source.HBASE), Arrays.asList(Framework.MAP_REDUCE, Framework.ITERATOR));
+        assertEquals("test-executor-mr", analysis.getAnalysisExecutor().getId());
+
+        analysis.setUp(null, Paths.get(""), Arrays.asList(Source.HBASE, Source.VCF_FILE), Arrays.asList(Framework.MAP_REDUCE, Framework.ITERATOR));
+        assertEquals("test-executor-mr", analysis.getAnalysisExecutor().getId());
     }
 }

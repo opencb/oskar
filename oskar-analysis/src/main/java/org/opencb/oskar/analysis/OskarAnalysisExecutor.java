@@ -17,7 +17,7 @@ public abstract class OskarAnalysisExecutor {
     }
 
     protected OskarAnalysisExecutor(ObjectMap executorParams, Path outDir) {
-        setup(executorParams, outDir);
+        setUp(executorParams, outDir);
     }
 
     public final void init(AnalysisResultManager arm) {
@@ -32,7 +32,7 @@ public abstract class OskarAnalysisExecutor {
         return this.getClass().getAnnotation(AnalysisExecutor.class).id();
     }
 
-    public void setup(ObjectMap executorParams, Path outDir) {
+    public final void setUp(ObjectMap executorParams, Path outDir) {
         this.executorParams = executorParams;
         this.outDir = outDir;
     }

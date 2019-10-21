@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.oskar.analysis.OskarAnalysisExecutor;
 import org.opencb.oskar.core.annotations.AnalysisExecutor;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * Created by jtarraga on 30/01/17.
@@ -33,7 +33,8 @@ public class AnalysisExecutorException extends AnalysisException {
     }
 
     public static AnalysisExecutorException executorNotFound(Class<?> clazz, String analysis, String executorId,
-                                                             AnalysisExecutor.Source source, Set<AnalysisExecutor.Framework> frameworks) {
+                                                             List<AnalysisExecutor.Source> sourceTypes,
+                                                             List<AnalysisExecutor.Framework> frameworks) {
 
         String requirements = "";
         if (clazz != OskarAnalysisExecutor.class) {
@@ -42,8 +43,8 @@ public class AnalysisExecutorException extends AnalysisException {
         if (StringUtils.isNotEmpty(executorId)) {
             requirements = " with executorId='" + executorId + "'";
         }
-        if (source != null) {
-            requirements = " for source ='" + source + "'";
+        if (CollectionUtils.isNotEmpty(sourceTypes)) {
+            requirements = " for source ='" + sourceTypes + "'";
         }
         if (CollectionUtils.isNotEmpty(frameworks)) {
             requirements = " for frameworks=" + frameworks;

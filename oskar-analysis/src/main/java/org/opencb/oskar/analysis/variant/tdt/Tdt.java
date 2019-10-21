@@ -32,7 +32,7 @@ public class Tdt extends OskarAnalysis {
 
     @Override
     public void exec() throws AnalysisException {
-        TdtExecutor tdtExecutor = getAnalysisExecutor(TdtExecutor.class, executorParams.getString("ID"));
+        TdtExecutor tdtExecutor = getAnalysisExecutor(TdtExecutor.class);
         tdtExecutor.setup(phenotype, executorParams, outDir);
 
         arm.startStep("tdt");

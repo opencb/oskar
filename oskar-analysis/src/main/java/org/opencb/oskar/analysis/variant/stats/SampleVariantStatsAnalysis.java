@@ -15,9 +15,13 @@ public class SampleVariantStatsAnalysis extends OskarAnalysis {
 
     public static final String ID = "SAMPLE_STATS";
 
+    private String study;
     private List<String> sampleNames;
     private String individualId;
     private String familyId;
+
+    public SampleVariantStatsAnalysis() {
+    }
 
     public SampleVariantStatsAnalysis(ObjectMap executorParams, Path outDir) {
         super(executorParams, outDir);
@@ -25,9 +29,9 @@ public class SampleVariantStatsAnalysis extends OskarAnalysis {
 
     @Override
     public void exec() throws AnalysisException {
-        SampleVariantStatsExecutor executor = getAnalysisExecutor(SampleVariantStatsExecutor.class, executorParams.getString("ID"));
-
-        executor.setup(executorParams, outDir);
+        SampleVariantStatsAnalysisExecutor executor = getAnalysisExecutor(SampleVariantStatsAnalysisExecutor.class)
+                .setOutputFile(getOutputFile())
+                .setStudy(getStudy());
         if (CollectionUtils.isNotEmpty(sampleNames)) {
             executor.setSampleNames(sampleNames);
         } else if (StringUtils.isNotEmpty(familyId)) {
@@ -38,9 +42,22 @@ public class SampleVariantStatsAnalysis extends OskarAnalysis {
             throw new AnalysisException("Invalid input parameters for variant sample stats analysis");
         }
 
-        arm.startStep("variant-sample-stats");
+        arm.startStep("sample-variant-stats");
         executor.exec();
         arm.endStep(100);
+    }
+
+    public Path getOutputFile() {
+        return outDir.resolve("sample_variant_stats.json");
+    }
+
+    public String getStudy() {
+        return study;
+    }
+
+    public SampleVariantStatsAnalysis setStudy(String study) {
+        this.study = study;
+        return this;
     }
 
     public List<String> getSampleNames() {

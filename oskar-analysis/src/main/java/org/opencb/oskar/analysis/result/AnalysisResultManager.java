@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.commons.datastore.core.ObjectMap;
+import org.opencb.oskar.analysis.OskarAnalysis;
 import org.opencb.oskar.analysis.exceptions.AnalysisException;
 
 import java.io.File;
@@ -59,7 +60,7 @@ public class AnalysisResultManager {
         Date now = now();
         AnalysisResult analysisResult = new AnalysisResult()
                 .setId(analysisId)
-                .setExecutorId(executorParams.getString("ID"))
+                .setExecutorId(executorParams.getString(OskarAnalysis.EXECUTOR_ID))
                 .setStart(now)
                 .setExecutorParams(executorParams);
         analysisResult.getStatus()
@@ -109,15 +110,24 @@ public class AnalysisResultManager {
         String outDirStr = outDir.toString();
         String finalFileStr;
         if (fileStr.startsWith(outDirStr)) {
-            finalFileStr = fileStr.substring(outDirStr.length());
-        } else {
-            finalFileStr = fileStr;
+            fileStr = fileStr.substring(outDirStr.length());
         }
+        if (fileStr.startsWith("/")) {
+            fileStr = fileStr.substring(1);
+        }
+        finalFileStr = fileStr;
         updateResult(analysisResult -> analysisResult.getOutputFiles().add(new FileResult(finalFileStr, fileType)));
     }
 
     public void startStep(String stepId) throws AnalysisException {
+        startStep(stepId, null);
+    }
+
+    public void startStep(String stepId, Float newTotalPercentage) throws AnalysisException {
         updateResult(analysisResult -> {
+            if (newTotalPercentage != null) {
+                analysisResult.getStatus().setCompletedPercentage(newTotalPercentage);
+            }
             analysisResult.getStatus().setStep(stepId);
             analysisResult
                     .getSteps()
@@ -149,7 +159,7 @@ public class AnalysisResultManager {
         write(analysisResult);
     }
 
-    private AnalysisResult read() throws AnalysisException {
+    public AnalysisResult read() throws AnalysisException {
         try {
             return objectReader.readValue(file);
         } catch (IOException e) {
@@ -170,7 +180,7 @@ public class AnalysisResultManager {
         return Date.from(Instant.now());
     }
 
-    public String getDateTime() {
+    private String getDateTime() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
         return dtf.format(now);
