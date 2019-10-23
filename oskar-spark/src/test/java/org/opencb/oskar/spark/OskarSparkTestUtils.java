@@ -9,7 +9,7 @@ import org.apache.spark.sql.execution.datasources.parquet.ParquetReadSupport;
 import org.junit.rules.ExternalResource;
 import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
-import org.opencb.oskar.spark.variant.analysis.transformers.VariantStatsTransformer;
+import org.opencb.oskar.spark.variant.transformers.VariantStatsTransformer;
 
 import java.io.File;
 import java.io.IOException;

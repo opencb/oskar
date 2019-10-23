@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.variant.analysis.executors.TdtSparkParquetAnalysis;
 
 import java.io.File;
 import java.io.IOException;
