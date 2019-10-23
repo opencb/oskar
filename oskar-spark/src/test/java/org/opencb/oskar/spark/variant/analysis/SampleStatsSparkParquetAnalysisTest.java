@@ -3,10 +3,10 @@ package org.opencb.oskar.spark.variant.analysis;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.exceptions.ExecutionException;
-import org.opencb.oskar.analysis.variant.stats.SampleVariantStatsExecutor;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
+import org.opencb.oskar.analysis.variant.stats.SampleVariantStatsAnalysis;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.variant.analysis.executors.SampleVariantStatsSparkParquetExecutor;
+import org.opencb.oskar.spark.variant.analysis.executors.SampleVariantStatsSparkParquetAnalysis;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +16,7 @@ import java.util.List;
 
 import static org.opencb.oskar.spark.OskarSparkTestUtils.*;
 
-public class SampleStatsSparkParquetExecutorTest {
+public class SampleStatsSparkParquetAnalysisTest {
     private List<String> sampleNames;
     private String cohort;
     private ObjectMap executorParams;
@@ -47,8 +47,8 @@ public class SampleStatsSparkParquetExecutorTest {
     }
 
     @Test
-    public void sampleStatsExecutorBySampleList() throws IOException, ExecutionException {
-        SampleVariantStatsExecutor executor = new SampleVariantStatsSparkParquetExecutor(executorParams, outDir)
+    public void sampleStatsAnalysisBySampleList() throws IOException, OskarAnalysisException {
+        SampleVariantStatsAnalysis executor = new SampleVariantStatsSparkParquetAnalysis(executorParams, outDir)
                 .setStudy(OskarSparkTestUtils.PLATINUM_STUDY)
                 .setSampleNames(sampleNames)
                 .setOutputFile(getRootDir().resolve("sample_stats.json"));
@@ -59,8 +59,8 @@ public class SampleStatsSparkParquetExecutorTest {
     }
 
     @Test
-    public void sampleStatsExecutorByFamilyId() throws IOException, ExecutionException {
-        SampleVariantStatsExecutor executor = new SampleVariantStatsSparkParquetExecutor(executorParams, outDir)
+    public void sampleStatsAnalysisByFamilyId() throws IOException, OskarAnalysisException {
+        SampleVariantStatsAnalysis executor = new SampleVariantStatsSparkParquetAnalysis(executorParams, outDir)
                 .setStudy(OskarSparkTestUtils.PLATINUM_STUDY)
                 .setFamilyId("FF")
                 .setOutputFile(getRootDir().resolve("sample_stats.json"));
@@ -71,8 +71,8 @@ public class SampleStatsSparkParquetExecutorTest {
     }
 
     @Test
-    public void sampleStatsExecutorByIndividualId() throws IOException, ExecutionException {
-        SampleVariantStatsExecutor executor = new SampleVariantStatsSparkParquetExecutor(executorParams, outDir)
+    public void sampleStatsAnalysisByIndividualId() throws IOException, OskarAnalysisException {
+        SampleVariantStatsAnalysis executor = new SampleVariantStatsSparkParquetAnalysis(executorParams, outDir)
                 .setStudy(OskarSparkTestUtils.PLATINUM_STUDY)
                 .setIndividualId(NA12877)
                 .setOutputFile(getRootDir().resolve("sample_stats.json"));

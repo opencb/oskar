@@ -9,11 +9,10 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 
 import java.io.IOException;
 
-import static org.apache.spark.sql.functions.*;
 import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.*;
 
 /**

@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
 
-public class SparkAnalysisExecutorUtils {
+public class SparkAnalysisUtils {
 
     public static void writeRows(Iterator<Row> rowIterator, PrintWriter pw) {
         StringBuilder line = new StringBuilder();

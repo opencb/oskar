@@ -4,9 +4,9 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.exceptions.ExecutionException;
-import org.opencb.oskar.analysis.variant.tdt.TdtExecutor;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
+import org.opencb.oskar.analysis.variant.tdt.TdtAnalysis;
+import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.analysis.transformers.TdtTransformer;
 
@@ -19,17 +19,17 @@ import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.explode;
 
 
-public class TdtSparkParquetExecutor extends TdtExecutor implements SparkParquetExecutor {
+public class TdtSparkParquetAnalysis extends TdtAnalysis implements SparkParquetAnalysis {
 
-    public TdtSparkParquetExecutor() {
+    public TdtSparkParquetAnalysis() {
     }
 
-    public TdtSparkParquetExecutor(String phenotype, ObjectMap executorParams, Path outDir) {
+    public TdtSparkParquetAnalysis(String phenotype, ObjectMap executorParams, Path outDir) {
         super(phenotype, executorParams, outDir);
     }
 
     @Override
-    public void exec() throws ExecutionException {
+    public void exec() throws OskarAnalysisException {
         String parquetFilename = getFile();
         String studyId = getStudy();
         SparkSession sparkSession = getSparkSession("tdt");
@@ -39,7 +39,7 @@ public class TdtSparkParquetExecutor extends TdtExecutor implements SparkParquet
         try {
             inputDastaset = oskar.load(parquetFilename);
         } catch (OskarException e) {
-            throw new ExecutionException("Error loading Parquet file: " + parquetFilename, e);
+            throw new OskarAnalysisException("Error loading Parquet file: " + parquetFilename, e);
         }
 
         TdtTransformer tdtTransformer = new TdtTransformer()
@@ -50,7 +50,7 @@ public class TdtSparkParquetExecutor extends TdtExecutor implements SparkParquet
 
         // Sanity check
         if (outputDataset == null) {
-            throw new ExecutionException("Something wrong happened! Output dataset is null when executing TDT analysis");
+            throw new OskarAnalysisException("Something wrong happened! Output dataset is null when executing TDT analysis");
         }
 
         String outFilename = getOutDir() + "/tdt.txt";
@@ -67,11 +67,11 @@ public class TdtSparkParquetExecutor extends TdtExecutor implements SparkParquet
                             "ct.sequenceOntologyTerms.name as SO",
                             "chiSquare", "pValue", "oddRatio", "freedomDegrees", "t1", "t2").toLocalIterator();
 
-            SparkAnalysisExecutorUtils.writeRows(rowIterator, pw);
+            SparkAnalysisUtils.writeRows(rowIterator, pw);
 
             pw.close();
         } catch (FileNotFoundException e) {
-            throw new ExecutionException("Error saving TDT results", e);
+            throw new OskarAnalysisException("Error saving TDT results", e);
         }
     }
 }

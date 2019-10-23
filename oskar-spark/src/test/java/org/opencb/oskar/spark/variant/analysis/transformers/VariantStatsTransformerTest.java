@@ -9,10 +9,9 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.opencb.biodata.models.variant.metadata.VariantMetadata;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.commons.OskarException;
-import org.opencb.oskar.spark.commons.OskarRuntimeException;
+import org.opencb.oskar.core.exceptions.OskarException;
+import org.opencb.oskar.core.exceptions.OskarRuntimeException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
-import org.opencb.oskar.spark.variant.analysis.transformers.VariantStatsTransformer;
 
 import java.util.Arrays;
 import java.util.Iterator;

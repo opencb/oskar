@@ -3,15 +3,14 @@ package org.opencb.oskar.spark.variant.analysis;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.exceptions.ExecutionException;
-import org.opencb.oskar.analysis.variant.stats.VariantStatsExecutor;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.variant.analysis.executors.VariantStatsSparkParquetExecutor;
+import org.opencb.oskar.spark.variant.analysis.executors.CohortVariantStatsSparkParquetAnalysis;
 
 import java.io.File;
 import java.io.IOException;
 
-public class VariantStatsSparkParquetExecutorTest {
+public class CohortStatsSparkParquetAnalysisTest {
     private String cohort;
     private ObjectMap executorParams;
 
@@ -31,12 +30,11 @@ public class VariantStatsSparkParquetExecutorTest {
     }
 
     @Test
-    public void variantStats() throws IOException, ExecutionException {
-        VariantStatsExecutor executor = new VariantStatsSparkParquetExecutor(null, executorParams,
-                oskarSparkTestUtils.getRootDir().toAbsolutePath())
-                .setOutputFile(oskarSparkTestUtils.getRootDir().resolve("variants.tsv"));
+    public void cohortStats() throws IOException, OskarAnalysisException {
+        CohortVariantStatsSparkParquetAnalysis executor = new CohortVariantStatsSparkParquetAnalysis(executorParams,
+                oskarSparkTestUtils.getRootDir().toAbsolutePath());
         executor.exec();
 
-        System.out.println("Variant stats done! Results at " + oskarSparkTestUtils.getRootDir().toAbsolutePath());
+        System.out.println("Cohort stats done! Results at " + oskarSparkTestUtils.getRootDir().toAbsolutePath());
     }
 }

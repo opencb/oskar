@@ -5,13 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.models.variant.metadata.SampleVariantStats;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.OskarExecutor;
-import org.opencb.oskar.analysis.exceptions.ExecutionException;
+import org.opencb.oskar.analysis.OskarAnalysis;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
 
 import java.nio.file.Path;
 import java.util.List;
 
-public abstract class SampleVariantStatsExecutor extends OskarExecutor {
+public abstract class SampleVariantStatsAnalysis extends OskarAnalysis {
 
     protected String study;
     protected List<String> sampleNames;
@@ -19,16 +19,16 @@ public abstract class SampleVariantStatsExecutor extends OskarExecutor {
     protected String familyId;
     private Path outputFile;
 
-    public SampleVariantStatsExecutor() {
+    public SampleVariantStatsAnalysis() {
     }
 
-    public SampleVariantStatsExecutor(ObjectMap executorParams, Path outDir) {
+    public SampleVariantStatsAnalysis(ObjectMap executorParams, Path outDir) {
         super.setUp(executorParams, outDir);
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("SampleStatsExecutor{");
+        final StringBuilder sb = new StringBuilder("SampleVariantStatsAnalysis{");
         sb.append("sampleNames=").append(sampleNames);
         sb.append(", individualId='").append(individualId).append('\'');
         sb.append(", familyId='").append(familyId).append('\'');
@@ -42,7 +42,7 @@ public abstract class SampleVariantStatsExecutor extends OskarExecutor {
         return study;
     }
 
-    public SampleVariantStatsExecutor setStudy(String study) {
+    public SampleVariantStatsAnalysis setStudy(String study) {
         this.study = study;
         return this;
     }
@@ -51,7 +51,7 @@ public abstract class SampleVariantStatsExecutor extends OskarExecutor {
         return sampleNames;
     }
 
-    public SampleVariantStatsExecutor setSampleNames(List<String> sampleNames) {
+    public SampleVariantStatsAnalysis setSampleNames(List<String> sampleNames) {
         this.sampleNames = sampleNames;
         return this;
     }
@@ -60,7 +60,7 @@ public abstract class SampleVariantStatsExecutor extends OskarExecutor {
         return individualId;
     }
 
-    public SampleVariantStatsExecutor setIndividualId(String individualId) {
+    public SampleVariantStatsAnalysis setIndividualId(String individualId) {
         this.individualId = individualId;
         return this;
     }
@@ -69,7 +69,7 @@ public abstract class SampleVariantStatsExecutor extends OskarExecutor {
         return familyId;
     }
 
-    public SampleVariantStatsExecutor setFamilyId(String familyId) {
+    public SampleVariantStatsAnalysis setFamilyId(String familyId) {
         this.familyId = familyId;
         return this;
     }
@@ -78,12 +78,12 @@ public abstract class SampleVariantStatsExecutor extends OskarExecutor {
         return outputFile;
     }
 
-    public SampleVariantStatsExecutor setOutputFile(Path outputFile) {
+    public SampleVariantStatsAnalysis setOutputFile(Path outputFile) {
         this.outputFile = outputFile;
         return this;
     }
 
-    protected void writeStatsToFile(List<SampleVariantStats> stats) throws ExecutionException {
+    protected void writeStatsToFile(List<SampleVariantStats> stats) throws OskarAnalysisException {
         ObjectMapper objectMapper = new ObjectMapper().configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
 
@@ -91,7 +91,7 @@ public abstract class SampleVariantStatsExecutor extends OskarExecutor {
         try {
             objectWriter.writeValue(outFilename.toFile(), stats);
         } catch (Exception e) {
-            throw new ExecutionException("Error writing output file: " + outFilename, e);
+            throw new OskarAnalysisException("Error writing output file: " + outFilename, e);
         }
     }
 }

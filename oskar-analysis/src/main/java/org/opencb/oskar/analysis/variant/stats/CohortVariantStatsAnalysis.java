@@ -5,24 +5,24 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.variant.metadata.VariantSetStats;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.OskarExecutor;
-import org.opencb.oskar.analysis.exceptions.ExecutionException;
+import org.opencb.oskar.analysis.OskarAnalysis;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.List;
 
-public abstract class CohortVariantStatsExecutor extends OskarExecutor {
+public abstract class CohortVariantStatsAnalysis extends OskarAnalysis {
 
     private String study;
     private List<String> sampleNames;
     private Path outputFile;
 
-    public CohortVariantStatsExecutor() {
+    public CohortVariantStatsAnalysis() {
     }
 
-    public CohortVariantStatsExecutor(ObjectMap executorParams, Path outDir) {
+    public CohortVariantStatsAnalysis(ObjectMap executorParams, Path outDir) {
         this.setUp(executorParams, outDir);
     }
 
@@ -30,7 +30,7 @@ public abstract class CohortVariantStatsExecutor extends OskarExecutor {
         return study;
     }
 
-    public CohortVariantStatsExecutor setStudy(String study) {
+    public CohortVariantStatsAnalysis setStudy(String study) {
         this.study = study;
         return this;
     }
@@ -39,7 +39,7 @@ public abstract class CohortVariantStatsExecutor extends OskarExecutor {
         return sampleNames;
     }
 
-    public CohortVariantStatsExecutor setSampleNames(List<String> sampleNames) {
+    public CohortVariantStatsAnalysis setSampleNames(List<String> sampleNames) {
         this.sampleNames = sampleNames;
         return this;
     }
@@ -48,12 +48,12 @@ public abstract class CohortVariantStatsExecutor extends OskarExecutor {
         return outputFile == null ? outDir.resolve("cohort_stats.json") : outputFile;
     }
 
-    public CohortVariantStatsExecutor setOutputFile(Path outputFile) {
+    public CohortVariantStatsAnalysis setOutputFile(Path outputFile) {
         this.outputFile = outputFile;
         return this;
     }
 
-    protected void writeStatsToFile(VariantSetStats stats) throws ExecutionException {
+    protected void writeStatsToFile(VariantSetStats stats) throws OskarAnalysisException {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         objectMapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
@@ -67,7 +67,7 @@ public abstract class CohortVariantStatsExecutor extends OskarExecutor {
             pw.println(objectMapper.writer().writeValueAsString(stats));
             pw.close();
         } catch (Exception e) {
-            throw new ExecutionException("Error writing output file: " + outFilename, e);
+            throw new OskarAnalysisException("Error writing output file: " + outFilename, e);
         }
     }
 }

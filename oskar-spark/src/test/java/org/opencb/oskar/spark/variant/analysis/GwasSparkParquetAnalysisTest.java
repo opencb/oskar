@@ -3,10 +3,10 @@ package org.opencb.oskar.spark.variant.analysis;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.exceptions.ExecutionException;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
 import org.opencb.oskar.analysis.variant.gwas.GwasConfiguration;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.variant.analysis.executors.GwasSparkParquetExecutor;
+import org.opencb.oskar.spark.variant.analysis.executors.GwasSparkParquetAnalysis;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.util.List;
 import static org.opencb.oskar.analysis.variant.gwas.GwasConfiguration.Method.CHI_SQUARE_TEST;
 import static org.opencb.oskar.spark.OskarSparkTestUtils.getRootDir;
 
-public class GwasSparkParquetExecutorTest {
+public class GwasSparkParquetAnalysisTest {
 
     private List<String> sampleList1;
     private List<String> sampleList2;
@@ -52,22 +52,22 @@ public class GwasSparkParquetExecutorTest {
         configuration = new GwasConfiguration();
     }
 
-    private void executeGwasByLists() throws IOException, ExecutionException {
-        GwasSparkParquetExecutor executor = new GwasSparkParquetExecutor(executorParams, outDir, configuration);
+    private void executeGwasByLists() throws IOException, OskarAnalysisException {
+        GwasSparkParquetAnalysis executor = new GwasSparkParquetAnalysis(executorParams, outDir, configuration);
         executor.setSampleList1(sampleList1).setSampleList2(sampleList2).setStudy(OskarSparkTestUtils.PLATINUM_STUDY).setOutputFile(outDir.resolve("gwas.tsv"));
 
         executor.exec();
     }
 
 
-    private void executeGwasByPhenotype() throws IOException, ExecutionException {
-        GwasSparkParquetExecutor executor = new GwasSparkParquetExecutor(executorParams, outDir, configuration);
+    private void executeGwasByPhenotype() throws IOException, OskarAnalysisException {
+        GwasSparkParquetAnalysis executor = new GwasSparkParquetAnalysis(executorParams, outDir, configuration);
         executor.setPhenotype1(phenotype).setStudy(OskarSparkTestUtils.PLATINUM_STUDY).setOutputFile(outDir.resolve("gwas.tsv"));
         executor.exec();
     }
 
     @Test
-    public void gwasChiSquareByLists() throws IOException, ExecutionException {
+    public void gwasChiSquareByLists() throws IOException, OskarAnalysisException {
         configuration.setMethod(CHI_SQUARE_TEST);
 
         executeGwasByLists();
@@ -76,14 +76,14 @@ public class GwasSparkParquetExecutorTest {
     }
 
     @Test
-    public void gwasChiSquareByPhenotype() throws IOException, ExecutionException {
+    public void gwasChiSquareByPhenotype() throws IOException, OskarAnalysisException {
         configuration.setMethod(CHI_SQUARE_TEST);
 
         System.out.println("GWAS/chi square done! Results at " + outDir);
     }
 
     @Test
-    public void gwasFisherByLists() throws IOException, ExecutionException {
+    public void gwasFisherByLists() throws IOException, OskarAnalysisException {
         configuration.setMethod(GwasConfiguration.Method.FISHER_TEST);
         configuration.setFisherMode(GwasConfiguration.FisherMode.GREATER);
 
@@ -93,7 +93,7 @@ public class GwasSparkParquetExecutorTest {
     }
 
     @Test
-    public void gwasFisherByPhenotype() throws IOException, ExecutionException {
+    public void gwasFisherByPhenotype() throws IOException, OskarAnalysisException {
         configuration.setMethod(GwasConfiguration.Method.FISHER_TEST);
         configuration.setFisherMode(GwasConfiguration.FisherMode.TWO_SIDED);
 

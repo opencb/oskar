@@ -1,19 +1,19 @@
 package org.opencb.oskar.analysis;
 
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.exceptions.ExecutionException;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
 
 import java.nio.file.Path;
 
-public abstract class OskarExecutor {
+public abstract class OskarAnalysis {
 
     protected ObjectMap params;
     protected Path outDir;
 
-    protected OskarExecutor() {
+    protected OskarAnalysis() {
     }
 
-    protected OskarExecutor(ObjectMap params, Path outDir) {
+    protected OskarAnalysis(ObjectMap params, Path outDir) {
         setUp(params, outDir);
     }
 
@@ -24,9 +24,9 @@ public abstract class OskarExecutor {
 
     /**
      * Method to be implemented by subclasses with the actual execution.
-     * @throws ExecutionException on error
+     * @throws OskarAnalysisException on error
      */
-    public abstract void exec() throws ExecutionException;
+    public abstract void exec() throws OskarAnalysisException;
 
     public final ObjectMap getParams() {
         return params;

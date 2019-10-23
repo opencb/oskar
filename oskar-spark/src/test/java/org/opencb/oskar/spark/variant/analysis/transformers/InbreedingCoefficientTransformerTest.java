@@ -4,9 +4,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.junit.*;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.commons.OskarException;
-import org.opencb.oskar.spark.variant.analysis.transformers.InbreedingCoefficientTransformer;
-import org.opencb.oskar.spark.variant.analysis.transformers.VariantStatsTransformer;
+import org.opencb.oskar.core.exceptions.OskarException;
 
 import java.io.IOException;
 

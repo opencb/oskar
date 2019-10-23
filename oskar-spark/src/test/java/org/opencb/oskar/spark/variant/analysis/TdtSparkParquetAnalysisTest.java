@@ -3,21 +3,25 @@ package org.opencb.oskar.spark.variant.analysis;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.exceptions.ExecutionException;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.variant.analysis.executors.CohortVariantStatsSparkParquetExecutor;
+import org.opencb.oskar.spark.variant.analysis.executors.TdtSparkParquetAnalysis;
 
 import java.io.File;
 import java.io.IOException;
 
-public class CohortStatsSparkParquetExecutorTest {
-    private String cohort;
+public class TdtSparkParquetAnalysisTest {
+
+    private String phenotype;
     private ObjectMap executorParams;
 
     private OskarSparkTestUtils oskarSparkTestUtils;
 
     @Before
     public void init() throws IOException {
+        // Init phenotype
+        phenotype = "JJ";
+
         // Prepare parquet and metadata test files
         oskarSparkTestUtils = new OskarSparkTestUtils();
         File file = oskarSparkTestUtils.getFile(OskarSparkTestUtils.PLATINUM_SMALL);
@@ -30,11 +34,11 @@ public class CohortStatsSparkParquetExecutorTest {
     }
 
     @Test
-    public void cohortStats() throws IOException, ExecutionException {
-        CohortVariantStatsSparkParquetExecutor executor = new CohortVariantStatsSparkParquetExecutor(executorParams,
-                oskarSparkTestUtils.getRootDir().toAbsolutePath());
-        executor.exec();
+    public void tdt() throws IOException, OskarAnalysisException {
+        new TdtSparkParquetAnalysis(phenotype, executorParams, oskarSparkTestUtils.getRootDir().toAbsolutePath())
+                .setStudy(OskarSparkTestUtils.PLATINUM_STUDY)
+                .exec();
 
-        System.out.println("Cohort stats done! Results at " + oskarSparkTestUtils.getRootDir().toAbsolutePath());
+        System.out.println("TDT done! Results at " + oskarSparkTestUtils.getRootDir().toAbsolutePath());
     }
 }

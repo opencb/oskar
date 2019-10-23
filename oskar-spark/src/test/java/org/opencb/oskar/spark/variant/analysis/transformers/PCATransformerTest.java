@@ -5,8 +5,7 @@ import org.apache.spark.sql.Row;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.commons.OskarException;
-import org.opencb.oskar.spark.variant.analysis.transformers.PCATransformer;
+import org.opencb.oskar.core.exceptions.OskarException;
 
 import java.io.IOException;
 

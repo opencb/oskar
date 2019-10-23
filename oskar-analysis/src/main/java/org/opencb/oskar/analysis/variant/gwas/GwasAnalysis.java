@@ -1,13 +1,13 @@
 package org.opencb.oskar.analysis.variant.gwas;
 
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.OskarExecutor;
+import org.opencb.oskar.analysis.OskarAnalysis;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GwasExecutor extends OskarExecutor {
+public abstract class GwasAnalysis extends OskarAnalysis {
 
     public static final String ID = "GWAS";
     private String study;
@@ -20,10 +20,10 @@ public abstract class GwasExecutor extends OskarExecutor {
     private Path outputFile;
     private GwasConfiguration configuration;
 
-    public GwasExecutor() {
+    public GwasAnalysis() {
     }
 
-    public GwasExecutor(ObjectMap executorParams, Path outDir, GwasConfiguration configuration) {
+    public GwasAnalysis(ObjectMap executorParams, Path outDir, GwasConfiguration configuration) {
         this.setup(executorParams, outDir, configuration);
     }
 
@@ -57,7 +57,7 @@ public abstract class GwasExecutor extends OskarExecutor {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("GwasExecutor{");
+        final StringBuilder sb = new StringBuilder("GwasAnalysis{");
         sb.append("sampleList1=").append(sampleList1);
         sb.append(", sampleList2=").append(sampleList2);
         sb.append(", phenotype1='").append(phenotype1).append('\'');
@@ -75,7 +75,7 @@ public abstract class GwasExecutor extends OskarExecutor {
         return study;
     }
 
-    public GwasExecutor setStudy(String study) {
+    public GwasAnalysis setStudy(String study) {
         this.study = study;
         return this;
     }
@@ -84,7 +84,7 @@ public abstract class GwasExecutor extends OskarExecutor {
         return sampleList1;
     }
 
-    public GwasExecutor setSampleList1(List<String> sampleList1) {
+    public GwasAnalysis setSampleList1(List<String> sampleList1) {
         this.sampleList1 = sampleList1;
         return this;
     }
@@ -93,7 +93,7 @@ public abstract class GwasExecutor extends OskarExecutor {
         return sampleList2;
     }
 
-    public GwasExecutor setSampleList2(List<String> sampleList2) {
+    public GwasAnalysis setSampleList2(List<String> sampleList2) {
         this.sampleList2 = sampleList2;
         return this;
     }
@@ -102,7 +102,7 @@ public abstract class GwasExecutor extends OskarExecutor {
         return phenotype1;
     }
 
-    public GwasExecutor setPhenotype1(String phenotype1) {
+    public GwasAnalysis setPhenotype1(String phenotype1) {
         this.phenotype1 = phenotype1;
         return this;
     }
@@ -111,7 +111,7 @@ public abstract class GwasExecutor extends OskarExecutor {
         return phenotype2;
     }
 
-    public GwasExecutor setPhenotype2(String phenotype2) {
+    public GwasAnalysis setPhenotype2(String phenotype2) {
         this.phenotype2 = phenotype2;
         return this;
     }
@@ -120,7 +120,7 @@ public abstract class GwasExecutor extends OskarExecutor {
         return cohort1;
     }
 
-    public GwasExecutor setCohort1(String cohort1) {
+    public GwasAnalysis setCohort1(String cohort1) {
         this.cohort1 = cohort1;
         return this;
     }
@@ -129,7 +129,7 @@ public abstract class GwasExecutor extends OskarExecutor {
         return cohort2;
     }
 
-    public GwasExecutor setCohort2(String cohort2) {
+    public GwasAnalysis setCohort2(String cohort2) {
         this.cohort2 = cohort2;
         return this;
     }
@@ -138,7 +138,7 @@ public abstract class GwasExecutor extends OskarExecutor {
         return outputFile;
     }
 
-    public GwasExecutor setOutputFile(Path outputFile) {
+    public GwasAnalysis setOutputFile(Path outputFile) {
         this.outputFile = outputFile;
         return this;
     }
@@ -147,7 +147,7 @@ public abstract class GwasExecutor extends OskarExecutor {
         return configuration == null ? new GwasConfiguration() : configuration;
     }
 
-    public GwasExecutor setConfiguration(GwasConfiguration configuration) {
+    public GwasAnalysis setConfiguration(GwasConfiguration configuration) {
         this.configuration = configuration;
         return this;
     }

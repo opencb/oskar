@@ -19,7 +19,7 @@ import org.opencb.biodata.models.variant.metadata.IndelLength;
 import org.opencb.biodata.models.variant.metadata.SampleVariantStats;
 import org.opencb.biodata.models.variant.stats.VariantStats;
 import org.opencb.biodata.tools.pedigree.MendelianError;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
@@ -163,7 +163,7 @@ public class SampleVariantStatsTransformer extends AbstractTransformer implement
             samples = metadataManager.samples(df, studyId);
 
             if (samples.isEmpty()) {
-                new OskarException("Missing samples");
+                throw OskarException.missingParam(samplesParam.name());
             }
         }
 

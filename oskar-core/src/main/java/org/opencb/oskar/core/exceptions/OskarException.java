@@ -1,4 +1,4 @@
-package org.opencb.oskar.spark.commons;
+package org.opencb.oskar.core.exceptions;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -11,13 +11,18 @@ import java.util.Collection;
 public class OskarException extends Exception {
 
     // Do not use constructor from outside. Add a factory method.
-    public OskarException(String message) {
+    protected OskarException(String message) {
         super(message);
     }
 
     // Do not use constructor from outside. Add a factory method.
     protected OskarException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    // Do not use constructor from outside. Add a factory method.
+    protected OskarException(Throwable cause) {
+        super(cause);
     }
 
     public static OskarRuntimeException unsupportedFileFormat(String path) {
@@ -42,6 +47,10 @@ public class OskarException extends Exception {
 
     public static OskarRuntimeException missingStudy(Collection<String> studies) {
         return missingParam("study", studies);
+    }
+
+    public static OskarRuntimeException missingParam(String paramName) {
+        return missingParam(paramName, null);
     }
 
     public static OskarRuntimeException missingParam(String paramName, Collection<String> availableValues) {

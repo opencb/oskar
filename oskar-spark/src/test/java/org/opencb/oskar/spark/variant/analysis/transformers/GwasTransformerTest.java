@@ -1,23 +1,18 @@
 package org.opencb.oskar.spark.variant.analysis.transformers;
 
-import org.apache.spark.ml.feature.Bucketizer;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.opencb.oskar.analysis.stats.FisherExactTest;
-import org.opencb.oskar.analysis.stats.FisherTestResult;
 import org.opencb.oskar.analysis.variant.gwas.GwasConfiguration;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
-import static org.apache.spark.sql.functions.*;
 import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.biotypes;
 
 

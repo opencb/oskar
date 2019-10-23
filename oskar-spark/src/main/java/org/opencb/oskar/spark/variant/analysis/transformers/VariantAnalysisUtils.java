@@ -7,13 +7,13 @@ import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.biodata.tools.variant.converters.VCFExporter;
 import org.opencb.biodata.tools.variant.metadata.VariantMetadataManager;
 import org.opencb.commons.datastore.core.Query;
-import org.opencb.oskar.analysis.OskarExecutor;
+import org.opencb.oskar.analysis.OskarAnalysis;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class VariantAnalysisUtils extends OskarExecutor {
+public class VariantAnalysisUtils extends OskarAnalysis {
     /**
      * Export Avro variant into a VCF file.
      *

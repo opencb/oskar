@@ -2,12 +2,12 @@ package org.opencb.oskar.analysis.variant.stats;
 
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.Query;
-import org.opencb.oskar.analysis.OskarExecutor;
+import org.opencb.oskar.analysis.OskarAnalysis;
 
 import java.nio.file.Path;
 import java.util.List;
 
-public abstract class VariantStatsExecutor extends OskarExecutor {
+public abstract class VariantStatsAnalysis extends OskarAnalysis {
 
     private Path outputFile;
     private String study;
@@ -15,21 +15,21 @@ public abstract class VariantStatsExecutor extends OskarExecutor {
     private List<String> samples;
     private Query variantsQuery;
 
-    public VariantStatsExecutor() {
+    public VariantStatsAnalysis() {
     }
 
-    public VariantStatsExecutor(ObjectMap executorParams, Path outDir) {
+    public VariantStatsAnalysis(ObjectMap executorParams, Path outDir) {
         this(null, executorParams, outDir);
     }
 
-    public VariantStatsExecutor(String cohort, ObjectMap executorParams, Path outDir) {
+    public VariantStatsAnalysis(String cohort, ObjectMap executorParams, Path outDir) {
         setUp(executorParams, outDir);
         this.cohort = cohort;
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("VariantStatsExecutor{");
+        final StringBuilder sb = new StringBuilder("VariantStatsAnalysis{");
         sb.append("cohort='").append(cohort).append('\'');
         sb.append(", params=").append(params);
         sb.append(", outDir=").append(outDir);
@@ -41,7 +41,7 @@ public abstract class VariantStatsExecutor extends OskarExecutor {
         return study;
     }
 
-    public VariantStatsExecutor setStudy(String study) {
+    public VariantStatsAnalysis setStudy(String study) {
         this.study = study;
         return this;
     }
@@ -50,7 +50,7 @@ public abstract class VariantStatsExecutor extends OskarExecutor {
         return cohort;
     }
 
-    public VariantStatsExecutor setCohort(String cohort) {
+    public VariantStatsAnalysis setCohort(String cohort) {
         this.cohort = cohort;
         return this;
     }
@@ -59,7 +59,7 @@ public abstract class VariantStatsExecutor extends OskarExecutor {
         return samples;
     }
 
-    public VariantStatsExecutor setSamples(List<String> samples) {
+    public VariantStatsAnalysis setSamples(List<String> samples) {
         this.samples = samples;
         return this;
     }
@@ -68,12 +68,12 @@ public abstract class VariantStatsExecutor extends OskarExecutor {
         return outputFile;
     }
 
-    public VariantStatsExecutor setOutputFile(Path outputFile) {
+    public VariantStatsAnalysis setOutputFile(Path outputFile) {
         this.outputFile = outputFile;
         return this;
     }
 
-    public VariantStatsExecutor setVariantsQuery(Query variantsQuery) {
+    public VariantStatsAnalysis setVariantsQuery(Query variantsQuery) {
         this.variantsQuery = variantsQuery;
         return this;
     }

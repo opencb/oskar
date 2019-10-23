@@ -1,19 +1,19 @@
 package org.opencb.oskar.analysis.variant.tdt;
 
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.OskarExecutor;
+import org.opencb.oskar.analysis.OskarAnalysis;
 
 import java.nio.file.Path;
 
-public abstract class TdtExecutor extends OskarExecutor {
+public abstract class TdtAnalysis extends OskarAnalysis {
 
     private String phenotype;
     private String study;
 
-    public TdtExecutor() {
+    public TdtAnalysis() {
     }
 
-    public TdtExecutor(String phenotype, ObjectMap executorParams, Path outDir) {
+    public TdtAnalysis(String phenotype, ObjectMap executorParams, Path outDir) {
         this.setup(phenotype, executorParams, outDir);
     }
 
@@ -36,7 +36,7 @@ public abstract class TdtExecutor extends OskarExecutor {
         return phenotype;
     }
 
-    public TdtExecutor setPhenotype(String phenotype) {
+    public TdtAnalysis setPhenotype(String phenotype) {
         this.phenotype = phenotype;
         return this;
     }
@@ -45,7 +45,7 @@ public abstract class TdtExecutor extends OskarExecutor {
         return study;
     }
 
-    public TdtExecutor setStudy(String study) {
+    public TdtAnalysis setStudy(String study) {
         this.study = study;
         return this;
     }

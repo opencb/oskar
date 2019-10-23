@@ -8,8 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.commons.OskarException;
-import org.opencb.oskar.spark.variant.analysis.transformers.HistogramTransformer;
+import org.opencb.oskar.core.exceptions.OskarException;
 
 import java.io.IOException;
 

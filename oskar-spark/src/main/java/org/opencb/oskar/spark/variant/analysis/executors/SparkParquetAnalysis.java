@@ -3,7 +3,7 @@ package org.opencb.oskar.spark.variant.analysis.executors;
 import org.apache.spark.sql.SparkSession;
 import org.opencb.commons.datastore.core.ObjectMap;
 
-public interface SparkParquetExecutor {
+public interface SparkParquetAnalysis {
 
     ObjectMap getParams();
 

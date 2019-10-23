@@ -3,25 +3,22 @@ package org.opencb.oskar.spark.variant.analysis;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.exceptions.ExecutionException;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
+import org.opencb.oskar.analysis.variant.stats.VariantStatsAnalysis;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.variant.analysis.executors.TdtSparkParquetExecutor;
+import org.opencb.oskar.spark.variant.analysis.executors.VariantStatsSparkParquetAnalysis;
 
 import java.io.File;
 import java.io.IOException;
 
-public class TdtSparkParquetExecutorTest {
-
-    private String phenotype;
+public class VariantStatsSparkParquetAnalysisTest {
+    private String cohort;
     private ObjectMap executorParams;
 
     private OskarSparkTestUtils oskarSparkTestUtils;
 
     @Before
     public void init() throws IOException {
-        // Init phenotype
-        phenotype = "JJ";
-
         // Prepare parquet and metadata test files
         oskarSparkTestUtils = new OskarSparkTestUtils();
         File file = oskarSparkTestUtils.getFile(OskarSparkTestUtils.PLATINUM_SMALL);
@@ -34,11 +31,12 @@ public class TdtSparkParquetExecutorTest {
     }
 
     @Test
-    public void tdt() throws IOException, ExecutionException {
-        new TdtSparkParquetExecutor(phenotype, executorParams, oskarSparkTestUtils.getRootDir().toAbsolutePath())
-                .setStudy(OskarSparkTestUtils.PLATINUM_STUDY)
-                .exec();
+    public void variantStats() throws IOException, OskarAnalysisException {
+        VariantStatsAnalysis executor = new VariantStatsSparkParquetAnalysis(null, executorParams,
+                oskarSparkTestUtils.getRootDir().toAbsolutePath())
+                .setOutputFile(oskarSparkTestUtils.getRootDir().resolve("variants.tsv"));
+        executor.exec();
 
-        System.out.println("TDT done! Results at " + oskarSparkTestUtils.getRootDir().toAbsolutePath());
+        System.out.println("Variant stats done! Results at " + oskarSparkTestUtils.getRootDir().toAbsolutePath());
     }
 }

@@ -7,7 +7,7 @@ import org.opencb.biodata.models.metadata.Sample;
 import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.biodata.tools.variant.metadata.VariantMetadataManager;
 import org.opencb.commons.datastore.core.Query;
-import org.opencb.oskar.analysis.exceptions.ExecutionException;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
 import org.opencb.oskar.analysis.exceptions.AnalysisToolException;
 import org.opencb.oskar.analysis.executor.Executor;
 import org.opencb.oskar.core.config.OskarConfiguration;
@@ -18,7 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-public class PlinkWrapper extends VariantOskarExecutorWrapper {
+public class PlinkWrapper extends VariantOskarAnalysisWrapper {
     public static final String ANALYSIS_NAME = "plink";
 
     private String inFilename;
@@ -41,7 +41,7 @@ public class PlinkWrapper extends VariantOskarExecutorWrapper {
     }
 
 
-    public void exec() throws ExecutionException {
+    public void exec() throws OskarAnalysisException {
         // Sanity check
         Path binPath;
         try {
@@ -49,11 +49,11 @@ public class PlinkWrapper extends VariantOskarExecutorWrapper {
             if (binPath == null || !binPath.toFile().exists()) {
                 String msg = "PLINK binary path is missing or does not exist:  '" + binPath + "'.";
                 logger.error(msg);
-                throw new ExecutionException(msg);
+                throw new OskarAnalysisException(msg);
             }
         } catch (Exception e) {
             logger.error(e.getMessage());
-            throw new ExecutionException(e.getMessage());
+            throw new OskarAnalysisException(e);
         }
 
         // Get output dir
@@ -104,7 +104,7 @@ public class PlinkWrapper extends VariantOskarExecutorWrapper {
             Executor.execute(sb.toString(), outDir, true);
         } catch (AnalysisToolException e) {
             logger.error(e.getMessage());
-            throw new ExecutionException(e);
+            throw new OskarAnalysisException(e);
         }
     }
 
