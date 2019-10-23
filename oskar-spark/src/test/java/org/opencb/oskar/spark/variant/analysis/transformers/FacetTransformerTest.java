@@ -2,6 +2,7 @@ package org.opencb.oskar.spark.variant.analysis.transformers;
 
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.Variant;
@@ -9,14 +10,13 @@ import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.config.RestConfig;
 import org.opencb.cellbase.client.rest.CellBaseClient;
 import org.opencb.cellbase.client.rest.VariantClient;
+import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
-import org.opencb.commons.datastore.core.result.FacetQueryResult;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
 import org.opencb.oskar.spark.commons.OskarException;
 import org.opencb.oskar.spark.variant.converters.DataframeToFacetFieldConverter;
 import org.opencb.oskar.spark.variant.converters.RowToVariantConverter;
-import org.opencb.oskar.spark.variant.analysis.transformers.FacetTransformer;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -24,8 +24,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.spark.sql.functions.*;
-import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.*;
+import static org.apache.spark.sql.functions.explode;
+import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.biotypes;
+import static org.opencb.oskar.spark.variant.udf.VariantUdfManager.genes;
 
 public class FacetTransformerTest {
 
@@ -53,7 +54,9 @@ public class FacetTransformerTest {
         Dataset<Row> res = facetTransformer.transform(df);
         res.show();
 
-        FacetQueryResult.Field field = new DataframeToFacetFieldConverter().convert(res);
+        FacetField field = new DataframeToFacetFieldConverter().convert(res);
+        System.out.println(field);
+        Assert.assertTrue(field.getBuckets().size() == 3);
     }
 
     @Test

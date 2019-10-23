@@ -4,7 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.opencb.biodata.tools.Converter;
-import org.opencb.commons.datastore.core.result.FacetQueryResult;
+import org.opencb.commons.datastore.core.FacetField;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class DataframeToFacetFieldConverter implements Converter<Dataset<Row>, FacetQueryResult.Field> {
+public class DataframeToFacetFieldConverter implements Converter<Dataset<Row>, FacetField> {
 
     public enum FacetType {
         CATEGORICAL,
@@ -34,12 +34,12 @@ public class DataframeToFacetFieldConverter implements Converter<Dataset<Row>, F
     public static final Pattern CATEGORICAL_PATTERN = Pattern.compile("^([a-zA-Z][a-zA-Z0-9_.]+)(\\[[a-zA-Z0-9_.\\-,*]+])?(:\\*|:\\d+)?$");
 
     @Override
-    public FacetQueryResult.Field convert(Dataset<Row> df) {
+    public FacetField convert(Dataset<Row> df) {
         // Sanity check
         String facet = df.schema().apply("count").metadata().getString("facet");
 
         String[] facets = facet.split(NESTED_FACET_SEPARATOR);
-        FacetQueryResult.Field rootField = createFacetField(facets[0]).setBuckets(new ArrayList<>());
+        FacetField rootField = createFacetField(facets[0]).setBuckets(new ArrayList<>());
 
         // Main loop: iterating over rows
         Iterator<Row> rowIterator = df.toLocalIterator();
@@ -50,7 +50,7 @@ public class DataframeToFacetFieldConverter implements Converter<Dataset<Row>, F
             // Index to the "count" column (at last position)
             int countIdx = row.size() - 1;
             long count = row.getLong(countIdx);
-            FacetQueryResult.Field field = rootField;
+            FacetField field = rootField;
             for (int i = 0; i < countIdx; i++) {
                 // Update field count
                 field.setCount(field.getCount() + count);
@@ -58,10 +58,10 @@ public class DataframeToFacetFieldConverter implements Converter<Dataset<Row>, F
                 if (StringUtils.isEmpty(field.getAggregationName())) {
                     // Check if the bucket exists
                     String bucketValue = row.get(i).toString();
-                    FacetQueryResult.Bucket bucket = getBucket(bucketValue, field.getBuckets());
+                    FacetField.Bucket bucket = getBucket(bucketValue, field.getBuckets());
                     if (bucket == null) {
                         // Create a new bucket with the
-                        bucket = new FacetQueryResult.Bucket(bucketValue, 0, new ArrayList<>());
+                        bucket = new FacetField.Bucket(bucketValue, 0, new ArrayList<>());
                         field.getBuckets().add(bucket);
                     }
                     // Update bucket count
@@ -70,8 +70,8 @@ public class DataframeToFacetFieldConverter implements Converter<Dataset<Row>, F
                     // Nested facet ?
                     if (i + 1 < countIdx) {
                         // Nested facet, then create a new facet field inside the bucket
-                        FacetQueryResult.Field newField = createFacetField(facets[i + 1]).setBuckets(new ArrayList<>());
-                        bucket.getFields().add(newField);
+                        FacetField newField = createFacetField(facets[i + 1]).setBuckets(new ArrayList<>());
+                        bucket.getFacetFields().add(newField);
                         field = newField;
                     }
                 } else {
@@ -94,8 +94,8 @@ public class DataframeToFacetFieldConverter implements Converter<Dataset<Row>, F
         return rootField;
     }
 
-    private FacetQueryResult.Bucket getBucket(String value, List<FacetQueryResult.Bucket> buckets) {
-        for (FacetQueryResult.Bucket bucket: buckets) {
+    private FacetField.Bucket getBucket(String value, List<FacetField.Bucket> buckets) {
+        for (FacetField.Bucket bucket: buckets) {
             if (value.equals(bucket.getValue())) {
                 return bucket;
             }
@@ -103,13 +103,13 @@ public class DataframeToFacetFieldConverter implements Converter<Dataset<Row>, F
         return null;
     }
 
-    private FacetQueryResult.Field createFacetField(String facet) {
+    private FacetField createFacetField(String facet) {
         // Categorical, range or aggregation facet
         String fieldName = getFieldName(facet);
         switch (getFacetType(facet)) {
             case CATEGORICAL: {
                 // Categorical facet
-                return new FacetQueryResult.Field(fieldName, "", new ArrayList<>());
+                return new FacetField(fieldName, "", new ArrayList<>());
             }
             case RANGE: {
                 // Range facet
@@ -118,13 +118,12 @@ public class DataframeToFacetFieldConverter implements Converter<Dataset<Row>, F
                 double end = Double.parseDouble(split[2]);
                 double step = Double.parseDouble(split[3]);
 
-                return new FacetQueryResult.Field(fieldName, "", new ArrayList<>())
-                        .setStart(start).setEnd(end).setStep(step);
+                return new FacetField(fieldName, "", new ArrayList<>()).setStart(start).setEnd(end).setStep(step);
             }
             case AGGREGATION: {
                 // Aggregation facet
-                return new FacetQueryResult.Field(fieldName, "", new ArrayList<>())
-                        .setAggregationName(facet.substring(0, facet.indexOf("(")));
+                return new FacetField(fieldName, "", new ArrayList<>()).setAggregationName(facet.substring(0,
+                        facet.indexOf("(")));
             }
             default:
                 throw new InvalidParameterException("Unknown facet type: " + facet);
