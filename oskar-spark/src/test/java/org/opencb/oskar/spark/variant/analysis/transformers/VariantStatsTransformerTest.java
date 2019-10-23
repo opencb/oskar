@@ -9,16 +9,16 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.opencb.biodata.models.variant.metadata.VariantMetadata;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.variant.analysis.transformers.VariantStatsTransformer;
+import org.opencb.oskar.core.exceptions.OskarException;
+import org.opencb.oskar.core.exceptions.OskarRuntimeException;
+import org.opencb.oskar.spark.variant.VariantMetadataManager;
 
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.spark.sql.functions.col;
-import static org.apache.spark.sql.functions.size;
-import static org.apache.spark.sql.functions.soundex;
+import static org.apache.spark.sql.functions.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.opencb.oskar.spark.OskarSparkTestUtils.*;
@@ -115,8 +115,12 @@ public class VariantStatsTransformerTest {
     @Test
     public void testUnknownSample() throws Exception {
         Dataset<Row> df = sparkTest.getVariantsDataset();
+        String studyId = "hgvauser@platinum:illumina_platinum";
+        List<String> samples = new VariantMetadataManager().samples(df, studyId);
         VariantStatsTransformer transformer = new VariantStatsTransformer().setSamples(Arrays.asList("unknown_sample")).setCohort("ID");
-        thrown.expect(IllegalArgumentException.class);
+        OskarRuntimeException expected = OskarException.unknownSample(studyId, "unknown_sample", samples);
+        thrown.expect(expected.getClass());
+        thrown.expectMessage(expected.getMessage());
         transformer.transform(df);
     }
 

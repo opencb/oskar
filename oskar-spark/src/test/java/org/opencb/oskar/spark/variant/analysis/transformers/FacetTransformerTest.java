@@ -13,10 +13,9 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 import org.opencb.commons.datastore.core.result.FacetQueryResult;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.variant.converters.DataframeToFacetFieldConverter;
 import org.opencb.oskar.spark.variant.converters.RowToVariantConverter;
-import org.opencb.oskar.spark.variant.analysis.transformers.FacetTransformer;
 
 import java.io.IOException;
 import java.io.PrintWriter;

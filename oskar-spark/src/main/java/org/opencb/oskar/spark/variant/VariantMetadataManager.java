@@ -19,7 +19,7 @@ import org.opencb.biodata.models.pedigree.Multiples;
 import org.opencb.biodata.models.variant.metadata.VariantMetadata;
 import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.commons.utils.FileUtils;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.commons.converters.DataTypeUtils;
 import scala.collection.Iterator;
 

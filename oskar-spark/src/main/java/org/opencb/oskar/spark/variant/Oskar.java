@@ -3,7 +3,7 @@ package org.opencb.oskar.spark.variant;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.variant.analysis.transformers.ModeOfInheritanceTransformer;
 import org.opencb.oskar.spark.variant.analysis.transformers.VariantSetStatsTransformer;
 import org.opencb.oskar.spark.variant.analysis.transformers.VariantStatsTransformer;

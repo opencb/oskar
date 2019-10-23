@@ -13,7 +13,7 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.feature.AllelesCode;
 import org.opencb.biodata.models.feature.Genotype;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.commons.converters.DataTypeUtils;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;

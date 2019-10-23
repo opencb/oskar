@@ -1,4 +1,4 @@
-package org.opencb.oskar.spark.commons;
+package org.opencb.oskar.core.exceptions;
 
 /**
  * Created on 23/11/18.

@@ -3,18 +3,14 @@ package org.opencb.oskar.spark.variant.analysis;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.result.AnalysisResult;
-import org.opencb.oskar.analysis.exceptions.AnalysisException;
-import org.opencb.oskar.analysis.result.AnalysisResultManager;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.variant.analysis.executors.TdtSparkParquetAnalysisExecutor;
+import org.opencb.oskar.spark.variant.analysis.executors.TdtSparkParquetAnalysis;
 
 import java.io.File;
 import java.io.IOException;
 
-import static org.opencb.oskar.spark.OskarSparkTestUtils.getRootDir;
-
-public class TdtSparkParquetAnalysisExecutorTest {
+public class TdtSparkParquetAnalysisTest {
 
     private String phenotype;
     private ObjectMap executorParams;
@@ -38,15 +34,11 @@ public class TdtSparkParquetAnalysisExecutorTest {
     }
 
     @Test
-    public void tdt() throws IOException, AnalysisException {
-        TdtSparkParquetAnalysisExecutor executor = new TdtSparkParquetAnalysisExecutor(phenotype, executorParams,
-                oskarSparkTestUtils.getRootDir().toAbsolutePath());
-        AnalysisResultManager amr = new AnalysisResultManager(getRootDir()).init("", new ObjectMap());
-        executor.init(amr);
-        executor.exec();
-        AnalysisResult analysisResult = amr.close();
+    public void tdt() throws IOException, OskarAnalysisException {
+        new TdtSparkParquetAnalysis(phenotype, executorParams, oskarSparkTestUtils.getRootDir().toAbsolutePath())
+                .setStudy(OskarSparkTestUtils.PLATINUM_STUDY)
+                .exec();
 
         System.out.println("TDT done! Results at " + oskarSparkTestUtils.getRootDir().toAbsolutePath());
-        System.out.println(analysisResult.toString());
     }
 }

@@ -16,7 +16,7 @@ import org.opencb.biodata.models.feature.AllelesCode;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.biodata.models.variant.stats.IdentityByState;
 import org.opencb.biodata.tools.variant.algorithm.IdentityByStateClustering;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import scala.collection.Seq;
 

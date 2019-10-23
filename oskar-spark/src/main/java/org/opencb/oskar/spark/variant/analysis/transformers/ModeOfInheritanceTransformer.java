@@ -10,7 +10,7 @@ import org.opencb.biodata.models.clinical.interpretation.ClinicalProperty;
 import org.opencb.biodata.models.clinical.pedigree.Pedigree;
 import org.opencb.biodata.models.commons.Disorder;
 import org.opencb.biodata.tools.pedigree.ModeOfInheritance;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import org.opencb.oskar.spark.variant.analysis.params.HasPhenotype;
 import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;

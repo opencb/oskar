@@ -1,54 +1,41 @@
 package org.opencb.oskar.analysis.variant.stats;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import org.opencb.biodata.models.variant.metadata.SampleVariantStats;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.oskar.analysis.OskarAnalysis;
-import org.opencb.oskar.analysis.exceptions.AnalysisException;
-import org.opencb.oskar.core.annotations.Analysis;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
 
 import java.nio.file.Path;
 import java.util.List;
 
-@Analysis(id = SampleVariantStatsAnalysis.ID, data = Analysis.AnalysisData.VARIANT)
-public class SampleVariantStatsAnalysis extends OskarAnalysis {
+public abstract class SampleVariantStatsAnalysis extends OskarAnalysis {
 
-    public static final String ID = "SAMPLE_STATS";
-
-    private String study;
-    private List<String> sampleNames;
-    private String individualId;
-    private String familyId;
+    protected String study;
+    protected List<String> sampleNames;
+    protected String individualId;
+    protected String familyId;
+    private Path outputFile;
 
     public SampleVariantStatsAnalysis() {
     }
 
     public SampleVariantStatsAnalysis(ObjectMap executorParams, Path outDir) {
-        super(executorParams, outDir);
+        super.setUp(executorParams, outDir);
     }
 
     @Override
-    public void exec() throws AnalysisException {
-        SampleVariantStatsAnalysisExecutor executor = getAnalysisExecutor(SampleVariantStatsAnalysisExecutor.class)
-                .setOutputFile(getOutputFile())
-                .setStudy(getStudy());
-        if (CollectionUtils.isNotEmpty(sampleNames)) {
-            executor.setSampleNames(sampleNames);
-        } else if (StringUtils.isNotEmpty(familyId)) {
-            executor.setFamilyId(familyId);
-        } else if (StringUtils.isNotEmpty(individualId)) {
-            executor.setIndividualId(individualId);
-        } else {
-            throw new AnalysisException("Invalid input parameters for variant sample stats analysis");
-        }
-
-        arm.startStep("sample-variant-stats");
-        executor.exec();
-        arm.endStep(100);
-    }
-
-    public Path getOutputFile() {
-        return outDir.resolve("sample_variant_stats.json");
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SampleVariantStatsAnalysis{");
+        sb.append("sampleNames=").append(sampleNames);
+        sb.append(", individualId='").append(individualId).append('\'');
+        sb.append(", familyId='").append(familyId).append('\'');
+        sb.append(", params=").append(params);
+        sb.append(", outDir=").append(outDir);
+        sb.append('}');
+        return sb.toString();
     }
 
     public String getStudy() {
@@ -85,5 +72,26 @@ public class SampleVariantStatsAnalysis extends OskarAnalysis {
     public SampleVariantStatsAnalysis setFamilyId(String familyId) {
         this.familyId = familyId;
         return this;
+    }
+
+    public Path getOutputFile() {
+        return outputFile;
+    }
+
+    public SampleVariantStatsAnalysis setOutputFile(Path outputFile) {
+        this.outputFile = outputFile;
+        return this;
+    }
+
+    protected void writeStatsToFile(List<SampleVariantStats> stats) throws OskarAnalysisException {
+        ObjectMapper objectMapper = new ObjectMapper().configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
+
+        Path outFilename = getOutputFile();
+        try {
+            objectWriter.writeValue(outFilename.toFile(), stats);
+        } catch (Exception e) {
+            throw new OskarAnalysisException("Error writing output file: " + outFilename, e);
+        }
     }
 }

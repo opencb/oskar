@@ -7,11 +7,9 @@ import org.junit.Test;
 import org.opencb.oskar.analysis.stats.ChiSquareTest;
 import org.opencb.oskar.analysis.stats.ChiSquareTestResult;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.commons.OskarException;
-import org.opencb.oskar.spark.variant.analysis.transformers.ChiSquareTransformer;
+import org.opencb.oskar.core.exceptions.OskarException;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 

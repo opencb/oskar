@@ -5,11 +5,9 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.StructField;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.exceptions.AnalysisException;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
 import org.opencb.oskar.analysis.variant.stats.VariantStatsAnalysis;
-import org.opencb.oskar.analysis.variant.stats.VariantStatsAnalysisExecutor;
-import org.opencb.oskar.core.annotations.AnalysisExecutor;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.analysis.transformers.VariantStatsTransformer;
 
@@ -20,39 +18,28 @@ import java.nio.file.Path;
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.explode;
 
-@AnalysisExecutor(
-        id = "spark-parquet",
-        analysis = VariantStatsAnalysis.ID,
-        source= AnalysisExecutor.Source.PARQUET_FILE,
-        framework = AnalysisExecutor.Framework.SPARK)
-public class VariantStatsSparkParquetAnalysisExecutor extends VariantStatsAnalysisExecutor {
 
-    public VariantStatsSparkParquetAnalysisExecutor() {
+public class VariantStatsSparkParquetAnalysis extends VariantStatsAnalysis implements SparkParquetAnalysis {
+
+    public VariantStatsSparkParquetAnalysis() {
     }
 
-    public VariantStatsSparkParquetAnalysisExecutor(String cohort, ObjectMap executorParams, Path outDir) {
+    public VariantStatsSparkParquetAnalysis(String cohort, ObjectMap executorParams, Path outDir) {
         super(cohort, executorParams, outDir);
     }
 
     @Override
-    public void exec() throws AnalysisException {
-        String parquetFilename = getExecutorParams().getString("FILE");
+    public void exec() throws OskarAnalysisException {
+        String parquetFilename = getFile();
         String studyId = getStudy();
-        String master = getExecutorParams().getString("MASTER");
-
-        // Prepare input dataset from the input parquet file
-        SparkSession sparkSession = SparkSession.builder()
-                .master(master)
-                .appName("sample stats")
-                .config("spark.ui.enabled", "false")
-                .getOrCreate();
+        SparkSession sparkSession = getSparkSession("variant stats");
 
         Oskar oskar = new Oskar(sparkSession);
         Dataset<Row> inputDastaset;
         try {
             inputDastaset = oskar.load(parquetFilename);
         } catch (OskarException e) {
-            throw new AnalysisException("Error loading Parquet file: " + parquetFilename, e);
+            throw new OskarAnalysisException("Error loading Parquet file: " + parquetFilename, e);
         }
 
         // Call to the transformer dataset
@@ -79,11 +66,11 @@ public class VariantStatsSparkParquetAnalysisExecutor extends VariantStatsAnalys
         try {
             pw = new PrintWriter(outFilename.toFile());
         } catch (FileNotFoundException e) {
-            throw new AnalysisException("Error creating output file: " + outFilename, e);
+            throw new OskarAnalysisException("Error creating output file: " + outFilename, e);
         }
         pw.println(line);
 
-        SparkAnalysisExecutorUtils.writeRows(outDf.toLocalIterator(), pw);
+        SparkAnalysisUtils.writeRows(outDf.toLocalIterator(), pw);
 
         pw.close();
     }

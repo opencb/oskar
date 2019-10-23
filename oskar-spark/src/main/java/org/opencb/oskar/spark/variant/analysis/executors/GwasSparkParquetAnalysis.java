@@ -6,12 +6,10 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.utils.CollectionUtils;
-import org.opencb.oskar.analysis.exceptions.AnalysisException;
-import org.opencb.oskar.analysis.variant.gwas.Gwas;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
+import org.opencb.oskar.analysis.variant.gwas.GwasAnalysis;
 import org.opencb.oskar.analysis.variant.gwas.GwasConfiguration;
-import org.opencb.oskar.analysis.variant.gwas.GwasExecutor;
-import org.opencb.oskar.core.annotations.AnalysisExecutor;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.analysis.transformers.GwasTransformer;
 import scala.collection.JavaConversions;
@@ -29,38 +27,27 @@ import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.explode;
 import static org.opencb.oskar.analysis.variant.gwas.GwasConfiguration.Method.CHI_SQUARE_TEST;
 
-@AnalysisExecutor(
-        id = "spark-parquet",
-        analysis = Gwas.ID,
-        source = AnalysisExecutor.Source.PARQUET_FILE,
-        framework = AnalysisExecutor.Framework.SPARK)
-public class GwasSparkParquetAnalysisExecutor extends GwasExecutor {
+public class GwasSparkParquetAnalysis extends GwasAnalysis implements SparkParquetAnalysis {
 
-    public GwasSparkParquetAnalysisExecutor() {
+    public GwasSparkParquetAnalysis() {
     }
 
-    public GwasSparkParquetAnalysisExecutor(ObjectMap executorParams, Path outDir, GwasConfiguration configuration) {
+    public GwasSparkParquetAnalysis(ObjectMap executorParams, Path outDir, GwasConfiguration configuration) {
         super(executorParams, outDir, configuration);
     }
 
     @Override
-    public void exec() throws AnalysisException {
-        String parquetFilename = getExecutorParams().getString("FILE");
-        String studyId = getExecutorParams().getString("STUDY_ID");
-        String master = getExecutorParams().getString("MASTER");
-
-        SparkSession sparkSession = SparkSession.builder()
-                .master(master)
-                .appName("GWAS")
-                .config("spark.ui.enabled", "false")
-                .getOrCreate();
+    public void exec() throws OskarAnalysisException {
+        String parquetFilename = getFile();
+        String studyId = getStudy();
+        SparkSession sparkSession = getSparkSession("gwas");
 
         Oskar oskar = new Oskar(sparkSession);
         Dataset<Row> inputDataset;
         try {
             inputDataset = oskar.load(parquetFilename);
         } catch (OskarException e) {
-            throw new AnalysisException("Error loading Parquet file: " + parquetFilename, e);
+            throw new OskarAnalysisException("Error loading Parquet file: " + parquetFilename, e);
         }
 
         GwasTransformer gwasTransformer = new GwasTransformer().setStudyId(studyId);
@@ -77,14 +64,14 @@ public class GwasSparkParquetAnalysisExecutor extends GwasExecutor {
         } else if (StringUtils.isNotEmpty(getCohort1()) || StringUtils.isNotEmpty(getCohort2())) {
             gwasTransformer.setCohort1(getCohort1()).setCohort2(getCohort2());
         } else {
-            throw new AnalysisException("Invalid parameters when executing GWAS analysis");
+            throw new OskarAnalysisException("Invalid parameters when executing GWAS analysis");
         }
 
         Dataset<Row> outputDataset = gwasTransformer.transform(inputDataset);
 
         // Sanity check
         if (outputDataset == null) {
-            throw new AnalysisException("Something wrong happened! Output dataset is null when executing GWAS analysis");
+            throw new OskarAnalysisException("Something wrong happened! Output dataset is null when executing GWAS analysis");
         }
 
         String outFilename = getOutputFile().toString();
@@ -100,9 +87,9 @@ public class GwasSparkParquetAnalysisExecutor extends GwasExecutor {
                 Row row = rowIterator.next();
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < row.size(); i++) {
-                    if (i == 9) {
+                    if (i == 8) {
                         // For consequence types
-                        List<String> soList = row.getList(9);
+                        List<String> soList = row.getList(8);
                         if (CollectionUtils.isNotEmpty(soList)) {
                             sb.append(StringUtils.join(soList, ","));
                         }
@@ -115,7 +102,7 @@ public class GwasSparkParquetAnalysisExecutor extends GwasExecutor {
             }
             pw.close();
         } catch (FileNotFoundException e) {
-            throw new AnalysisException("Error saving GWAS results", e);
+            throw new OskarAnalysisException("Error saving GWAS results", e);
         }
     }
 
