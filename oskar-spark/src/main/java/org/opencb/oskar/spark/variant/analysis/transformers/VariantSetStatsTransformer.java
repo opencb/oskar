@@ -18,7 +18,7 @@ import org.opencb.biodata.models.variant.metadata.VariantFileMetadata;
 import org.opencb.biodata.models.variant.metadata.VariantSetStats;
 import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.biodata.models.variant.stats.VariantStats;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
@@ -171,9 +171,6 @@ public class VariantSetStatsTransformer extends AbstractTransformer implements H
             df = df.where(filter);
 
         }
-
-        System.out.println("samples = " + samples);
-        System.out.println("files = " + files);
 
         VariantSetStatsFunction udaf = new VariantSetStatsFunction(studyId, files);
 

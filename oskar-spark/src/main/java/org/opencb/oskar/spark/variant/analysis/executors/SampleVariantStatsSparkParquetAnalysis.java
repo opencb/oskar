@@ -11,11 +11,9 @@ import org.opencb.biodata.models.variant.metadata.SampleVariantStats;
 import org.opencb.biodata.models.variant.metadata.VariantMetadata;
 import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.exceptions.AnalysisException;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
 import org.opencb.oskar.analysis.variant.stats.SampleVariantStatsAnalysis;
-import org.opencb.oskar.analysis.variant.stats.SampleVariantStatsAnalysisExecutor;
-import org.opencb.oskar.core.annotations.AnalysisExecutor;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.variant.Oskar;
 import org.opencb.oskar.spark.variant.analysis.transformers.SampleVariantStatsTransformer;
 
@@ -26,43 +24,31 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@AnalysisExecutor(
-        id = "spark-parquet",
-        analysis = SampleVariantStatsAnalysis.ID,
-        source= AnalysisExecutor.Source.PARQUET_FILE,
-        framework = AnalysisExecutor.Framework.SPARK)
-public class SampleVariantStatsSparkParquetAnalysisExecutor extends SampleVariantStatsAnalysisExecutor {
+public class SampleVariantStatsSparkParquetAnalysis extends SampleVariantStatsAnalysis implements SparkParquetAnalysis {
 
     private Oskar oskar;
 
     private Dataset<Row> inputDataset;
     private String studyId;
 
-    public SampleVariantStatsSparkParquetAnalysisExecutor() {
+    public SampleVariantStatsSparkParquetAnalysis() {
     }
 
-    public SampleVariantStatsSparkParquetAnalysisExecutor(ObjectMap executorParams, Path outDir) {
+    public SampleVariantStatsSparkParquetAnalysis(ObjectMap executorParams, Path outDir) {
         super(executorParams, outDir);
     }
 
     @Override
-    public void exec() throws AnalysisException {
-        studyId = getExecutorParams().getString("STUDY_ID");
-        String parquetFilename = getExecutorParams().getString("FILE");
-        String master = getExecutorParams().getString("MASTER");
-
-        // Prepare input dataset from the input parquet file
-        SparkSession sparkSession = SparkSession.builder()
-                .master(master)
-                .appName("sample stats")
-                .config("spark.ui.enabled", "false")
-                .getOrCreate();
+    public void exec() throws OskarAnalysisException {
+        String parquetFilename = getFile();
+        studyId = getStudy();
+        SparkSession sparkSession = getSparkSession("sample variant stats");
 
         oskar = new Oskar(sparkSession);
         try {
             inputDataset = oskar.load(parquetFilename);
         } catch (OskarException e) {
-            throw new AnalysisException("Error loading Parquet file: " + parquetFilename, e);
+            throw new OskarAnalysisException("Error loading Parquet file: " + parquetFilename, e);
         }
 
         // Call to the dataset transformer
@@ -78,7 +64,7 @@ public class SampleVariantStatsSparkParquetAnalysisExecutor extends SampleVarian
                 sampleNames = getSampleNamesByIndividualId(individualId);
             } else {
                 // This case should never occur (it is checked before calling)
-                throw new AnalysisException("Invalid parameters: missing sample names, family ID or individual ID");
+                throw new OskarAnalysisException("Invalid parameters: missing sample names, family ID or individual ID");
             }
         }
 
@@ -88,7 +74,7 @@ public class SampleVariantStatsSparkParquetAnalysisExecutor extends SampleVarian
         writeStatsToFile(stats);
     }
 
-    private List<String> getSampleNamesByFamilyId(String familyId) throws AnalysisException {
+    private List<String> getSampleNamesByFamilyId(String familyId) throws OskarAnalysisException {
         Set<String> sampleNames = new HashSet<>();
 
         VariantMetadata variantMetadata = oskar.metadata().variantMetadata(inputDataset);
@@ -111,12 +97,12 @@ public class SampleVariantStatsSparkParquetAnalysisExecutor extends SampleVarian
 
         // Sanity check
         if (CollectionUtils.isEmpty(sampleNames)) {
-            throw new AnalysisException("Invalid parameters: no samples found for family ID '" + familyId + "'");
+            throw new OskarAnalysisException("Invalid parameters: no samples found for family ID '" + familyId + "'");
         }
         return sampleNames.stream().collect(Collectors.toList());
     }
 
-    private List<String> getSampleNamesByIndividualId(String individualId) throws AnalysisException {
+    private List<String> getSampleNamesByIndividualId(String individualId) throws OskarAnalysisException {
         List<String> sampleNames = new ArrayList<>();
 
         VariantMetadata variantMetadata = oskar.metadata().variantMetadata(inputDataset);
@@ -140,7 +126,7 @@ public class SampleVariantStatsSparkParquetAnalysisExecutor extends SampleVarian
 
         // Sanity check
         if (CollectionUtils.isEmpty(sampleNames)) {
-            throw new AnalysisException("Invalid parameters: no samples found for individual ID '" + individualId + "'");
+            throw new OskarAnalysisException("Invalid parameters: no samples found for individual ID '" + individualId + "'");
         }
         return sampleNames.stream().collect(Collectors.toList());
     }

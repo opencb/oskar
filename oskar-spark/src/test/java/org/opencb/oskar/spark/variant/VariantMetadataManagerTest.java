@@ -7,10 +7,9 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.metadata.VariantMetadata;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

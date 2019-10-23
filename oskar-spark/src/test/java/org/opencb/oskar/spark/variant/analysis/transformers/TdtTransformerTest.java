@@ -4,14 +4,11 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.opencb.oskar.core.annotations.Analysis;
 import org.opencb.oskar.spark.OskarSparkTestUtils;
-import org.opencb.oskar.spark.commons.OskarException;
-import org.opencb.oskar.spark.variant.analysis.transformers.TdtTransformer;
+import org.opencb.oskar.core.exceptions.OskarException;
 
 import java.io.IOException;
 
-@Analysis(id = "bbb", data = Analysis.AnalysisData.VARIANT)
 public class TdtTransformerTest {
     @ClassRule
     public static OskarSparkTestUtils sparkTest = new OskarSparkTestUtils();

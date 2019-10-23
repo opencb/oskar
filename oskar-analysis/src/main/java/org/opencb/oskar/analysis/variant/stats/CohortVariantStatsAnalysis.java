@@ -1,21 +1,29 @@
 package org.opencb.oskar.analysis.variant.stats;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.opencb.biodata.models.variant.metadata.VariantSetStats;
+import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.oskar.analysis.OskarAnalysis;
-import org.opencb.oskar.analysis.exceptions.AnalysisException;
-import org.opencb.oskar.analysis.result.FileResult;
-import org.opencb.oskar.core.annotations.Analysis;
+import org.opencb.oskar.analysis.exceptions.OskarAnalysisException;
 
+import java.io.File;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.List;
 
-@Analysis(id = CohortVariantStatsAnalysis.ID, data = Analysis.AnalysisData.VARIANT)
-public class CohortVariantStatsAnalysis extends OskarAnalysis {
-    public static final String ID = "COHORT_STATS";
+public abstract class CohortVariantStatsAnalysis extends OskarAnalysis {
 
     private String study;
     private List<String> sampleNames;
+    private Path outputFile;
 
     public CohortVariantStatsAnalysis() {
+    }
+
+    public CohortVariantStatsAnalysis(ObjectMap executorParams, Path outDir) {
+        this.setUp(executorParams, outDir);
     }
 
     public String getStudy() {
@@ -36,22 +44,30 @@ public class CohortVariantStatsAnalysis extends OskarAnalysis {
         return this;
     }
 
-    @Override
-    protected void exec() throws AnalysisException {
-
-        arm.startStep("Calculate");
-
-        Path outputFile = outDir.resolve("cohort_stats.json");
-
-        getAnalysisExecutor(CohortVariantStatsAnalysisExecutor.class)
-                .setStudy(getStudy())
-                .setOutputFile(outputFile)
-                .setSampleNames(getSampleNames())
-                .exec();
-
-        arm.addFile(outputFile, FileResult.FileType.JSON);
-        arm.endStep(100);
+    public Path getOutputFile() {
+        return outputFile == null ? outDir.resolve("cohort_stats.json") : outputFile;
     }
 
+    public CohortVariantStatsAnalysis setOutputFile(Path outputFile) {
+        this.outputFile = outputFile;
+        return this;
+    }
 
+    protected void writeStatsToFile(VariantSetStats stats) throws OskarAnalysisException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
+        objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+
+        File outFilename = getOutputFile().toFile();
+        try {
+            PrintWriter pw = new PrintWriter(outFilename);
+            pw.println(objectMapper.writer().writeValueAsString(stats));
+            pw.close();
+        } catch (Exception e) {
+            throw new OskarAnalysisException("Error writing output file: " + outFilename, e);
+        }
+    }
 }

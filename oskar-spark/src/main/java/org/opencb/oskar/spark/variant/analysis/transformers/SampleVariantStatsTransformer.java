@@ -19,7 +19,7 @@ import org.opencb.biodata.models.variant.metadata.IndelLength;
 import org.opencb.biodata.models.variant.metadata.SampleVariantStats;
 import org.opencb.biodata.models.variant.stats.VariantStats;
 import org.opencb.biodata.tools.pedigree.MendelianError;
-import org.opencb.oskar.spark.commons.OskarException;
+import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
 import org.opencb.oskar.spark.variant.analysis.params.HasStudyId;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
@@ -150,17 +150,26 @@ public class SampleVariantStatsTransformer extends AbstractTransformer implement
 
         VariantMetadataManager metadataManager = new VariantMetadataManager();
 
+        String studyId = getStudyId();
+        if (StringUtils.isEmpty(studyId)) {
+            List<String> studies = metadataManager.studies(df);
+            if (studies.size() == 1) {
+                studyId = studies.get(0);
+            } else {
+                throw OskarException.missingStudy(studies);
+            }
+        }
         if (samples.isEmpty()) {
-            samples = metadataManager.samples(df, getStudyId());
+            samples = metadataManager.samples(df, studyId);
 
             if (samples.isEmpty()) {
-                new OskarException("Missing samples");
+                throw OskarException.missingParam(samplesParam.name());
             }
         }
 
-        List<Pedigree> pedigrees = metadataManager.pedigrees(df, getStudyId());
+        List<Pedigree> pedigrees = metadataManager.pedigrees(df, studyId);
 
-        SampleVariantStatsFunction udaf = new SampleVariantStatsFunction(getStudyId(), getFileId(), samples, pedigrees);
+        SampleVariantStatsFunction udaf = new SampleVariantStatsFunction(studyId, getFileId(), samples, pedigrees);
 
         return df.agg(udaf.apply(
                 col("chromosome"),
