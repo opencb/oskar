@@ -1,17 +1,14 @@
 package org.opencb.oskar.analysis.variant.tdt;
 
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.OskarAnalysisExecutor;
-import org.opencb.oskar.analysis.exceptions.AnalysisException;
-import org.opencb.oskar.analysis.result.FileResult;
+import org.opencb.oskar.analysis.OskarExecutor;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
-public abstract class TdtExecutor extends OskarAnalysisExecutor {
+public abstract class TdtExecutor extends OskarExecutor {
 
     private String phenotype;
+    private String study;
 
     public TdtExecutor() {
     }
@@ -35,19 +32,21 @@ public abstract class TdtExecutor extends OskarAnalysisExecutor {
         return sb.toString();
     }
 
-    protected void registerFiles() throws AnalysisException {
-        String outFilename = getOutDir() + "/tdt.txt";
-        if (new File(outFilename).exists()) {
-            arm.addFile(Paths.get(outFilename), FileResult.FileType.TAB_SEPARATED);
-        }
-    }
-
     public String getPhenotype() {
         return phenotype;
     }
 
     public TdtExecutor setPhenotype(String phenotype) {
         this.phenotype = phenotype;
+        return this;
+    }
+
+    public String getStudy() {
+        return study;
+    }
+
+    public TdtExecutor setStudy(String study) {
+        this.study = study;
         return this;
     }
 }

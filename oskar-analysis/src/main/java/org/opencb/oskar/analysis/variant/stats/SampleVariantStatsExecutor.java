@@ -5,14 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.models.variant.metadata.SampleVariantStats;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.OskarAnalysisExecutor;
-import org.opencb.oskar.analysis.exceptions.AnalysisException;
-import org.opencb.oskar.analysis.result.FileResult;
+import org.opencb.oskar.analysis.OskarExecutor;
+import org.opencb.oskar.analysis.exceptions.ExecutionException;
 
 import java.nio.file.Path;
 import java.util.List;
 
-public abstract class SampleVariantStatsAnalysisExecutor extends OskarAnalysisExecutor {
+public abstract class SampleVariantStatsExecutor extends OskarExecutor {
 
     protected String study;
     protected List<String> sampleNames;
@@ -20,10 +19,10 @@ public abstract class SampleVariantStatsAnalysisExecutor extends OskarAnalysisEx
     protected String familyId;
     private Path outputFile;
 
-    public SampleVariantStatsAnalysisExecutor() {
+    public SampleVariantStatsExecutor() {
     }
 
-    public SampleVariantStatsAnalysisExecutor(ObjectMap executorParams, Path outDir) {
+    public SampleVariantStatsExecutor(ObjectMap executorParams, Path outDir) {
         super.setUp(executorParams, outDir);
     }
 
@@ -33,9 +32,8 @@ public abstract class SampleVariantStatsAnalysisExecutor extends OskarAnalysisEx
         sb.append("sampleNames=").append(sampleNames);
         sb.append(", individualId='").append(individualId).append('\'');
         sb.append(", familyId='").append(familyId).append('\'');
-        sb.append(", executorParams=").append(executorParams);
+        sb.append(", params=").append(params);
         sb.append(", outDir=").append(outDir);
-        sb.append(", arm=").append(arm);
         sb.append('}');
         return sb.toString();
     }
@@ -44,7 +42,7 @@ public abstract class SampleVariantStatsAnalysisExecutor extends OskarAnalysisEx
         return study;
     }
 
-    public SampleVariantStatsAnalysisExecutor setStudy(String study) {
+    public SampleVariantStatsExecutor setStudy(String study) {
         this.study = study;
         return this;
     }
@@ -53,7 +51,7 @@ public abstract class SampleVariantStatsAnalysisExecutor extends OskarAnalysisEx
         return sampleNames;
     }
 
-    public SampleVariantStatsAnalysisExecutor setSampleNames(List<String> sampleNames) {
+    public SampleVariantStatsExecutor setSampleNames(List<String> sampleNames) {
         this.sampleNames = sampleNames;
         return this;
     }
@@ -62,7 +60,7 @@ public abstract class SampleVariantStatsAnalysisExecutor extends OskarAnalysisEx
         return individualId;
     }
 
-    public SampleVariantStatsAnalysisExecutor setIndividualId(String individualId) {
+    public SampleVariantStatsExecutor setIndividualId(String individualId) {
         this.individualId = individualId;
         return this;
     }
@@ -71,7 +69,7 @@ public abstract class SampleVariantStatsAnalysisExecutor extends OskarAnalysisEx
         return familyId;
     }
 
-    public SampleVariantStatsAnalysisExecutor setFamilyId(String familyId) {
+    public SampleVariantStatsExecutor setFamilyId(String familyId) {
         this.familyId = familyId;
         return this;
     }
@@ -80,12 +78,12 @@ public abstract class SampleVariantStatsAnalysisExecutor extends OskarAnalysisEx
         return outputFile;
     }
 
-    public SampleVariantStatsAnalysisExecutor setOutputFile(Path outputFile) {
+    public SampleVariantStatsExecutor setOutputFile(Path outputFile) {
         this.outputFile = outputFile;
         return this;
     }
 
-    protected void writeStatsToFile(List<SampleVariantStats> stats) throws AnalysisException {
+    protected void writeStatsToFile(List<SampleVariantStats> stats) throws ExecutionException {
         ObjectMapper objectMapper = new ObjectMapper().configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
 
@@ -93,10 +91,7 @@ public abstract class SampleVariantStatsAnalysisExecutor extends OskarAnalysisEx
         try {
             objectWriter.writeValue(outFilename.toFile(), stats);
         } catch (Exception e) {
-            throw new AnalysisException("Error writing output file: " + outFilename, e);
-        }
-        if (outFilename.toFile().exists()) {
-            arm.addFile(outFilename, FileResult.FileType.JSON);
+            throw new ExecutionException("Error writing output file: " + outFilename, e);
         }
     }
 }

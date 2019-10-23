@@ -172,9 +172,6 @@ public class VariantSetStatsTransformer extends AbstractTransformer implements H
 
         }
 
-        System.out.println("samples = " + samples);
-        System.out.println("files = " + files);
-
         VariantSetStatsFunction udaf = new VariantSetStatsFunction(studyId, files);
 
         return df.agg(udaf.apply(

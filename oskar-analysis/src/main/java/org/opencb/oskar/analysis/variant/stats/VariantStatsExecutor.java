@@ -2,12 +2,12 @@ package org.opencb.oskar.analysis.variant.stats;
 
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.Query;
-import org.opencb.oskar.analysis.OskarAnalysisExecutor;
+import org.opencb.oskar.analysis.OskarExecutor;
 
 import java.nio.file.Path;
 import java.util.List;
 
-public abstract class VariantStatsAnalysisExecutor extends OskarAnalysisExecutor {
+public abstract class VariantStatsExecutor extends OskarExecutor {
 
     private Path outputFile;
     private String study;
@@ -15,23 +15,23 @@ public abstract class VariantStatsAnalysisExecutor extends OskarAnalysisExecutor
     private List<String> samples;
     private Query variantsQuery;
 
-    public VariantStatsAnalysisExecutor() {
+    public VariantStatsExecutor() {
     }
 
-    public VariantStatsAnalysisExecutor(ObjectMap executorParams, Path outDir) {
+    public VariantStatsExecutor(ObjectMap executorParams, Path outDir) {
         this(null, executorParams, outDir);
     }
 
-    public VariantStatsAnalysisExecutor(String cohort, ObjectMap executorParams, Path outDir) {
+    public VariantStatsExecutor(String cohort, ObjectMap executorParams, Path outDir) {
         setUp(executorParams, outDir);
         this.cohort = cohort;
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("VariantStatsAnalysisExecutor{");
+        final StringBuilder sb = new StringBuilder("VariantStatsExecutor{");
         sb.append("cohort='").append(cohort).append('\'');
-        sb.append(", executorParams=").append(executorParams);
+        sb.append(", params=").append(params);
         sb.append(", outDir=").append(outDir);
         sb.append('}');
         return sb.toString();
@@ -41,7 +41,7 @@ public abstract class VariantStatsAnalysisExecutor extends OskarAnalysisExecutor
         return study;
     }
 
-    public VariantStatsAnalysisExecutor setStudy(String study) {
+    public VariantStatsExecutor setStudy(String study) {
         this.study = study;
         return this;
     }
@@ -50,7 +50,7 @@ public abstract class VariantStatsAnalysisExecutor extends OskarAnalysisExecutor
         return cohort;
     }
 
-    public VariantStatsAnalysisExecutor setCohort(String cohort) {
+    public VariantStatsExecutor setCohort(String cohort) {
         this.cohort = cohort;
         return this;
     }
@@ -59,7 +59,7 @@ public abstract class VariantStatsAnalysisExecutor extends OskarAnalysisExecutor
         return samples;
     }
 
-    public VariantStatsAnalysisExecutor setSamples(List<String> samples) {
+    public VariantStatsExecutor setSamples(List<String> samples) {
         this.samples = samples;
         return this;
     }
@@ -68,12 +68,12 @@ public abstract class VariantStatsAnalysisExecutor extends OskarAnalysisExecutor
         return outputFile;
     }
 
-    public VariantStatsAnalysisExecutor setOutputFile(Path outputFile) {
+    public VariantStatsExecutor setOutputFile(Path outputFile) {
         this.outputFile = outputFile;
         return this;
     }
 
-    public VariantStatsAnalysisExecutor setVariantsQuery(Query variantsQuery) {
+    public VariantStatsExecutor setVariantsQuery(Query variantsQuery) {
         this.variantsQuery = variantsQuery;
         return this;
     }

@@ -1,14 +1,15 @@
 package org.opencb.oskar.analysis.variant.gwas;
 
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.oskar.analysis.OskarAnalysisExecutor;
+import org.opencb.oskar.analysis.OskarExecutor;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GwasExecutor extends OskarAnalysisExecutor {
+public abstract class GwasExecutor extends OskarExecutor {
 
+    public static final String ID = "GWAS";
     private String study;
     private List<String> sampleList1;
     private List<String> sampleList2;
@@ -64,9 +65,8 @@ public abstract class GwasExecutor extends OskarAnalysisExecutor {
         sb.append(", cohort1='").append(cohort1).append('\'');
         sb.append(", cohort2='").append(cohort2).append('\'');
         sb.append(", configuration=").append(configuration);
-        sb.append(", executorParams=").append(executorParams);
+        sb.append(", params=").append(params);
         sb.append(", outDir=").append(outDir);
-        sb.append(", arm=").append(arm);
         sb.append('}');
         return sb.toString();
     }
@@ -144,7 +144,7 @@ public abstract class GwasExecutor extends OskarAnalysisExecutor {
     }
 
     public GwasConfiguration getConfiguration() {
-        return configuration;
+        return configuration == null ? new GwasConfiguration() : configuration;
     }
 
     public GwasExecutor setConfiguration(GwasConfiguration configuration) {

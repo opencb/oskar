@@ -21,6 +21,11 @@ import java.util.Map;
 
 public class GwasConfiguration {
 
+    public GwasConfiguration() {
+        method = Method.FISHER_TEST;
+        fisherMode = FisherMode.TWO_SIDED;
+    }
+
     public enum Method {
         FISHER_TEST("fisher-test"),
         CHI_SQUARE_TEST("chi-square-test");

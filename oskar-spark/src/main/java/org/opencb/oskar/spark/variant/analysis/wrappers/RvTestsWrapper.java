@@ -1,7 +1,7 @@
 package org.opencb.oskar.spark.variant.analysis.wrappers;
 
 import org.opencb.commons.datastore.core.Query;
-import org.opencb.oskar.analysis.exceptions.AnalysisExecutorException;
+import org.opencb.oskar.analysis.exceptions.ExecutionException;
 import org.opencb.oskar.analysis.exceptions.AnalysisToolException;
 import org.opencb.oskar.core.config.OskarConfiguration;
 import org.opencb.oskar.analysis.executor.Executor;
@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * Created by joaquin on 1/19/17.
  */
-public class RvTestsWrapper extends VariantOskarAnalysisWrapper {
+public class RvTestsWrapper extends VariantOskarExecutorWrapper {
 
     public static final String ANALYSIS_NAME = "rvtests";
 
@@ -43,7 +43,7 @@ public class RvTestsWrapper extends VariantOskarAnalysisWrapper {
     }
 
     @Override
-    public void exec() throws AnalysisExecutorException {
+    public void exec() throws ExecutionException {
         // Sanity check
         Path binPath;
         try {
@@ -51,11 +51,11 @@ public class RvTestsWrapper extends VariantOskarAnalysisWrapper {
             if (binPath == null || !binPath.toFile().exists()) {
                 String msg = "RvTests binary path is missing or does not exist:  '" + binPath + "'.";
                 logger.error(msg);
-                throw new AnalysisExecutorException(msg);
+                throw new ExecutionException(msg);
             }
         } catch (Exception e) {
             logger.error(e.getMessage());
-            throw new AnalysisExecutorException(e.getMessage());
+            throw new ExecutionException(e.getMessage());
         }
 
         // Get output dir
@@ -72,7 +72,7 @@ public class RvTestsWrapper extends VariantOskarAnalysisWrapper {
             VariantAnalysisUtils.exportPedigree(metaFilename, studyId, pedFilename);
         } catch (IOException e) {
             logger.error(e.getMessage());
-            throw new AnalysisExecutorException(e);
+            throw new ExecutionException(e);
         }
 
         StringBuilder sb = new StringBuilder();
@@ -99,7 +99,7 @@ public class RvTestsWrapper extends VariantOskarAnalysisWrapper {
             Executor.execute(sb.toString(), outDir, true);
         } catch (AnalysisToolException e) {
             logger.error(e.getMessage());
-            throw new AnalysisExecutorException(e);
+            throw new ExecutionException(e);
         }
     }
 }
