@@ -20,6 +20,7 @@ import org.opencb.oskar.spark.variant.converters.RowToVariantConverter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,7 +57,7 @@ public class FacetTransformerTest {
 
         FacetField field = new DataframeToFacetFieldConverter().convert(res);
         System.out.println(field);
-        Assert.assertTrue(field.getBuckets().size() == 3);
+        Assert.assertTrue(field.getBuckets().size() == 2);
     }
 
     @Test
@@ -146,13 +147,18 @@ public class FacetTransformerTest {
 
     @Test
     public void nestedFacetCatAndAggAndCat() throws IOException, OskarException {
-        Dataset<Row> df = sparkTest.getVariantsDataset();
+        Dataset<Row> df;
         String facet = "biotype>>avg(gerp)>>type";
+        df = sparkTest.getVariantsDataset();
         FacetTransformer facetTransformer = new FacetTransformer();
         facetTransformer.setFacet(facet);
 
-        Dataset<Row> res = facetTransformer.transform(df);
-        res.show(100);
+        try {
+            facetTransformer.transform(df);
+            Assert.fail("Should have thrown an InvalidParameterException");
+        } catch (InvalidParameterException e) {
+            Assert.assertEquals(e.getMessage(), "In nested facets, aggregations must be in last place: " + facet);
+        }
     }
 
     @Test

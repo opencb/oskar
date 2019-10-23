@@ -49,6 +49,8 @@ public class FacetTransformer extends AbstractTransformer {
         converter = new DataframeToFacetFieldConverter();
         facetParam = new Param<>(this, "facet", "");
 
+        setDefault(facetParam(), null);
+
         init();
 
     }
@@ -69,11 +71,11 @@ public class FacetTransformer extends AbstractTransformer {
 
 
         // Sanity check
-        if (facetParam() == null) {
+        String facet = getOrDefault(facetParam());
+        if (StringUtils.isEmpty(facet)) {
             return df.sparkSession().emptyDataFrame();
         }
 
-        String facet = getOrDefault(facetParam());
         if (facet.contains(converter.NESTED_FACET_SEPARATOR)) {
             // Nested facet
             String[] facets = facet.split(converter.NESTED_FACET_SEPARATOR);
