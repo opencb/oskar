@@ -13,15 +13,14 @@ import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.variant.StudyEntry;
-import org.opencb.biodata.models.variant.metadata.ChromosomeStats;
 import org.opencb.biodata.models.variant.metadata.VariantFileMetadata;
 import org.opencb.biodata.models.variant.metadata.VariantSetStats;
 import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.biodata.models.variant.stats.VariantStats;
 import org.opencb.oskar.core.exceptions.OskarException;
 import org.opencb.oskar.spark.variant.VariantMetadataManager;
-import org.opencb.oskar.spark.variant.transformers.params.HasStudyId;
 import org.opencb.oskar.spark.variant.converters.VariantToRowConverter;
+import org.opencb.oskar.spark.variant.transformers.params.HasStudyId;
 import org.opencb.oskar.spark.variant.udf.VariantUdfManager;
 import scala.Option;
 import scala.Tuple2;
@@ -338,25 +337,25 @@ public class VariantSetStatsTransformer extends AbstractTransformer implements H
             float stdDevQuality = (float) Math.sqrt(qualSumSq / qualCount - meanQual * meanQual);
 
             java.util.Map<String, Integer> chromosomes = mapAsJavaMap(VariantSetStatsBufferUtils.getByChromosomeCounts(buffer));
-            java.util.Map<String, ChromosomeStats> chromosomeStats = new java.util.HashMap<>(chromosomes.size());
             // TODO: Calculate chromosome density
-            chromosomes.forEach((chr, count) -> chromosomeStats.put(chr, new ChromosomeStats(count, 0F)));
+//            java.util.Map<String, ChromosomeCount> chromosomeStats = new java.util.HashMap<>(chromosomes.size());
+//            chromosomes.forEach((chr, count) -> chromosomeStats.put(chr, new ChromosomeStats(count, 0F)));
 
-            VariantSetStats stats = new VariantSetStats(
-                    VariantSetStatsBufferUtils.getNumVariants(buffer),
-                    0, // TODO: setNumSamples
-                    VariantSetStatsBufferUtils.getNumPass(buffer),
-                    ((float) (VariantSetStatsBufferUtils.getTransitionsCount(buffer))
-                            / VariantSetStatsBufferUtils.getTransversionsCount(buffer)),
-                    (float) meanQual,
-                    stdDevQuality,
-                    Collections.emptyList(),
-                    mapAsJavaMap(VariantSetStatsBufferUtils.getVariantTypeCounts(buffer)),
-                    mapAsJavaMap(VariantSetStatsBufferUtils.getVariantBiotypeCounts(buffer)),
-                    mapAsJavaMap(VariantSetStatsBufferUtils.getConsequenceTypesCounts(buffer)),
-                    chromosomeStats
-            );
-            return new VariantToRowConverter().convert(stats);
+//            VariantSetStats stats = new VariantSetStats(
+//                    VariantSetStatsBufferUtils.getNumVariants(buffer),
+//                    0, // TODO: setNumSamples
+//                    VariantSetStatsBufferUtils.getNumPass(buffer),
+//                    ((float) (VariantSetStatsBufferUtils.getTransitionsCount(buffer))
+//                            / VariantSetStatsBufferUtils.getTransversionsCount(buffer)),
+//                    (float) meanQual,
+//                    stdDevQuality,
+//                    Collections.emptyList(),
+//                    mapAsJavaMap(VariantSetStatsBufferUtils.getVariantTypeCounts(buffer)),
+//                    mapAsJavaMap(VariantSetStatsBufferUtils.getVariantBiotypeCounts(buffer)),
+//                    mapAsJavaMap(VariantSetStatsBufferUtils.getConsequenceTypesCounts(buffer)),
+//            );
+//            return new VariantToRowConverter().convert(stats);
+            return null;
         }
     }
 

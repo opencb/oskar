@@ -9,7 +9,7 @@ import org.opencb.biodata.models.variant.avro.StudyEntry;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
 import org.opencb.biodata.models.variant.avro.VariantStats;
 import org.opencb.biodata.models.variant.metadata.VariantSetStats;
-import org.opencb.biodata.tools.Converter;
+import org.opencb.biodata.tools.commons.Converter;
 import org.opencb.oskar.spark.commons.converters.AvroToRowConverter;
 
 import java.io.Serializable;

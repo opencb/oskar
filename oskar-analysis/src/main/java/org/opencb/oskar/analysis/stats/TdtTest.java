@@ -1,11 +1,11 @@
 package org.opencb.oskar.analysis.stats;
 
 import org.apache.commons.lang.StringUtils;
+import org.opencb.biodata.models.clinical.Disorder;
 import org.opencb.biodata.models.clinical.pedigree.Member;
 import org.opencb.biodata.models.clinical.pedigree.Pedigree;
 import org.opencb.biodata.models.clinical.pedigree.PedigreeManager;
-import org.opencb.biodata.models.commons.Disorder;
-import org.opencb.biodata.models.feature.Genotype;
+import org.opencb.biodata.models.variant.Genotype;
 import org.opencb.biodata.tools.pedigree.MendelianError;
 import org.opencb.biodata.tools.pedigree.MendelianError.GenotypeCode;
 import org.opencb.commons.datastore.core.ObjectMap;

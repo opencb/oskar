@@ -13,7 +13,7 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.opencb.biodata.models.clinical.pedigree.Member;
 import org.opencb.biodata.models.clinical.pedigree.Pedigree;
-import org.opencb.biodata.models.feature.Genotype;
+import org.opencb.biodata.models.variant.Genotype;
 import org.opencb.biodata.models.variant.StudyEntry;
 import org.opencb.biodata.models.variant.metadata.IndelLength;
 import org.opencb.biodata.models.variant.metadata.SampleVariantStats;
@@ -66,7 +66,7 @@ public class SampleVariantStatsTransformer extends AbstractTransformer implement
             SampleVariantStats stats = new SampleVariantStats();
 
             stats.setId(row.getString(BufferUtils.SAMPLE_INDEX));
-            stats.setNumVariants(row.getInt(BufferUtils.NUM_VARIANTS_INDEX));
+            stats.setVariantCount(row.getInt(BufferUtils.NUM_VARIANTS_INDEX));
             stats.setChromosomeCount(mapAsJavaMap(row.getMap(BufferUtils.CHROMOSOME_COUNT_INDEX)));
             stats.setTypeCount(mapAsJavaMap(row.getMap(BufferUtils.TYPE_COUNT_INDEX)));
             stats.setGenotypeCount(mapAsJavaMap(row.getMap(BufferUtils.GENOTYPE_COUNT_INDEX)));
@@ -88,11 +88,11 @@ public class SampleVariantStatsTransformer extends AbstractTransformer implement
                 }
             }
             stats.setIndelLengthCount(indel);
-            stats.setNumPass(row.getInt(BufferUtils.NUM_PASS_INDEX));
+//            stats.setNumPass(row.getInt(BufferUtils.NUM_PASS_INDEX));
             stats.setTiTvRatio((float) row.getDouble(BufferUtils.TI_TV_RATIO_INDEX));
-            stats.setMeanQuality((float) row.getDouble(BufferUtils.MEAN_QUALITY_INDEX));
-            stats.setStdDevQuality((float) row.getDouble(BufferUtils.STD_DEV_QUALITY_INDEX));
-            stats.setMissingPositions(row.getInt(BufferUtils.MISSING_POSITIONS_INDEX));
+            stats.setQualityAvg((float) row.getDouble(BufferUtils.MEAN_QUALITY_INDEX));
+            stats.setQualityStdDev((float) row.getDouble(BufferUtils.STD_DEV_QUALITY_INDEX));
+//            stats.setMissingPositions(row.getInt(BufferUtils.MISSING_POSITIONS_INDEX));
             // TODO: mendelian errors
             stats.setConsequenceTypeCount(mapAsJavaMap(row.getMap(BufferUtils.CONSEQUENCE_TYPE_COUNT_INDEX)));
             stats.setBiotypeCount(mapAsJavaMap(row.getMap(BufferUtils.BIOTYPE_COUNT_INDEX)));

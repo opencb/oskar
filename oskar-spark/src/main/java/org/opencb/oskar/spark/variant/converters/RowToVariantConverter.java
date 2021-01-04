@@ -5,7 +5,7 @@ import org.apache.spark.sql.Row;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.VariantType;
-import org.opencb.biodata.tools.Converter;
+import org.opencb.biodata.tools.commons.Converter;
 import scala.collection.mutable.WrappedArray;
 
 import java.util.ArrayList;
@@ -41,10 +41,10 @@ public class RowToVariantConverter implements MapFunction<Row, Variant>, Convert
         List<Row> studies = row.getList(row.fieldIndex("studies"));
         Row study = studies.get(0);
         builder.setStudyId(study.getAs("studyId"));
-        builder.setFormat(study.getList(study.fieldIndex("format")));
+        builder.setSampleDataKeys(study.getList(study.fieldIndex("format")));
 
         List<List<String>> samplesDataJava = getSamplesData(study);
-        builder.setSamplesData(samplesDataJava);
+//        builder.setSamplesData(samplesDataJava);
 
         return builder.build();
     }

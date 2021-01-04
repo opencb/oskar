@@ -12,7 +12,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.types.*;
 import org.opencb.biodata.models.clinical.pedigree.Member;
 import org.opencb.biodata.models.clinical.pedigree.Pedigree;
-import org.opencb.biodata.models.commons.Phenotype;
+import org.opencb.biodata.models.clinical.Phenotype;
 import org.opencb.biodata.models.metadata.Individual;
 import org.opencb.biodata.models.metadata.Sample;
 import org.opencb.biodata.models.pedigree.Multiples;
