@@ -9,6 +9,8 @@
     <version>0.2.0</version>
     <packaging>pom</packaging>
 
+    <name>Oskar</name>
+
     <modules>
         <module>oskar-app</module>
         <module>oskar-analysis</module>
