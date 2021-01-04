@@ -10,6 +10,8 @@
     <packaging>pom</packaging>
 
     <name>Oskar</name>
+    <description>Oskar projects implements a big data genomic analysis</description>
+    <url>http://docs.opencb.org/display/oskar/</url>
 
     <modules>
         <module>oskar-app</module>
