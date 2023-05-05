@@ -22,15 +22,15 @@
 
     <properties>
         <oskar.version>0.2.0</oskar.version>
-        <cellbase.version>4.8.0</cellbase.version>
-        <biodata.version>2.0.4</biodata.version>
-        <commons-lib.version>4.0.4</commons-lib.version>
+        <cellbase.version>5.4.0</cellbase.version>
+        <biodata.version>2.8.0</biodata.version>
+        <commons-lib.version>4.8.0</commons-lib.version>
         <commons-math.version>3.6.1</commons-math.version>
         <hadoop.version>2.7.3</hadoop.version>
         <spark.version>2.3.2</spark.version>
         <parquet.version>1.8.2</parquet.version>
         <avro.version>1.7.7</avro.version>
-        <jackson.version>2.10.1</jackson.version>
+        <jackson.version>2.11.4</jackson.version>
         <slf4j.version>1.7.25</slf4j.version>
         <junit.version>4.12</junit.version>
         <compileSource>1.8</compileSource>

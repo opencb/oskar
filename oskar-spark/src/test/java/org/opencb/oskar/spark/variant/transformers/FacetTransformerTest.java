@@ -10,6 +10,7 @@ import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.config.RestConfig;
 import org.opencb.cellbase.client.rest.CellBaseClient;
 import org.opencb.cellbase.client.rest.VariantClient;
+import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
@@ -398,7 +399,7 @@ public class FacetTransformerTest {
         }
 
         VariantClient variantClient = cellBaseClient.getVariantClient();
-        QueryResponse<Variant> annotatedVariants = variantClient.annotate(variants, QueryOptions.empty());
+        CellBaseDataResponse<Variant> annotatedVariants = variantClient.annotate(variants, QueryOptions.empty());
 
         PrintWriter pw = new PrintWriter("/tmp/variants.json");
         for (Variant variant : annotatedVariants.allResults()) {
