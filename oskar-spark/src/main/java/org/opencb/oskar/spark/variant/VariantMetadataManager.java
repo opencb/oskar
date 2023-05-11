@@ -13,6 +13,7 @@ import org.apache.spark.sql.types.*;
 import org.opencb.biodata.models.clinical.pedigree.Member;
 import org.opencb.biodata.models.clinical.pedigree.Pedigree;
 import org.opencb.biodata.models.clinical.Phenotype;
+import org.opencb.biodata.models.core.SexOntologyTermAnnotation;
 import org.opencb.biodata.models.metadata.Individual;
 import org.opencb.biodata.models.metadata.Sample;
 import org.opencb.biodata.models.pedigree.Multiples;
@@ -293,7 +294,8 @@ public class VariantMetadataManager {
                     }
 
                     // Other attributes
-                    member.setSex(Member.Sex.getEnum(attrMetadata.getString("sex")));
+//                    member.setSex(Member.Sex.getEnum(attrMetadata.getString("sex")));
+                    member.setSex(new SexOntologyTermAnnotation().setId(attrMetadata.getString("sex")));
                     member.setPhenotypes(Collections.singletonList(new Phenotype(attrMetadata.getString("phenotype"),
                             attrMetadata.getString("phenotype"), null)));
 

@@ -6,7 +6,7 @@
 
     <groupId>org.opencb.oskar</groupId>
     <artifactId>oskar</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1</version>
     <packaging>pom</packaging>
 
     <name>Oskar</name>
@@ -21,18 +21,17 @@
     </modules>
 
     <properties>
-        <oskar.version>0.2.0</oskar.version>
-        <cellbase.version>4.8.0</cellbase.version>
-        <biodata.version>2.0.4</biodata.version>
-        <commons-lib.version>4.0.4</commons-lib.version>
+        <cellbase.version>5.4.0</cellbase.version>
+        <biodata.version>2.8.0</biodata.version>
+        <commons-lib.version>4.8.0</commons-lib.version>
         <commons-math.version>3.6.1</commons-math.version>
         <hadoop.version>2.7.3</hadoop.version>
         <spark.version>2.3.2</spark.version>
         <parquet.version>1.8.2</parquet.version>
         <avro.version>1.7.7</avro.version>
-        <jackson.version>2.10.1</jackson.version>
-        <slf4j.version>1.7.25</slf4j.version>
-        <junit.version>4.12</junit.version>
+        <jackson.version>2.11.4</jackson.version>
+        <slf4j.version>1.7.32</slf4j.version>
+        <junit.version>4.13.2</junit.version>
         <compileSource>1.8</compileSource>
     </properties>
 
@@ -65,7 +64,30 @@
             <name>Joaquin</name>
             <email>joaquintarraga@gmail.com</email>
         </developer>
+        <developer>
+            <id>jsanahuja</id>
+            <name>Juanfe</name>
+            <email>juanfesanahuja@gmail.com</email>
+        </developer>
     </developers>
+
+    <repositories>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/opencb</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <dependencyManagement>
         <dependencies>
@@ -73,39 +95,27 @@
             <dependency>
                 <groupId>org.opencb.oskar</groupId>
                 <artifactId>oskar-core</artifactId>
-                <version>${oskar.version}</version>
+                <version>${project.parent.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.opencb.oskar</groupId>
                 <artifactId>oskar-analysis</artifactId>
-                <version>${oskar.version}</version>
+                <version>${project.parent.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.opencb.oskar</groupId>
                 <artifactId>oskar-spark</artifactId>
-                <version>${oskar.version}</version>
+                <version>${project.parent.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-tools</artifactId>
                 <version>${biodata.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-simple</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.opencb.commons</groupId>
                 <artifactId>commons-lib</artifactId>
                 <version>${commons-lib.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-simple</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <!-- General dependencies -->
@@ -137,7 +147,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <version>${junit.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -151,7 +161,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.10.1</version>
                 <configuration>
                     <source>${compileSource}</source>
                     <target>${compileSource}</target>
@@ -178,12 +188,22 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <failIfNoTests>false</failIfNoTests>
-                </configuration>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-dependency-plugin</artifactId>-->
+<!--                <version>3.5.0</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>analyze</id>-->
+<!--                        <goals>-->
+<!--                            <goal>analyze-only</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <failOnWarning>true</failOnWarning>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 
@@ -198,14 +218,25 @@
                 <OSKAR.CELLBASE.REST.HOST>http://bioinfo.hpc.cam.ac.uk/cellbase/</OSKAR.CELLBASE.REST.HOST>
             </properties>
         </profile>
+
         <profile>
-            <id>deploy</id>
+            <id>deploy-maven</id>
+            <distributionManagement>
+                <repository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.0.1</version>
+                        <version>3.2.0</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -218,7 +249,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.4</version>
+                        <version>3.3.2</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -228,7 +259,7 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <doclint>none</doclint>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -242,13 +273,20 @@
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
+                                <configuration>
+                                    <!-- Prevent `gpg` from using pinentry programs -->
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.5</version>
+                        <version>1.6.8</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>
@@ -259,17 +297,18 @@
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>deploy-github</id>
+            <distributionManagement>
+                <repository>
+                    <id>github</id>
+                    <name>GitHub OpenCB Apache Maven Packages</name>
+                    <url>https://maven.pkg.github.com/opencb/biodata</url>
+                </repository>
+            </distributionManagement>
+            <build>
+            </build>
+        </profile>
     </profiles>
-
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
 </project>
