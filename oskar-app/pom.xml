@@ -19,13 +19,6 @@
         <!--<sonar.skip>true</sonar.skip>-->
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.opencb.oskar</groupId>
-            <artifactId>oskar-spark</artifactId>
-        </dependency>
-    </dependencies>
-
     <build>
         <finalName>oskar-app</finalName>
         <sourceDirectory>src/main/java</sourceDirectory>
