@@ -33,6 +33,16 @@
         <slf4j.version>1.7.32</slf4j.version>
         <junit.version>4.13.2</junit.version>
         <compileSource>1.8</compileSource>
+        <commons-lang.version>2.4</commons-lang.version>
+        <jackson-mapper-asl.version>1.9.13</jackson-mapper-asl.version>
+        <slf4j-api.version>1.7.32</slf4j-api.version>
+        <log4j.version>1.2.17</log4j.version>
+        <scala-library.version>2.11.8</scala-library.version>
+        <hadoop-common.version>2.7.3</hadoop-common.version>
+        <spark-avro_2.11.version>3.2.0</spark-avro_2.11.version>
+        <htsjdk.version>2.23.0</htsjdk.version>
+        <commons-lang3.version>3.12.0</commons-lang3.version>
+        <commons-collections.version>3.2.2</commons-collections.version>
     </properties>
 
     <scm>
@@ -108,17 +118,47 @@
                 <version>${project.parent.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.opencb.commons</groupId>
+                <artifactId>commons-lib</artifactId>
+                <version>${commons-lib.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opencb.commons</groupId>
+                <artifactId>commons-datastore-core</artifactId>
+                <version>${commons-lib.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-tools</artifactId>
                 <version>${biodata.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.opencb.commons</groupId>
-                <artifactId>commons-lib</artifactId>
-                <version>${commons-lib.version}</version>
+                <groupId>org.opencb.biodata</groupId>
+                <artifactId>biodata-formats</artifactId>
+                <version>${biodata.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opencb.biodata</groupId>
+                <artifactId>biodata-models</artifactId>
+                <version>${biodata.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opencb.cellbase</groupId>
+                <artifactId>cellbase-client</artifactId>
+                <version>${cellbase.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opencb.cellbase</groupId>
+                <artifactId>cellbase-core</artifactId>
+                <version>${cellbase.version}</version>
             </dependency>
 
             <!-- General dependencies -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math3</artifactId>
+                <version>${commons-math.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
@@ -143,6 +183,87 @@
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-yaml</artifactId>
                 <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-mapper-asl</artifactId>
+                <version>${jackson-mapper-asl.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+                <version>${scala-library.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>${commons-lang.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-common</artifactId>
+                <version>${hadoop-common.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.samtools</groupId>
+                <artifactId>htsjdk</artifactId>
+                <version>${htsjdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>${commons-collections.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>${avro.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.databricks</groupId>
+                <artifactId>spark-avro_2.11</artifactId>
+                <version>${spark-avro_2.11.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-core_2.11</artifactId>
+                <version>${spark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-sql_2.11</artifactId>
+                <version>${spark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-catalyst_2.11</artifactId>
+                <version>${spark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-mllib-local_2.11</artifactId>
+                <version>${spark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-mllib_2.11</artifactId>
+                <version>${spark.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>

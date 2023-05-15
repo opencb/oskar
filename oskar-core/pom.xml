@@ -18,19 +18,15 @@
         <dependency>
             <groupId>org.opencb.commons</groupId>
             <artifactId>commons-datastore-core</artifactId>
-            <version>4.8.0</version>
         </dependency>
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-client</artifactId>
-            <version>${cellbase.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -42,7 +38,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.11.4</version>
         </dependency>
     </dependencies>
 
