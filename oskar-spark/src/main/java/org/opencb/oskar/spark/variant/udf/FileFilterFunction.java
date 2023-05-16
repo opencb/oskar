@@ -1,6 +1,6 @@
 package org.opencb.oskar.spark.variant.udf;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.sql.api.java.UDF2;
 import org.opencb.biodata.models.variant.StudyEntry;
 import scala.runtime.AbstractFunction2;

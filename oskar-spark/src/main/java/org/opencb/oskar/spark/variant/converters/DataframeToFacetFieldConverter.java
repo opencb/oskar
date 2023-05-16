@@ -1,6 +1,6 @@
 package org.opencb.oskar.spark.variant.converters;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.opencb.biodata.tools.commons.Converter;

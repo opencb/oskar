@@ -1,6 +1,6 @@
 package org.opencb.oskar.spark.variant.wrappers;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.sql.SparkSession;
 import org.opencb.biodata.models.metadata.Individual;
 import org.opencb.biodata.models.metadata.Sample;

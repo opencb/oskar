@@ -1,6 +1,6 @@
 package org.opencb.oskar.spark.variant.transformers;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.ml.param.Param;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;

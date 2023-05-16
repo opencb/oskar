@@ -31,18 +31,16 @@
         <avro.version>1.7.7</avro.version>
         <jackson.version>2.11.4</jackson.version>
         <slf4j.version>1.7.32</slf4j.version>
-        <junit.version>4.13.2</junit.version>
-        <compileSource>1.8</compileSource>
-        <commons-lang.version>2.4</commons-lang.version>
+        <commons-lang3.version>3.12.0</commons-lang3.version>
         <jackson-mapper-asl.version>1.9.13</jackson-mapper-asl.version>
-        <slf4j-api.version>1.7.32</slf4j-api.version>
         <log4j.version>1.2.17</log4j.version>
         <scala-library.version>2.11.8</scala-library.version>
-        <hadoop-common.version>2.7.3</hadoop-common.version>
         <spark-avro_2.11.version>3.2.0</spark-avro_2.11.version>
         <htsjdk.version>2.23.0</htsjdk.version>
-        <commons-lang3.version>3.12.0</commons-lang3.version>
         <commons-collections.version>3.2.2</commons-collections.version>
+        <junit.version>4.13.2</junit.version>
+
+        <compileSource>1.8</compileSource>
     </properties>
 
     <scm>
@@ -206,14 +204,9 @@
                 <version>${log4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>commons-lang</groupId>
-                <artifactId>commons-lang</artifactId>
-                <version>${commons-lang.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-common</artifactId>
-                <version>${hadoop-common.version}</version>
+                <version>${hadoop.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.samtools</groupId>
